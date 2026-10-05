@@ -1,0 +1,140 @@
+/* ============================================================
+   THE FLUSH FACTOR — animations.css
+   Alle keyframe-animaties.
+   ============================================================ */
+
+/* ──────── SPOELEN ──────── */
+@keyframes flushPulse {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(0.94) rotate(-1deg); }
+  50%  { transform: scale(1.04) rotate(1deg); }
+  80%  { transform: scale(0.97) rotate(-0.5deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes waterSwirl {
+  0%   { transform: scale(1) rotate(0deg); opacity: 1; }
+  40%  { transform: scale(0.6) rotate(180deg); opacity: 0.5; }
+  70%  { transform: scale(0.3) rotate(360deg); opacity: 0.1; }
+  85%  { transform: scale(0.1) rotate(400deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+#toilet-wrapper.flushing { animation: flushPulse 0.7s ease; }
+#bowl-water.flushing-water { animation: waterSwirl 0.7s ease forwards; }
+
+/* ──────── SCHUDDEN ──────── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px) rotate(-1deg); }
+  40%       { transform: translateX(5px) rotate(1deg); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+#toilet-wrapper.toilet-shake { animation: shake 0.4s ease; }
+
+@keyframes overflowShake {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  25%       { transform: translateX(-3px) translateY(2px); }
+  75%       { transform: translateX(3px) translateY(-2px); }
+}
+.overflow-shake { animation: overflowShake 0.1s infinite !important; }
+
+/* ──────── WIGGLE (chaos) ──────── */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20%       { transform: rotate(-8deg) scale(1.05); }
+  40%       { transform: rotate(8deg) scale(1.05); }
+  60%       { transform: rotate(-5deg); }
+  80%       { transform: rotate(5deg); }
+}
+#toilet-wrapper.toilet-wiggle { animation: wiggle 0.4s ease infinite; }
+
+/* ──────── DISCO ──────── */
+@keyframes discoFlash {
+  0%   { background: rgba(255,0,128,0.15); }
+  16%  { background: rgba(0,200,255,0.15); }
+  33%  { background: rgba(255,200,0,0.15); }
+  50%  { background: rgba(0,255,100,0.15); }
+  66%  { background: rgba(200,0,255,0.15); }
+  83%  { background: rgba(255,100,0,0.15); }
+  100% { background: rgba(255,0,128,0.15); }
+}
+@keyframes toiletDisco {
+  0%, 100% { filter: drop-shadow(0 6px 16px rgba(0,0,0,0.18)); }
+  25%  { filter: drop-shadow(0 0 20px rgba(255,0,128,0.8)); }
+  50%  { filter: drop-shadow(0 0 20px rgba(0,200,255,0.8)); }
+  75%  { filter: drop-shadow(0 0 20px rgba(255,200,0,0.8)); }
+}
+#toilet-wrapper.toilet-disco #toilet-svg { animation: toiletDisco 0.4s linear infinite; }
+
+/* ──────── FLAMINGO BOUNCE ──────── */
+@keyframes flamingoBounce {
+  from { transform: translateX(-50%) translateY(0) rotate(-5deg); }
+  to   { transform: translateX(-50%) translateY(-20px) rotate(5deg); }
+}
+
+/* ──────── CHAOS FLOAT ──────── */
+@keyframes chaosFloat {
+  from { transform: translateY(0) rotate(-10deg); }
+  to   { transform: translateY(-18px) rotate(10deg); }
+}
+
+/* ──────── CONFETTI VALLEN ──────── */
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ──────── LAVA GLOEi ──────── */
+@keyframes lavaGlow {
+  from { background: linear-gradient(180deg,#ff4500,#ff8c00,#ff4500); }
+  to   { background: linear-gradient(180deg,#ff6600,#ff4500,#ff2200); }
+}
+
+/* ──────── GEVAAR PULSEREN ──────── */
+@keyframes dangerPulse {
+  from { opacity: 0.8; }
+  to   { opacity: 1; box-shadow: inset 0 0 8px rgba(255,0,0,0.5); }
+}
+
+/* ──────── STATUSBERICHT ──────── */
+@keyframes msgFade {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  70%  { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+/* ──────── PUNTEN POPUP ──────── */
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  60%  { opacity: 1; transform: translateY(-40px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+}
+
+/* ──────── COMBO POP ──────── */
+@keyframes comboPop {
+  0%   { transform: translateX(-50%) scale(1); }
+  50%  { transform: translateX(-50%) scale(1.4); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* ──────── USABLE PULSEREN ──────── */
+@keyframes usablePulse {
+  from { box-shadow: 0 0 6px rgba(42,157,143,0.4); }
+  to   { box-shadow: 0 0 14px rgba(42,157,143,0.8); }
+}
+
+/* ──────── SCHERM INTREDE ──────── */
+@keyframes screenEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.screen-enter { animation: screenEnter 0.3s ease; }
+
+/* ──────── WATER-STIJG PULSEREN (verstopping) ──────── */
+@keyframes waterRise {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(1.04); }
+}
+.clogged-state #bowl-water { animation: waterRise 0.8s ease-in-out infinite alternate; }
