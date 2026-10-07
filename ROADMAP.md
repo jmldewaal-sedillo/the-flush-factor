@@ -68,6 +68,21 @@
 
 ---
 
+## 🔧 Sprint 2 (punten 11–20)
+
+- [x] **11. Echt toilet-GLB** — CC0 GLB-model (opengameart.org, Toilet/toilet.glb, 94KB); GLTFLoader + DRACOLoader; fallback naar procedureel bij laad-fout; cosmetica-skin toegepast op geladen materialen.
+- [x] **12. Camera OrbitControls** — Vrij draaien/zoomen met limieten; auto-zoom bij verstopping (inzoomen op kom) en bij ontstopping (terugvliegen); resetCamera() via menu-knop.
+- [x] **13. Startpositie verder uitgezoomd** — Camera start op (0, 2.8, 7.0); decorationAnchor Group toegevoegd boven toilet.
+- [x] **14. Header weg, fullscreen layout** — `<header>` verwijderd; `#bathroom-scene` wordt `position:fixed; inset:0`; vier HUD-zones: `#hud-topleft`, `#hud-topright`, `#hud-left`, `#hud-bottom`.
+- [x] **15. Ronde WC-menuknop (linksboven)** — Bubble-knop met frosted glass; uitklapbaar menu met geluid/credits/volledig scherm/camera-reset; credits-modal met CREDITS.md-inhoud.
+- [x] **16. Score-bubbel (rechtsboven)** — Frosted glass bubble met score, highscore, streak, level en winkelknop.
+- [x] **17. Spoelknop zwevend (onderin midden)** — Ronde knop met safe-area-inset-bottom.
+- [x] **18. Gereedschappen verticaal (linkerkant)** — Ronde knoppen met SVG-cirkel cooldown-ring en secondenteller.
+- [x] **19. Mand (rechtsonder) ipv prullenbak** — 3D-mand (wicker-stijl); volumetracking in liters; upgrade-manden in winkel; item "valt" in mand bij ontstopping.
+- [x] **20. Knoppen blokkeren 3D niet** — `pointer-events:all` op canvas voor OrbitControls; HUD-elementen hoger z-index.
+
+---
+
 ## 🔜 Versie 0.2 — Verbeteringen & uitbreiding
 
 ### Prioriteit hoog

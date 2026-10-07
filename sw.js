@@ -3,7 +3,7 @@
 // Service Worker: offline caching voor PWA/TWA.
 // ============================================================
 
-const CACHE = 'flushfactor-v5';
+const CACHE = 'flushfactor-v6';
 const ASSETS = [
   '/',
   '/index.html',
@@ -18,6 +18,10 @@ const ASSETS = [
   '/js/phone-preview.js',
   '/js/vendor/three.module.min.js',
   '/js/vendor/RGBELoader.js',
+  '/js/vendor/OrbitControls.js',
+  '/js/vendor/GLTFLoader.js',
+  '/js/vendor/DRACOLoader.js',
+  '/assets/models/toilet.glb',
   '/manifest.json',
 ];
 
@@ -38,7 +42,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Sla grote 3D-assets (texturen, HDRI) op bij eerste gebruik
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

@@ -5,13 +5,20 @@
 // ============================================================
 
 import * as THREE from 'three';
-import { RGBELoader } from './vendor/RGBELoader.js';
+import { RGBELoader }    from './vendor/RGBELoader.js';
+import { OrbitControls } from './vendor/OrbitControls.js';
+import { GLTFLoader }    from './vendor/GLTFLoader.js';
+import { DRACOLoader }   from './vendor/DRACOLoader.js';
 
 // ──────── MODULE-STATE ────────
-let renderer, scene, camera, clock;
-let toiletGroup, waterMesh, propSprite, trashBinMesh;
+let renderer, scene, camera, clock, controls;
+let toiletGroup, toiletGLB, waterMesh, propSprite, basketGroup;
 let floorMesh, backWallMesh, leftWallMesh, rightWallMesh;
 let qualityTier = 'medium';
+let basketItems3D = [];   // actieve items boven mand
+
+// GLB node references (zijn null als model geen aparte nodes heeft)
+let toiletLidNode = null;
 
 // Uniform-objecten voor de water-shader
 const waterU = {
@@ -23,15 +30,23 @@ const waterU = {
 };
 
 // Animatie-tijdlijnen
-let flushAnim  = null;   // { start, dur }
-let clogAnim   = null;   // { start, dur, to }
-let unclogAnim = null;   // { start, dur }
+let flushAnim   = null;   // { start, dur }
+let clogAnim    = null;   // { start, dur, to }
+let unclogAnim  = null;   // { start, dur }
+let cameraAnim  = null;   // { start, dur, fromPos, toPos, fromTarget, toTarget }
+
+// Standaard cameraposities
+const CAM_DEFAULT = new THREE.Vector3(0, 2.8, 7.0);
+const CAM_TARGET_DEFAULT = new THREE.Vector3(0, 0.9, 0);
+const CAM_CLOG = new THREE.Vector3(0, 1.6, 2.6);
+const CAM_TARGET_CLOG = new THREE.Vector3(0, 0.8, 0);
 
 // Toestand
 let isActive = false;
 let currentPropEmoji = null;
 let porcelainMat, seatMat, waterMat;
-let particles = [];      // actieve deeltjessystemen
+let glbToiletMat = null;  // materiaal van het GLB-model (voor cosmetica)
+let particles = [];       // actieve deeltjessystemen
 
 // ──────── ENTRY POINT ────────
 export function init3D() {
@@ -42,19 +57,30 @@ export function init3D() {
   _buildScene();
   _buildLights();
   _buildRoom();
-  _buildToilet();
+  _buildToilet();         // procedureel (fallback)
   _buildWater();
-  _buildTrashBin();
+  _buildBasket();
+  _buildDecoration();
   _loadHDRI();
+  _buildControls();
   _hide2D();
   _bindEvents();
   _setupResize();
+
+  // Probeer GLB te laden (verbergt procedureel toilet bij succes)
+  _loadToiletModel();
 
   window.__3D_ACTIVE = true;
   isActive = true;
 
   clock = new THREE.Clock();
   _loop();
+}
+
+// ──────── PUBLIEKE API ────────
+export function resetCamera() {
+  if (!camera) return;
+  _flyCamera(CAM_DEFAULT, CAM_TARGET_DEFAULT);
 }
 
 // ──────── KWALITEITSDETECTIE ────────
@@ -116,8 +142,25 @@ function _buildRenderer() {
   renderer.setSize(w, h);
 
   camera = new THREE.PerspectiveCamera(44, w / h, 0.1, 100);
-  camera.position.set(0, 2.5, 5.2);
-  camera.lookAt(0, 1.0, 0);
+  camera.position.copy(CAM_DEFAULT);
+  camera.lookAt(CAM_TARGET_DEFAULT);
+}
+
+// ──────── ORBIT CONTROLS ────────
+function _buildControls() {
+  if (!camera || !renderer) return;
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enablePan = false;
+  controls.minPolarAngle = 0.15;
+  controls.maxPolarAngle = Math.PI / 2.05;
+  controls.minAzimuthAngle = -Math.PI / 2.2;
+  controls.maxAzimuthAngle =  Math.PI / 2.2;
+  controls.minDistance = 2.5;
+  controls.maxDistance = 9.5;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.target.copy(CAM_TARGET_DEFAULT);
+  controls.update();
 }
 
 // ──────── SCÈNE ────────
@@ -132,7 +175,6 @@ function _buildLights() {
   const ambient = new THREE.AmbientLight(0xffffff, qualityTier === 'low' ? 1.0 : 0.55);
   scene.add(ambient);
 
-  // Hoofdlicht (plafondlamp, iets schuin)
   const key = new THREE.DirectionalLight(0xfdfcf5, 1.6);
   key.position.set(-1.5, 5, 3);
   if (qualityTier === 'high') {
@@ -148,12 +190,10 @@ function _buildLights() {
   }
   scene.add(key);
 
-  // Opvullicht rechts-warm
   const fill = new THREE.PointLight(0xfff0e0, qualityTier === 'low' ? 0 : 0.5, 10);
   fill.position.set(2.5, 2.5, 2);
   scene.add(fill);
 
-  // Bovenlicht voor reflecties op porselein
   if (qualityTier !== 'low') {
     const top = new THREE.PointLight(0xe8f4ff, 0.4, 8);
     top.position.set(0, 4.5, 0);
@@ -165,9 +205,8 @@ function _buildLights() {
 function _buildRoom() {
   const loader = new THREE.TextureLoader();
 
-  // ── Wandtegels ──
-  const tileAlbedo  = loader.load('assets/textures/Tiles101_1K-JPG_Color.jpg',    t => { t.colorSpace = THREE.SRGBColorSpace; });
-  const tileNormal  = loader.load('assets/textures/Tiles101_1K-JPG_NormalGL.jpg');
+  const tileAlbedo    = loader.load('assets/textures/Tiles101_1K-JPG_Color.jpg',    t => { t.colorSpace = THREE.SRGBColorSpace; });
+  const tileNormal    = loader.load('assets/textures/Tiles101_1K-JPG_NormalGL.jpg');
   const tileRoughness = loader.load('assets/textures/Tiles101_1K-JPG_Roughness.jpg');
   [tileAlbedo, tileNormal, tileRoughness].forEach(t => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -175,45 +214,41 @@ function _buildRoom() {
   });
 
   const tileMat = new THREE.MeshStandardMaterial({
-    map:         tileAlbedo,
-    normalMap:   tileNormal,
-    roughnessMap:tileRoughness,
-    roughness:   0.6,
-    metalness:   0.0,
+    map:          tileAlbedo,
+    normalMap:    tileNormal,
+    roughnessMap: tileRoughness,
+    roughness:    0.6,
+    metalness:    0.0,
   });
 
-  // Achterwand
   backWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), tileMat);
   backWallMesh.position.set(0, 2.5, -1.8);
   scene.add(backWallMesh);
 
-  // Linkerwand
   leftWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(5, 6), tileMat.clone());
   leftWallMesh.rotation.y = Math.PI / 2;
   leftWallMesh.position.set(-3.5, 2.5, 1);
   scene.add(leftWallMesh);
 
-  // Rechterwand
   rightWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(5, 6), tileMat.clone());
   rightWallMesh.rotation.y = -Math.PI / 2;
   rightWallMesh.position.set(3.5, 2.5, 1);
   scene.add(rightWallMesh);
 
-  // ── Vloer ──
-  const floorAlbedo   = loader.load('assets/textures/WoodFloor041_1K-JPG_Color.jpg',   t => { t.colorSpace = THREE.SRGBColorSpace; });
-  const floorNormal   = loader.load('assets/textures/WoodFloor041_1K-JPG_NormalGL.jpg');
-  const floorRoughness= loader.load('assets/textures/WoodFloor041_1K-JPG_Roughness.jpg');
+  const floorAlbedo    = loader.load('assets/textures/WoodFloor041_1K-JPG_Color.jpg',    t => { t.colorSpace = THREE.SRGBColorSpace; });
+  const floorNormal    = loader.load('assets/textures/WoodFloor041_1K-JPG_NormalGL.jpg');
+  const floorRoughness = loader.load('assets/textures/WoodFloor041_1K-JPG_Roughness.jpg');
   [floorAlbedo, floorNormal, floorRoughness].forEach(t => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.repeat.set(5, 4);
   });
 
   const floorMat = new THREE.MeshStandardMaterial({
-    map:         floorAlbedo,
-    normalMap:   floorNormal,
-    roughnessMap:floorRoughness,
-    roughness:   0.5,
-    metalness:   0.0,
+    map:          floorAlbedo,
+    normalMap:    floorNormal,
+    roughnessMap: floorRoughness,
+    roughness:    0.5,
+    metalness:    0.0,
   });
 
   floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), floorMat);
@@ -222,13 +257,11 @@ function _buildRoom() {
   floorMesh.receiveShadow = qualityTier === 'high';
   scene.add(floorMesh);
 
-  // Plint
   const plinthMat = new THREE.MeshStandardMaterial({ color: 0xfdfcf5, roughness: 0.3 });
   const plinth = new THREE.Mesh(new THREE.BoxGeometry(8, 0.12, 0.08), plinthMat);
   plinth.position.set(0, 0.06, -1.76);
   scene.add(plinth);
 
-  // WC-rolhouder (rechts van toilet)
   _buildPaperHolder();
 }
 
@@ -237,22 +270,26 @@ function _buildPaperHolder() {
   const chromeMat = new THREE.MeshPhysicalMaterial({ color: 0xddddcc, metalness: 0.85, roughness: 0.15 });
   const paperMat  = new THREE.MeshStandardMaterial({ color: 0xfafaf5, roughness: 0.85 });
 
-  // Houder arm
-  const armGeo  = new THREE.CylinderGeometry(0.025, 0.025, 0.18, 12);
-  const arm = new THREE.Mesh(armGeo, chromeMat);
+  const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.18, 12), chromeMat);
   arm.rotation.z = Math.PI / 2;
   arm.position.set(1.1, 0.95, 0.0);
   scene.add(arm);
 
-  // WC-rol
-  const rollGeo = new THREE.CylinderGeometry(0.13, 0.13, 0.16, 24);
-  const roll = new THREE.Mesh(rollGeo, paperMat);
+  const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.16, 24), paperMat);
   roll.rotation.z = Math.PI / 2;
   roll.position.set(1.1, 0.95, 0.0);
   scene.add(roll);
 }
 
-// ──────── TOILET (procedureel) ────────
+// ──────── DECORATIE ANKER ────────
+function _buildDecoration() {
+  const anchor = new THREE.Group();
+  anchor.name = 'decorationAnchor';
+  anchor.position.set(0, 3.2, -0.5);
+  scene.add(anchor);
+}
+
+// ──────── TOILET PROCEDUREEL (fallback) ────────
 function _buildToilet() {
   toiletGroup = new THREE.Group();
 
@@ -274,7 +311,6 @@ function _buildToilet() {
 
   const seg = qualityTier === 'low' ? 16 : qualityTier === 'high' ? 48 : 32;
 
-  // ── Kom buitenkant (lathe) ──
   const bowlPts = [
     new THREE.Vector2(0.02, 0.00),
     new THREE.Vector2(0.18, 0.02),
@@ -285,15 +321,10 @@ function _buildToilet() {
     new THREE.Vector2(0.62, 0.96),
     new THREE.Vector2(0.64, 1.00),
   ];
-  const bowlOuter = new THREE.Mesh(
-    new THREE.LatheGeometry(bowlPts, seg),
-    porcelainMat
-  );
-  bowlOuter.castShadow  = qualityTier === 'high';
-  bowlOuter.receiveShadow = qualityTier === 'high';
+  const bowlOuter = new THREE.Mesh(new THREE.LatheGeometry(bowlPts, seg), porcelainMat);
+  bowlOuter.castShadow = qualityTier === 'high';
   toiletGroup.add(bowlOuter);
 
-  // ── Kom binnenkant (donker, holte simuleren) ──
   const innerPts = [
     new THREE.Vector2(0.02, 0.10),
     new THREE.Vector2(0.12, 0.12),
@@ -308,7 +339,6 @@ function _buildToilet() {
   );
   toiletGroup.add(bowlInner);
 
-  // ── Zitring (torus-achtig, iets boven de rand) ──
   const seatCurve = [
     new THREE.Vector2(0.60, 1.00),
     new THREE.Vector2(0.68, 1.01),
@@ -318,44 +348,29 @@ function _buildToilet() {
     new THREE.Vector2(0.68, 1.15),
     new THREE.Vector2(0.60, 1.16),
   ];
-  const seat = new THREE.Mesh(
-    new THREE.LatheGeometry(seatCurve, seg),
-    seatMat
-  );
-  seat.castShadow = qualityTier === 'high';
+  const seat = new THREE.Mesh(new THREE.LatheGeometry(seatCurve, seg), seatMat);
   toiletGroup.add(seat);
 
-  // ── Verbindingsstuk (nek) ──
   const neckGeo = new THREE.CylinderGeometry(0.28, 0.35, 0.45, seg);
   const neck = new THREE.Mesh(neckGeo, porcelainMat);
   neck.position.y = 1.35;
-  neck.castShadow = qualityTier === 'high';
   toiletGroup.add(neck);
 
-  // ── Stortbak (tank) ──
   const tankW = 0.76, tankD = 0.28, tankH = 0.85;
-  const tankGeo = new THREE.BoxGeometry(tankW, tankH, tankD);
-  // Afgeronde hoeken simuleren met schaal
-  const tank = new THREE.Mesh(tankGeo, porcelainMat);
+  const tank = new THREE.Mesh(new THREE.BoxGeometry(tankW, tankH, tankD), porcelainMat);
   tank.position.set(0, 1.57 + tankH / 2, -0.30);
-  tank.castShadow = qualityTier === 'high';
   toiletGroup.add(tank);
 
-  // ── Tankdeksel ──
-  const lidGeo = new THREE.BoxGeometry(tankW + 0.04, 0.055, tankD + 0.04);
-  const lid    = new THREE.Mesh(lidGeo, seatMat);
+  const lid = new THREE.Mesh(new THREE.BoxGeometry(tankW + 0.04, 0.055, tankD + 0.04), seatMat);
   lid.position.set(0, 1.57 + tankH + 0.027, -0.30);
   toiletGroup.add(lid);
 
-  // ── Spoelknop op tank ──
-  const btnGeo = new THREE.BoxGeometry(0.20, 0.055, 0.07);
   const btnMat = new THREE.MeshPhysicalMaterial({ color: 0xc8c6b0, roughness: 0.4, metalness: 0.1 });
-  const btn    = new THREE.Mesh(btnGeo, btnMat);
+  const btn = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.055, 0.07), btnMat);
   btn.name = 'flushButton';
   btn.position.set(0.18, 1.57 + tankH + 0.055, -0.19);
   toiletGroup.add(btn);
 
-  // ── Voetstuk ──
   const pedPts = [
     new THREE.Vector2(0.02, 0.00),
     new THREE.Vector2(0.30, 0.00),
@@ -363,22 +378,81 @@ function _buildToilet() {
     new THREE.Vector2(0.26, 0.18),
     new THREE.Vector2(0.22, 0.28),
   ];
-  const pedestal = new THREE.Mesh(
-    new THREE.LatheGeometry(pedPts, seg),
-    porcelainMat
-  );
+  const pedestal = new THREE.Mesh(new THREE.LatheGeometry(pedPts, seg), porcelainMat);
   toiletGroup.add(pedestal);
 
-  // Schaduw onder toilet
-  const shadowGeo = new THREE.CircleGeometry(0.65, 32);
   const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 });
-  const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.65, 32), shadowMat);
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.002;
   toiletGroup.add(shadow);
 
   toiletGroup.position.set(0, 0, 0.3);
   scene.add(toiletGroup);
+}
+
+// ──────── GLB MODEL LADEN ────────
+function _loadToiletModel() {
+  const dracoLoader = new DRACOLoader();
+  // Gebruik gstatic CDN voor DRACO-decoders (werkt online)
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.setDRACOLoader(dracoLoader);
+
+  gltfLoader.load(
+    'assets/models/toilet.glb',
+    (gltf) => {
+      toiletGLB = gltf.scene;
+
+      // Bounding box → schaal naar ~1.8m hoog
+      const box = new THREE.Box3().setFromObject(toiletGLB);
+      const size = box.getSize(new THREE.Vector3());
+      const scale = 1.8 / Math.max(size.x, size.y, size.z);
+      toiletGLB.scale.setScalar(scale);
+
+      // Basiscentrering op Y=0
+      const box2 = new THREE.Box3().setFromObject(toiletGLB);
+      toiletGLB.position.y = -box2.min.y;
+      toiletGLB.position.z = 0.3;
+
+      // Sla materialen op voor cosmetica
+      toiletGLB.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = qualityTier === 'high';
+          child.receiveShadow = qualityTier === 'high';
+          // Vervang materiaal door PBR porselein
+          glbToiletMat = new THREE.MeshPhysicalMaterial({
+            color:      0xfdfcf5,
+            roughness:  0.12,
+            metalness:  0.0,
+            clearcoat:  0.6,
+            clearcoatRoughness: 0.08,
+            envMapIntensity: 1.0,
+          });
+          child.material = glbToiletMat;
+
+          // Zoek node names voor animeerbare onderdelen
+          const nm = child.name.toLowerCase();
+          if (nm.includes('lid') || nm.includes('deksel')) toiletLidNode = child;
+        }
+      });
+
+      // Verberg procedureel model
+      toiletGroup.visible = false;
+
+      // Water aanpassen: GLB hoger
+      if (waterMesh) waterMesh.position.y = 1.05;
+
+      scene.add(toiletGLB);
+      dracoLoader.dispose();
+    },
+    undefined,
+    () => {
+      // Laden mislukt → procedureel toilet blijft zichtbaar
+      dracoLoader.dispose();
+    }
+  );
 }
 
 // ──────── WATER ────────
@@ -394,13 +468,11 @@ function _buildWater() {
       vUv = uv;
       vec3 pos = position;
 
-      // Golfjes (stiller bij spoelen—drain vermindert ze)
       float t = uTime;
       float waveAmp = mix(0.018, 0.004, uFlushDrain);
       float wave = sin(pos.x * 5.0 + t * 2.8) * waveAmp
                  + cos(pos.z * 4.0 + t * 2.1) * waveAmp * 0.7;
 
-      // Draaikolk bij spoelen: radiale deflectie
       float angle = atan(pos.z, pos.x) + uFlushSwirl * 6.28 * 2.0;
       float r     = length(vec2(pos.x, pos.z));
       float swirl = sin(angle * 3.0 - r * 8.0) * uFlushSwirl * 0.06 * (1.0 - r * 0.5);
@@ -421,27 +493,21 @@ function _buildWater() {
     varying float vWave;
 
     void main() {
-      // Kleurinterpolatie helder ↔ troebel
       vec3 clearColor = vec3(0.553, 0.890, 0.988);
       vec3 mudColor   = vec3(0.545, 0.416, 0.078);
       vec3 col = mix(clearColor, mudColor, uClogged);
 
-      // Speculaire glans
       vec2 uvC = vUv - 0.5;
       float spec = pow(max(0.0, 0.8 - length(uvC * vec2(1.6, 1.2))), 4.0) * 0.5;
       col += vec3(spec);
 
-      // Schuim op golfkammen
       float foam = step(0.012, vWave) * (1.0 - uClogged) * 0.3;
       col += vec3(foam);
 
-      // Randverduistering (diepte)
       float rim = smoothstep(0.5, 0.3, length(uvC));
       col *= (0.75 + rim * 0.25);
 
-      // Alpha: minder transparant bij verstopping, wegvloeiend bij spoelen
       float alpha = mix(0.82, 0.72, uClogged) * (1.0 - uFlushDrain * 0.9);
-
       gl_FragColor = vec4(col, alpha);
     }
   `;
@@ -455,38 +521,43 @@ function _buildWater() {
     side:           THREE.FrontSide,
   });
 
-  // Plat ellipsoid passend in de toiletkom
   const geo = new THREE.SphereGeometry(0.44, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
   waterMesh = new THREE.Mesh(geo, waterMat);
-  // Schaal het tot een ellips (breed en plat)
   waterMesh.scale.set(1.0, 0.22, 0.82);
-  // Positie: bovenzijde van de kom, net boven het donkere interieur
   waterMesh.position.set(0, 1.02, 0.30);
   scene.add(waterMesh);
 }
 
-// ──────── PRULLENBAK (3D decoratief) ────────
-function _buildTrashBin() {
-  const binMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.6, metalness: 0.1 });
-  const lidMat = new THREE.MeshStandardMaterial({ color: 0x777777, roughness: 0.5, metalness: 0.1 });
+// ──────── MAND (3D decoratief, vervangt prullenbak) ────────
+function _buildBasket() {
+  const wickerMat = new THREE.MeshStandardMaterial({ color: 0xC8892A, roughness: 0.85, metalness: 0.0 });
+  const rimMat    = new THREE.MeshStandardMaterial({ color: 0xA06820, roughness: 0.7,  metalness: 0.0 });
 
-  // Baklichaam (cylinder)
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.16, 0.14, 0.42, 20),
-    binMat
+  // Bodem
+  const bottom = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.18, 0.04, 20),
+    wickerMat
   );
+  bottom.position.y = 0.02;
 
-  // Deksel
-  const lid = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.17, 0.17, 0.04, 20),
-    lidMat
+  // Wand (open cylinder)
+  const wall = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.22, 0.18, 0.38, 20, 1, true),
+    new THREE.MeshStandardMaterial({ color: 0xC8892A, roughness: 0.85, side: THREE.DoubleSide })
   );
-  lid.position.y = 0.23;
+  wall.position.y = 0.23;
 
-  trashBinMesh = new THREE.Group();
-  trashBinMesh.add(body, lid);
-  trashBinMesh.position.set(1.4, 0.21, 0.95);
-  scene.add(trashBinMesh);
+  // Rand bovenin
+  const rim = new THREE.Mesh(
+    new THREE.TorusGeometry(0.22, 0.022, 8, 20),
+    rimMat
+  );
+  rim.position.y = 0.42;
+
+  basketGroup = new THREE.Group();
+  basketGroup.add(bottom, wall, rim);
+  basketGroup.position.set(1.5, 0, 1.1);
+  scene.add(basketGroup);
 }
 
 // ──────── HDRI LADEN ────────
@@ -500,14 +571,11 @@ function _loadHDRI() {
       scene.environment = envMap;
       hdr.dispose();
       pmrem.dispose();
-      // Verhoog env map intensiteit op het porselein
       if (porcelainMat) porcelainMat.envMapIntensity = 1.2;
+      if (glbToiletMat) glbToiletMat.envMapIntensity = 1.2;
     },
     undefined,
-    () => {
-      // HDRI faalt → programmatische fallback (3-punt belichting al aanwezig)
-      pmrem.dispose();
-    });
+    () => { pmrem.dispose(); });
 }
 
 // ──────── 2D ELEMENTEN VERBERGEN ────────
@@ -535,12 +603,13 @@ function _setupResize() {
 
 // ──────── GAME-EVENTS ────────
 function _bindEvents() {
-  document.addEventListener('game:flush',    _onFlush);
-  document.addEventListener('game:clog',     _onClog);
-  document.addEventListener('game:unclog',   _onUnclog);
-  document.addEventListener('game:chaos',    _onChaos);
-  document.addEventListener('cosmetic:changed', _onCosmetic);
-  // Waterstand vanuit game loop update
+  document.addEventListener('game:flush',         _onFlush);
+  document.addEventListener('game:clog',          _onClog);
+  document.addEventListener('game:unclog',        _onUnclog);
+  document.addEventListener('game:chaos',         _onChaos);
+  document.addEventListener('cosmetic:changed',   _onCosmetic);
+  document.addEventListener('basket:add',         _onBasketAdd);
+  document.addEventListener('camera:reset',       () => resetCamera());
   document.addEventListener('game:waterLevel', e => {
     waterU.uWaterLevel.value = (e.detail?.waterLevel ?? 0) / 100;
   });
@@ -548,7 +617,6 @@ function _bindEvents() {
 
 function _onFlush() {
   flushAnim = { start: clock.getElapsedTime(), dur: 0.75 };
-  // Spoelknop indrukken
   const btn = toiletGroup?.getObjectByName('flushButton');
   if (btn) {
     btn.position.y -= 0.03;
@@ -560,20 +628,22 @@ function _onClog(e) {
   currentPropEmoji = e.detail?.prop?.emoji ?? '🧻';
   _showProp(currentPropEmoji);
   clogAnim = { start: clock.getElapsedTime(), dur: 0.8, to: 1.0 };
+  // Camera inzoomen op kom
+  _flyCamera(CAM_CLOG, CAM_TARGET_CLOG);
 }
 
-function _onUnclog() {
+function _onUnclog(e) {
   clogAnim = { start: clock.getElapsedTime(), dur: 0.6, to: 0.0 };
   unclogAnim = { start: clock.getElapsedTime(), dur: 0.55 };
-  _spawnParticleBurst(trashBinMesh.position);
+  _spawnParticleBurst(basketGroup ? basketGroup.position : new THREE.Vector3(1.5, 0.4, 1.1));
+  // Terugvliegen naar standaard
+  setTimeout(() => _flyCamera(CAM_DEFAULT, CAM_TARGET_DEFAULT), 700);
 }
 
 function _onChaos(e) {
   const effect = e.detail?.effect ?? 'ducks';
   _spawnChaosParticles(effect);
-  // Prop blijft zitten (geen unclog)
   if (propSprite) {
-    // Schudbeweging
     const orig = propSprite.position.clone();
     let t = 0;
     const shake = () => {
@@ -595,9 +665,38 @@ function _onCosmetic(e) {
   }
 }
 
+function _onBasketAdd(e) {
+  const emoji = e.detail?.emoji;
+  if (emoji) _stackItemInBasket(emoji);
+}
+
+// ──────── CAMERA VLIEGEN ────────
+function _flyCamera(toPos, toTarget) {
+  if (!camera || !controls) return;
+  const fromPos    = camera.position.clone();
+  const fromTarget = controls.target.clone();
+  const dur = 0.9;
+  cameraAnim = {
+    start: clock.getElapsedTime(), dur,
+    fromPos, toPos: toPos.clone(),
+    fromTarget, toTarget: toTarget.clone(),
+  };
+}
+
+function _advanceCamera(now) {
+  if (!cameraAnim || !controls) return;
+  const p = Math.min((now - cameraAnim.start) / cameraAnim.dur, 1);
+  const t = _easeInOut(p);
+
+  camera.position.lerpVectors(cameraAnim.fromPos, cameraAnim.toPos, t);
+  controls.target.lerpVectors(cameraAnim.fromTarget, cameraAnim.toTarget, t);
+  controls.update();
+
+  if (p >= 1) cameraAnim = null;
+}
+
 // ──────── TOILET COSMETICA ────────
 function _applyToiletSkin(id) {
-  if (!porcelainMat || !seatMat) return;
   const skins = {
     'toilet-standard': { color: 0xfdfcf5, metalness: 0.0, roughness: 0.12 },
     'toilet-golden':   { color: 0xFFD700, metalness: 0.8, roughness: 0.08 },
@@ -605,13 +704,23 @@ function _applyToiletSkin(id) {
     'toilet-medieval': { color: 0x5c3d1e, metalness: 0.0, roughness: 0.7  },
   };
   const s = skins[id] || skins['toilet-standard'];
-  porcelainMat.color.setHex(s.color);
-  porcelainMat.metalness = s.metalness;
-  porcelainMat.roughness = s.roughness;
-  seatMat.color.setHex(s.color);
+
+  // Procedureel toilet
+  if (porcelainMat) {
+    porcelainMat.color.setHex(s.color);
+    porcelainMat.metalness = s.metalness;
+    porcelainMat.roughness = s.roughness;
+  }
+  if (seatMat) seatMat.color.setHex(s.color);
+
+  // GLB toilet
+  if (glbToiletMat) {
+    glbToiletMat.color.setHex(s.color);
+    glbToiletMat.metalness = s.metalness;
+    glbToiletMat.roughness = s.roughness;
+  }
 }
 
-// ──────── TEGEL COSMETICA ────────
 function _applyTileCosmetic(id) {
   const colors = {
     'tiles-default':      0xd9eaf7,
@@ -625,7 +734,6 @@ function _applyTileCosmetic(id) {
   });
 }
 
-// ──────── VLOER COSMETICA ────────
 function _applyFloorCosmetic(id) {
   const colors = {
     'floor-basic':   0xc4a882,
@@ -660,6 +768,44 @@ function _showProp(emoji) {
   scene.add(propSprite);
 }
 
+// ──────── ITEM IN MAND ────────
+function _stackItemInBasket(emoji) {
+  if (!basketGroup) return;
+  const sprite = _makeEmojiSprite(emoji);
+  sprite.scale.setScalar(0.35);
+
+  // Startpositie: boven de mand
+  const bx = basketGroup.position.x + (Math.random() - 0.5) * 0.15;
+  const bz = basketGroup.position.z + (Math.random() - 0.5) * 0.15;
+  sprite.position.set(bx, basketGroup.position.y + 1.2, bz);
+  scene.add(sprite);
+
+  // Einddoel in de mand (gestapeld)
+  const count = basketItems3D.length;
+  const targetY = basketGroup.position.y + 0.38 + count * 0.08;
+  const targetX = bx + (Math.random() - 0.5) * 0.08;
+  const targetZ = bz + (Math.random() - 0.5) * 0.08;
+
+  const startT = clock.getElapsedTime();
+  const dur = 0.5;
+  const startY = sprite.position.y;
+
+  basketItems3D.push({
+    sprite,
+    done: false,
+    update(now) {
+      const p = Math.min((now - startT) / dur, 1);
+      const ease = p < 0.7 ? _easeIn(p / 0.7) : 1.0 + Math.sin((p - 0.7) / 0.3 * Math.PI) * 0.06;
+      sprite.position.x = bx + (targetX - bx) * Math.min(p * 1.4, 1);
+      sprite.position.y = startY + (targetY - startY) * ease;
+      sprite.position.z = bz + (targetZ - bz) * Math.min(p * 1.4, 1);
+      if (p >= 1) this.done = true;
+    },
+  });
+}
+
+function _easeIn(t) { return t * t; }
+
 // ──────── CHAOS DEELTJES ────────
 function _spawnChaosParticles(effect) {
   const emojiMap = {
@@ -685,9 +831,9 @@ function _spawnChaosParticles(effect) {
     sprite.scale.setScalar(scale);
     scene.add(sprite);
 
-    const dur  = 2.0 + Math.random() * 1.0;
-    const velY = 0.3 + Math.random() * 0.5;
-    const velX = (Math.random() - 0.5) * 0.6;
+    const dur   = 2.0 + Math.random() * 1.0;
+    const velY  = 0.3 + Math.random() * 0.5;
+    const velX  = (Math.random() - 0.5) * 0.6;
     const startT = clock.getElapsedTime();
 
     particles.push({
@@ -746,12 +892,10 @@ function _advanceFlush(now) {
   if (!flushAnim) return;
   const p = Math.min((now - flushAnim.start) / flushAnim.dur, 1);
 
-  // Watervlak draait en zakt weg
   waterU.uFlushSwirl.value = p < 0.82
     ? p / 0.82
     : 1.0 - (p - 0.82) / 0.18;
 
-  // Peilzakking: zakt diep weg en vult daarna
   const drainCurve = p < 0.80
     ? _easeInOut(p / 0.80)
     : 1.0 - _easeInOut((p - 0.80) / 0.20);
@@ -771,11 +915,10 @@ function _advanceUnclog(now) {
   if (!unclogAnim || !propSprite) return;
   const p = Math.min((now - unclogAnim.start) / unclogAnim.dur, 1);
 
-  // Prop vliegt in boog richting prullenbak
   const sx = 0, sy = 1.18, sz = 0.30;
-  const ex = trashBinMesh.position.x;
-  const ey = trashBinMesh.position.y + 0.5;
-  const ez = trashBinMesh.position.z;
+  const ex = basketGroup ? basketGroup.position.x : 1.5;
+  const ey = (basketGroup ? basketGroup.position.y : 0) + 0.5;
+  const ez = basketGroup ? basketGroup.position.z : 1.1;
 
   propSprite.position.set(
     sx + (ex - sx) * p,
@@ -803,23 +946,31 @@ function _loop() {
   const now = clock.getElapsedTime();
   waterU.uTime.value = now;
 
-  // Subtiele zweefbeweging camera
-  camera.position.x = Math.sin(now * 0.06) * 0.04;
-  camera.lookAt(Math.sin(now * 0.06) * 0.02, 1.0, 0);
+  // Camera-animatie heeft prioriteit; anders update damping
+  if (cameraAnim) {
+    _advanceCamera(now);
+  } else if (controls) {
+    // Subtiele zweef alleen wanneer geen orbit-actie
+    controls.update();
+  }
 
-  // Prop dobbert wanneer aanwezig en niet aan het vliegen
   if (propSprite && !unclogAnim) {
     propSprite.position.y = 1.18 + Math.sin(now * 5.8) * 0.025;
   }
 
-  // Prullenbak subtiel schommelt wanneer vol
-  if (trashBinMesh) {
-    trashBinMesh.rotation.z = Math.sin(now * 3.0) * 0.012;
+  if (basketGroup) {
+    basketGroup.rotation.y = Math.sin(now * 0.4) * 0.02;
   }
 
   _advanceFlush(now);
   _advanceClog(now);
   _advanceUnclog(now);
+
+  // Basket-item animaties
+  basketItems3D = basketItems3D.filter(item => {
+    item.update(now);
+    return !item.done;
+  });
 
   // Deeltjes updaten
   const ts = now * 1000;

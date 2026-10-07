@@ -15,16 +15,24 @@ export const LEVEL_CONFIG = [
 
 // ──────── DINGEN DIE HET TOILET VERSTOPPEN ────────
 export const CLOG_PROPS = [
-  { id: 'toilet-paper', emoji: '🧻', name: 'wc-papier' },
-  { id: 'rubber-duck',  emoji: '🦆', name: 'rubberen eendje' },
-  { id: 'sock',         emoji: '🧦', name: 'sok' },
-  { id: 'toy-car',      emoji: '🚗', name: 'speelgoedautootje' },
-  { id: 'phone',        emoji: '📱', name: 'telefoon' },
-  { id: 'teddy',        emoji: '🧸', name: 'teddybeer' },
-  { id: 'fish',         emoji: '🐟', name: 'visje' },
-  { id: 'banana',       emoji: '🍌', name: 'bananenschil' },
-  { id: 'lego',         emoji: '🧱', name: 'legoblokje' },
-  { id: 'key',          emoji: '🗝️',  name: 'sleutel' },
+  { id: 'toilet-paper', emoji: '🧻', name: 'wc-papier',         volume: 0.5 },
+  { id: 'rubber-duck',  emoji: '🦆', name: 'rubberen eendje',   volume: 1.0 },
+  { id: 'sock',         emoji: '🧦', name: 'sok',               volume: 0.3 },
+  { id: 'toy-car',      emoji: '🚗', name: 'speelgoedautootje', volume: 1.5 },
+  { id: 'phone',        emoji: '📱', name: 'telefoon',          volume: 0.8 },
+  { id: 'teddy',        emoji: '🧸', name: 'teddybeer',         volume: 2.0 },
+  { id: 'fish',         emoji: '🐟', name: 'visje',             volume: 0.6 },
+  { id: 'banana',       emoji: '🍌', name: 'bananenschil',      volume: 0.4 },
+  { id: 'lego',         emoji: '🧱', name: 'legoblokje',        volume: 1.5 },
+  { id: 'key',          emoji: '🗝️',  name: 'sleutel',          volume: 0.2 },
+];
+
+// ──────── MAND UPGRADES ────────
+export const BASKET_CONFIG = [
+  { id: 'basket-s',  name: 'Kleine mand',      capacity: 20,  price: 0,    emoji: '🧺', description: 'Standaard mand. Werkt prima.' },
+  { id: 'basket-m',  name: 'Middelgrote mand', capacity: 30,  price: 200,  emoji: '🧺', description: 'Meer ruimte voor meer troep.' },
+  { id: 'basket-l',  name: 'Grote mand',       capacity: 50,  price: 500,  emoji: '🧺', description: 'Voor de echte verzamelaar.' },
+  { id: 'basket-xl', name: 'XL-mand',          capacity: 100, price: 1500, emoji: '🧺', description: 'Je kunt eens per maand legen.' },
 ];
 
 export const TOOLS = [

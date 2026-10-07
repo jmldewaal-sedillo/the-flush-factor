@@ -7,7 +7,7 @@ import { MESSAGES, CLOG_PROPS, LEVEL_CONFIG } from './items.js';
 import { ClogSystem } from './clog.js';
 import { InventorySystem } from './inventory.js';
 import { ShopSystem } from './shop.js';
-import { init3D } from './renderer3d.js';
+import { init3D, resetCamera } from './renderer3d.js';
 
 // ──────── STATE ────────
 const state = {
@@ -16,12 +16,15 @@ const state = {
   combo: 1,
   lastFlushTime: 0,
   isFlushing: false,
-  streak: 0,        // Spoelbeurten zonder verstopping
-  bestStreak: 0,    // Langste reeks ooit
-  level: 1,         // Huidig level
-  trashLevel: 0,    // Aantal items in prullenbak (max 5)
-  trashItems: [],   // Emoji's van weggehaalde props
-  currentProp: null,// Transient: huidige verstoppingsprop
+  streak: 0,
+  bestStreak: 0,
+  level: 1,
+  // Mand (vervangt prullenbak)
+  basketVolume: 0,
+  basketCapacity: 20,
+  basketItems: [],    // { emoji, volume }
+  activeBasket: 'basket-s',
+  currentProp: null,
   activeCosmetics: {
     toilet: 'toilet-standard',
     tiles: 'tiles-default',
@@ -29,7 +32,7 @@ const state = {
     decoration: 'deco-none',
   },
   purchasedItems: new Set(),
-  ownedTools: null,       // null = gebruik startgereedschappen
+  ownedTools: null,
   toolDiscovery: {},
   stats: {
     totalFlushes: 0,
@@ -49,7 +52,6 @@ const $ = id => document.getElementById(id);
 function init() {
   loadState();
 
-  // Pas clog-moeilijkheid aan op geladen level
   const levelCfg = LEVEL_CONFIG.find(c => c.level === state.level) || LEVEL_CONFIG[0];
   clog.setLevel(state.level, levelCfg);
 
@@ -60,10 +62,11 @@ function init() {
 
   setupEvents();
   setupClogEvents();
+  setupMenuEvents();
   applyAllCosmetics();
   renderInventory();
 
-  // Winkelknoppen
+  // Winkel
   $('btn-shop').addEventListener('click', () => shop.open());
   $('btn-shop-close').addEventListener('click', () => { shop.close(); saveState(); });
   document.querySelectorAll('.shop-tab').forEach(tab => {
@@ -74,19 +77,25 @@ function init() {
     });
   });
 
-  // Prullenbak
-  const trashBin = $('trash-bin');
-  if (trashBin) trashBin.addEventListener('click', emptyTrash);
+  // Mand-knop
+  const basketBtn = $('btn-basket');
+  if (basketBtn) basketBtn.addEventListener('click', emptyBasket);
 
-  // Service Worker
+  // Basket upgrade event
+  document.addEventListener('basket:upgraded', e => {
+    state.basketCapacity = e.detail.capacity;
+    state.activeBasket = e.detail.id;
+    updateBasketUI();
+    saveState();
+  });
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 
   updateLevelUI();
-  updateTrashUI();
+  updateBasketUI();
 
-  // 3D renderer opstarten (WebGL-fallback: bij fout blijft 2D actief)
   init3D();
 
   requestAnimationFrame(gameLoop);
@@ -95,7 +104,7 @@ function init() {
 // ──────── GAME LOOP ────────
 let lastTs = 0;
 function gameLoop(ts) {
-  const dt = Math.min(ts - lastTs, 100); // max 100ms stap
+  const dt = Math.min(ts - lastTs, 100);
   lastTs = ts;
 
   clog.update(dt);
@@ -104,6 +113,69 @@ function gameLoop(ts) {
   updateInventoryUI();
 
   requestAnimationFrame(gameLoop);
+}
+
+// ──────── MENU ────────
+function setupMenuEvents() {
+  const btnMenu = $('btn-menu');
+  const menu    = $('main-menu');
+  if (!btnMenu || !menu) return;
+
+  btnMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = !menu.hidden;
+    menu.hidden = open;
+    btnMenu.setAttribute('aria-expanded', String(!open));
+  });
+
+  // Sluit menu bij klik buiten
+  document.addEventListener('click', (e) => {
+    if (!menu.hidden && !menu.contains(e.target) && e.target !== btnMenu) {
+      menu.hidden = true;
+      btnMenu.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  menu.addEventListener('click', (e) => {
+    const action = e.target.closest('[data-action]')?.dataset.action;
+    if (!action) return;
+    menu.hidden = true;
+    btnMenu.setAttribute('aria-expanded', 'false');
+
+    switch (action) {
+      case 'sound':
+        showMsg('🔊 Geluid komt binnenkort!');
+        break;
+      case 'credits':
+        $('credits-modal').hidden = false;
+        break;
+      case 'fullscreen':
+        _toggleFullscreen();
+        break;
+      case 'camera-reset':
+        document.dispatchEvent(new Event('camera:reset'));
+        resetCamera();
+        break;
+    }
+  });
+
+  // Credits sluiten
+  const closeCredits = $('btn-credits-close');
+  if (closeCredits) closeCredits.addEventListener('click', () => {
+    $('credits-modal').hidden = true;
+  });
+  const creditsModal = $('credits-modal');
+  if (creditsModal) creditsModal.addEventListener('click', (e) => {
+    if (e.target === creditsModal) creditsModal.hidden = true;
+  });
+}
+
+function _toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  } else {
+    document.exitFullscreen?.();
+  }
 }
 
 // ──────── SPOELEN ────────
@@ -119,7 +191,6 @@ function flush() {
   state.isFlushing = true;
   state.stats.totalFlushes++;
 
-  // Combo berekening
   const now = Date.now();
   if (now - state.lastFlushTime < 1800) {
     state.combo = Math.min(state.combo + 0.5, 8);
@@ -135,7 +206,6 @@ function flush() {
   animateFlush();
   document.dispatchEvent(new CustomEvent('game:flush', { detail: {} }));
 
-  // Streak bijhouden
   state.streak++;
   if (state.streak > state.bestStreak) state.bestStreak = state.streak;
   updateStreakUI();
@@ -223,7 +293,7 @@ function showMsg(text) {
   if (!el) return;
   el.textContent = text;
   el.classList.remove('visible');
-  void el.offsetWidth; // herstart animatie
+  void el.offsetWidth;
   el.classList.add('visible');
 }
 
@@ -277,7 +347,6 @@ function updateWaterUI() {
     );
   }
 
-  // Stuur waterpeil naar 3D renderer
   document.dispatchEvent(new CustomEvent('game:waterLevel', { detail: { waterLevel: pct } }));
 
   const bowl = $('bowl-water');
@@ -309,7 +378,7 @@ function interpolateColor(hex1, hex2, t) {
   return `rgb(${r},${g},${b})`;
 }
 
-// ──────── CLOG PROP (zichtbare verstopping) ────────
+// ──────── CLOG PROP (2D fallback) ────────
 function showClogProp(prop) {
   if (window.__3D_ACTIVE) return;
   const el = $('clog-prop');
@@ -339,7 +408,7 @@ function hideClogProp() {
 function animatePropFlyToBin(prop) {
   if (window.__3D_ACTIVE) return;
   const propEl = $('clog-prop');
-  const binEl  = $('trash-bin');
+  const binEl  = $('btn-basket');
   if (!propEl || !binEl || !propEl.classList.contains('visible')) return;
 
   propEl.classList.remove('bobbing', 'dropping', 'chaos-shake');
@@ -386,50 +455,53 @@ function showUnclogCelebration() {
   setTimeout(() => el.classList.remove('visible'), 1800);
 }
 
-// ──────── PRULLENBAK ────────
-function addToTrash(prop) {
+// ──────── MAND ────────
+function addToBasket(prop) {
   if (!prop) return;
-  if (state.trashLevel >= 5) {
-    // Bak zit vol → straf
+  const vol = prop.volume ?? 0.5;
+
+  if (state.basketVolume + vol > state.basketCapacity) {
+    // Mand zit vol → straf
     const penalty = 30;
     state.score = Math.max(0, state.score - penalty);
-    showMsg(`🗑️ Prullenbak vol! -${penalty}pts`);
+    showMsg(`🧺 Mand vol! -${penalty}pts`);
     updateScoreUI();
-    const bin = $('trash-bin');
-    if (bin) {
-      bin.classList.add('trash-overflow');
-      setTimeout(() => bin.classList.remove('trash-overflow'), 500);
-    }
+    const btn = $('btn-basket');
+    if (btn) btn.classList.add('basket-full');
     saveState();
     return;
   }
-  state.trashLevel++;
-  state.trashItems.push(prop.emoji);
-  if (state.trashItems.length > 10) state.trashItems = state.trashItems.slice(-10);
-  updateTrashUI();
+
+  state.basketVolume += vol;
+  state.basketItems.push({ emoji: prop.emoji, volume: vol });
+  if (state.basketItems.length > 30) state.basketItems = state.basketItems.slice(-30);
+
+  // Stuur event naar 3D renderer
+  document.dispatchEvent(new CustomEvent('basket:add', { detail: { emoji: prop.emoji } }));
+
+  updateBasketUI();
   saveState();
 }
 
-function emptyTrash() {
-  if (state.trashLevel === 0) {
-    showMsg('Prullenbak is al leeg!');
+function emptyBasket() {
+  if (state.basketVolume === 0) {
+    showMsg('Mand is al leeg!');
     return;
   }
-  state.trashLevel = 0;
-  state.trashItems = [];
-  updateTrashUI();
-  showMsg('🗑️ Prullenbak geleegd!');
+  state.basketVolume = 0;
+  state.basketItems  = [];
+  updateBasketUI();
+  showMsg('🧺 Mand geleegd!');
   saveState();
 }
 
-function updateTrashUI() {
-  const bin     = $('trash-bin');
-  const items   = $('trash-items');
-  const countEl = $('trash-count');
-  if (!bin) return;
-  if (items) items.textContent = state.trashItems.slice(-4).join('');
-  if (countEl) countEl.textContent = state.trashLevel > 0 ? `${state.trashLevel}/5` : '';
-  bin.classList.toggle('trash-full', state.trashLevel >= 5);
+function updateBasketUI() {
+  const vol = $('basket-vol');
+  if (vol) vol.textContent = `${state.basketVolume.toFixed(1)} / ${state.basketCapacity} L`;
+  const btn = $('btn-basket');
+  if (btn) {
+    btn.classList.toggle('basket-full', state.basketVolume >= state.basketCapacity);
+  }
 }
 
 // ──────── CLOG-EVENTS ────────
@@ -453,19 +525,17 @@ function setupClogEvents() {
   clog.on('resolved', () => {
     showClogWarning(false);
 
-    // Prop vliegt richting prullenbak
     const prop = state.currentProp;
     animatePropFlyToBin(prop);
 
-    // Grote celebratie + bonuspunten
     showUnclogCelebration();
     document.dispatchEvent(new CustomEvent('game:unclog', { detail: {} }));
     const bonus = 20 * state.level;
     addScore(bonus);
     spawnPointPopup(bonus);
 
-    // Prop in bak (vertraagd zodat de vlieganimatie klaar is)
-    setTimeout(() => addToTrash(prop), 650);
+    // Voeg toe aan mand (vertraagd zodat 3D-animatie klaar is)
+    setTimeout(() => addToBasket(prop), 650);
 
     state.currentProp = null;
     const w = $('toilet-wrapper');
@@ -509,9 +579,12 @@ function renderInventory() {
       : '';
 
     btn.innerHTML = `
+      <svg class="cd-ring" viewBox="0 0 60 60" aria-hidden="true">
+        <circle class="cd-track" cx="30" cy="30" r="24"/>
+        <circle class="cd-fill"  cx="30" cy="30" r="24"/>
+      </svg>
       <span class="tool-emoji">${tool.emoji}</span>
-      <span class="tool-name">${tool.name}</span>
-      <div class="tool-cooldown-overlay"></div>
+      <span class="cd-secs"></span>
       ${badge}
     `;
     btn.addEventListener('click', () => onToolClick(tool.id));
@@ -523,9 +596,23 @@ function updateInventoryUI() {
   inv.getAll().forEach(tool => {
     const btn = document.querySelector(`.tool-btn[data-id="${tool.id}"]`);
     if (!btn) return;
+
     const pct = inv.cooldownPct(tool.id);
-    const overlay = btn.querySelector('.tool-cooldown-overlay');
-    if (overlay) overlay.style.height = `${pct * 100}%`;
+    const circumference = 2 * Math.PI * 24; // r=24 → ≈ 150.8
+
+    const fill = btn.querySelector('.cd-fill');
+    if (fill) {
+      fill.style.strokeDasharray = circumference;
+      fill.style.strokeDashoffset = circumference * (1 - pct);
+    }
+
+    const secs = btn.querySelector('.cd-secs');
+    if (secs) {
+      secs.textContent = pct > 0 && tool.cooldownRemaining > 0
+        ? Math.ceil(tool.cooldownRemaining / 1000) + 's'
+        : '';
+    }
+
     btn.classList.toggle('on-cooldown', pct > 0);
     btn.classList.toggle('usable', clog.isClogged && pct === 0);
   });
@@ -535,7 +622,6 @@ function onToolClick(id) {
   const result = inv.use(id);
   switch (result) {
     case 'resolved':
-      // Celebratie en bonuspunten zijn al afgevuurd via clog.on('resolved')
       break;
     case 'partial':
       showMsg('Iets beter! Blijf proberen…');
@@ -581,12 +667,12 @@ function applyCosmetic(category, id) {
   } else if (category === 'decoration') {
     const deco = $('decoration-slot');
     const decoMap = {
-      'deco-none':   '',
-      'deco-plant':  '🌱',
-      'deco-mirror': '🪞',
-      'deco-painting':'🖼️',
-      'deco-poster': '💪',
-      'deco-rubber-duck-deco':'🦆',
+      'deco-none':          '',
+      'deco-plant':         '🌱',
+      'deco-mirror':        '🪞',
+      'deco-painting':      '🖼️',
+      'deco-poster':        '💪',
+      'deco-rubber-duck-deco': '🦆',
     };
     if (deco) deco.textContent = decoMap[id] || '';
   }
@@ -613,19 +699,21 @@ const SAVE_KEY = 'flushfactor_v1';
 
 function saveState() {
   const data = {
-    score: state.score,
-    highScore: state.highScore,
-    combo: state.combo,
-    streak: state.streak,
-    bestStreak: state.bestStreak,
-    level: state.level,
-    trashLevel: state.trashLevel,
-    trashItems: state.trashItems,
+    score:           state.score,
+    highScore:       state.highScore,
+    combo:           state.combo,
+    streak:          state.streak,
+    bestStreak:      state.bestStreak,
+    level:           state.level,
+    basketVolume:    state.basketVolume,
+    basketCapacity:  state.basketCapacity,
+    basketItems:     state.basketItems,
+    activeBasket:    state.activeBasket,
     activeCosmetics: state.activeCosmetics,
-    purchasedItems: [...state.purchasedItems],
-    ownedTools: inv.getAll().map(t => t.id),
-    toolDiscovery: state.toolDiscovery,
-    stats: state.stats,
+    purchasedItems:  [...state.purchasedItems],
+    ownedTools:      inv.getAll().map(t => t.id),
+    toolDiscovery:   state.toolDiscovery,
+    stats:           state.stats,
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch {}
 }
@@ -635,19 +723,22 @@ function loadState() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
-    state.score          = data.score          ?? 0;
-    state.highScore      = data.highScore       ?? 0;
-    state.combo          = data.combo           ?? 1;
-    state.streak         = data.streak          ?? 0;
-    state.bestStreak     = data.bestStreak      ?? 0;
-    state.level          = data.level           ?? 1;
-    state.trashLevel     = data.trashLevel      ?? 0;
-    state.trashItems     = data.trashItems      ?? [];
-    state.activeCosmetics= data.activeCosmetics ?? state.activeCosmetics;
-    state.purchasedItems = new Set(data.purchasedItems ?? []);
-    state.ownedTools     = data.ownedTools      ?? null;
-    state.toolDiscovery  = data.toolDiscovery   ?? {};
-    state.stats          = data.stats           ?? state.stats;
+    state.score           = data.score          ?? 0;
+    state.highScore       = data.highScore       ?? 0;
+    state.combo           = data.combo           ?? 1;
+    state.streak          = data.streak          ?? 0;
+    state.bestStreak      = data.bestStreak      ?? 0;
+    state.level           = data.level           ?? 1;
+    // Migreer van oud trashLevel systeem naar basket
+    state.basketVolume    = data.basketVolume    ?? (data.trashLevel ? data.trashLevel * 0.5 : 0);
+    state.basketCapacity  = data.basketCapacity  ?? 20;
+    state.basketItems     = data.basketItems     ?? [];
+    state.activeBasket    = data.activeBasket    ?? 'basket-s';
+    state.activeCosmetics = data.activeCosmetics ?? state.activeCosmetics;
+    state.purchasedItems  = new Set(data.purchasedItems ?? []);
+    state.ownedTools      = data.ownedTools      ?? null;
+    state.toolDiscovery   = data.toolDiscovery   ?? {};
+    state.stats           = data.stats           ?? state.stats;
   } catch {}
   updateScoreUI();
   updateStreakUI();
@@ -657,7 +748,6 @@ function loadState() {
 function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 // ──────── START ────────
-// Sla init over als phone-preview.js de host-pagina beheert.
 window.addEventListener('DOMContentLoaded', function () {
   if (!window.__PHONE_PREVIEW_ACTIVE) init();
 });

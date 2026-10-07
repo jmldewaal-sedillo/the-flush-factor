@@ -3,7 +3,7 @@
 // Winkellogica: tonen, kopen, cosmetica toepassen.
 // ============================================================
 
-import { COSMETICS, PREMIUM_TOOLS } from './items.js';
+import { COSMETICS, PREMIUM_TOOLS, BASKET_CONFIG } from './items.js';
 
 export class ShopSystem {
   constructor(gameState, inventorySystem) {
@@ -42,6 +42,8 @@ export class ShopSystem {
 
     if (tab === 'tools') {
       this._renderSection(container, 'Gereedschappen', PREMIUM_TOOLS, 'tool');
+    } else if (tab === 'baskets') {
+      this._renderSection(container, 'Manden', BASKET_CONFIG, 'basket');
     } else {
       const categories = [
         { key: 'toilet',     label: 'Toiletmodellen' },
@@ -67,7 +69,8 @@ export class ShopSystem {
     items.forEach(item => {
       const minLevel = item.minLevel || 1;
       const locked   = type === 'tool' && minLevel > this.state.level;
-      const owned    = !locked && (this.state.purchasedItems.has(item.id) || item.price === 0);
+      const owned    = !locked && (this.state.purchasedItems.has(item.id) || item.price === 0 ||
+                       (type === 'basket' && item.id === 'basket-s'));
       const active   = !locked && this._isActive(item);
       const canBuy   = !locked && !owned && this.state.score >= item.price;
 
@@ -112,12 +115,13 @@ export class ShopSystem {
     if (active) return; // al actief, niets doen
 
     if (owned || item.price === 0) {
-      // Activeer/wissel
       if (type === 'cosmetic') {
         this._activateCosmetic(item);
         this._onPurchase?.(item, 'activate');
+      } else if (type === 'basket') {
+        this._activateBasket(item);
+        this._onPurchase?.(item, 'activate');
       }
-      // Tools die al owned zijn hoeven niet geactiveerd
       return;
     }
 
@@ -133,6 +137,9 @@ export class ShopSystem {
     if (type === 'tool') {
       this.inv.addTool(item.id);
       this._showShopMsg(`${item.emoji} ${item.name} toegevoegd aan inventaris!`);
+    } else if (type === 'basket') {
+      this._activateBasket(item);
+      this._showShopMsg(`${item.emoji} ${item.name} gekocht!`);
     } else {
       this._activateCosmetic(item);
       this._showShopMsg(`${item.emoji} ${item.name} gekocht!`);
@@ -142,12 +149,23 @@ export class ShopSystem {
     this.render();
   }
 
+  _activateBasket(item) {
+    this.state.basketCapacity = item.capacity;
+    this.state.activeBasket = item.id;
+    document.dispatchEvent(new CustomEvent('basket:upgraded', { detail: item }));
+  }
+
   _activateCosmetic(item) {
     this.state.activeCosmetics[item.category] = item.id;
     document.dispatchEvent(new CustomEvent('cosmetic:changed', { detail: item }));
   }
 
   _isActive(item) {
+    if (item.capacity !== undefined) {
+      // Mand: actief als dit de huidige mand is
+      return this.state.activeBasket === item.id ||
+             (item.id === 'basket-s' && !this.state.activeBasket);
+    }
     return this.state.activeCosmetics[item.category] === item.id;
   }
 

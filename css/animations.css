@@ -150,6 +150,12 @@
 }
 .screen-enter { animation: screenEnter 0.3s ease; }
 
+/* ──────── MENU UITKLAP ──────── */
+@keyframes menuSlide {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ──────── WATER-STIJG PULSEREN (verstopping) ──────── */
 @keyframes waterRise {
   from { transform: scaleY(1); }
@@ -190,18 +196,12 @@
   to   { opacity: 1;   transform: translateX(-50%) scale(1.03); }
 }
 
-/* ──────── PRULLENBAK ──────── */
-@keyframes trashFullBob {
-  from { transform: rotate(-5deg) scale(1);    }
-  to   { transform: rotate(5deg)  scale(1.06); }
+/* ──────── MAND ──────── */
+@keyframes basketFull {
+  from { transform: scale(1) rotate(-3deg); }
+  to   { transform: scale(1.06) rotate(3deg); }
 }
-@keyframes trashOverflow {
-  0%,100% { transform: rotate(0deg)   translateY(0);   }
-  25%     { transform: rotate(-12deg) translateY(-4px); }
-  50%     { transform: rotate(12deg)  translateY(-2px); }
-  75%     { transform: rotate(-8deg)  translateY(-3px); }
-}
-#trash-bin.trash-overflow { animation: trashOverflow 0.5s ease; }
+.basket-btn.basket-full { animation: basketFull 0.45s ease-in-out infinite alternate; }
 
 /* ──────── ONTSTOPPINGS-BANNER ──────── */
 @keyframes unclogBanner {

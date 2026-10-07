@@ -19,191 +19,159 @@
 ══════════════════════════════════════════ -->
 <div id="game-screen" class="screen">
 
-  <!-- Header -->
-  <header class="game-header">
-    <div class="game-title">🚽 Flush Factor</div>
-    <div class="score-block">
-      <span id="score-value">0</span>
-      <span id="high-score">Beste: 0</span>
-      <div class="streak-row">
-        <span id="streak-count" title="Spoelbeurten zonder verstopping">🚽 ×0</span>
-        <span id="streak-best"  title="Langste reeks">🏆 0</span>
-        <span id="level-display" title="Huidig level">Lv.1</span>
+  <!-- Badkamer scène (fullscreen) -->
+  <div id="bathroom-scene" data-tiles="tiles-default" data-floor="floor-basic">
+
+    <!-- SVG-toilet fallback (verborgen bij 3D) -->
+    <div id="toilet-wrapper">
+      <svg id="toilet-svg" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg"
+           role="img" aria-label="Toilet">
+        <defs>
+          <linearGradient id="g-pors" x1="0.15" y1="0" x2="0.85" y2="1">
+            <stop offset="0%"   stop-color="#fdfcf5"/>
+            <stop offset="48%"  stop-color="#f0eedf"/>
+            <stop offset="100%" stop-color="#dedad0"/>
+          </linearGradient>
+          <linearGradient id="g-seat" x1="0.1" y1="0" x2="0.9" y2="1">
+            <stop offset="0%"   stop-color="#eceadb"/>
+            <stop offset="100%" stop-color="#d0cebe"/>
+          </linearGradient>
+          <linearGradient id="g-tank" x1="0.1" y1="0" x2="0.6" y2="1">
+            <stop offset="0%"   stop-color="#fdfcf5"/>
+            <stop offset="100%" stop-color="#e2e0d0"/>
+          </linearGradient>
+          <radialGradient id="g-bowl-dark" cx="50%" cy="42%" r="55%">
+            <stop offset="0%"   stop-color="#b8b5a4"/>
+            <stop offset="100%" stop-color="#787570"/>
+          </radialGradient>
+          <radialGradient id="g-water" cx="40%" cy="38%" r="60%">
+            <stop offset="0%"   stop-color="#8ee3fc"/>
+            <stop offset="100%" stop-color="#28a8da"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="100" cy="291" rx="58" ry="9" fill="rgba(0,0,0,0.12)"/>
+        <path class="toilet-porcelain" fill="url(#g-pors)"
+              d="M54,252 Q48,270 52,280 Q100,287 148,280 Q152,270 146,252 Z"/>
+        <path fill="rgba(255,255,255,0.22)"
+              d="M57,252 Q100,248 143,252 Q100,255 57,252 Z" pointer-events="none"/>
+        <path class="toilet-porcelain" fill="url(#g-pors)"
+              d="M28,218 Q26,258 100,266 Q174,258 172,218 L164,190 Q100,182 36,190 Z"/>
+        <ellipse cx="100" cy="226" rx="54" ry="36" fill="url(#g-bowl-dark)"/>
+        <path class="toilet-seat" fill="url(#g-seat)"
+              d="M33,214 Q31,252 100,260 Q169,252 167,214 L160,192 Q100,184 40,192 Z"/>
+        <path fill="rgba(255,255,255,0.16)"
+              d="M40,193 Q100,186 160,193 Q100,197 40,193 Z" pointer-events="none"/>
+        <ellipse id="bowl-water" cx="100" cy="233" rx="44" ry="29" fill="url(#g-water)"/>
+        <ellipse cx="87" cy="224" rx="16" ry="8"
+                 fill="rgba(255,255,255,0.44)" transform="rotate(-20,87,224)"
+                 pointer-events="none"/>
+        <ellipse cx="80" cy="230" rx="7" ry="3.5"
+                 fill="rgba(255,255,255,0.28)" transform="rotate(-20,80,230)"
+                 pointer-events="none"/>
+        <rect class="toilet-porcelain" fill="url(#g-pors)"
+              x="74" y="120" width="52" height="74" rx="6"/>
+        <rect fill="rgba(0,0,0,0.05)" x="74" y="120" width="8" height="74" rx="3"
+              pointer-events="none"/>
+        <rect class="toilet-tank" fill="url(#g-tank)"
+              x="40" y="24" width="120" height="98" rx="9"/>
+        <rect fill="rgba(255,255,255,0.28)" x="144" y="28" width="7" height="44" rx="4"
+              pointer-events="none"/>
+        <rect x="48" y="62" width="104" height="54" rx="4" fill="#c2e8ff" opacity="0.52"/>
+        <rect x="48" y="62" width="104" height="6" rx="3"
+              fill="rgba(255,255,255,0.28)" pointer-events="none"/>
+        <line x1="48" y1="118" x2="152" y2="118" stroke="#c6c4b4"
+              stroke-width="1.5" opacity="0.7" stroke-linecap="round"/>
+        <rect class="toilet-tank-lid" fill="url(#g-seat)"
+              x="34" y="10" width="132" height="22" rx="8"/>
+        <rect fill="rgba(255,255,255,0.32)" x="40" y="13" width="50" height="7" rx="4"
+              pointer-events="none"/>
+        <rect x="132" y="46" width="33" height="14" rx="6" fill="#c8c6b0"/>
+        <rect x="134" y="48" width="29" height="10" rx="4" fill="#b2b09a"/>
+        <rect x="135" y="49" width="14" height="3" rx="2"
+              fill="rgba(255,255,255,0.38)" pointer-events="none"/>
+        <rect x="28" y="56" width="19" height="9" rx="5" fill="#b6b5a0"/>
+        <line x1="36" y1="56" x2="36" y2="44" stroke="#b6b5a0" stroke-width="3.5"
+              stroke-linecap="round"/>
+        <circle cx="36" cy="42" r="5" fill="#8c8a7a"/>
+        <circle cx="35" cy="41" r="2" fill="rgba(255,255,255,0.32)"
+                pointer-events="none"/>
+      </svg>
+      <!-- Prop die het toilet verstopt -->
+      <div id="clog-prop" aria-hidden="true"></div>
+    </div><!-- /toilet-wrapper -->
+
+    <!-- ── HUD-ZONES ── -->
+
+    <!-- Linksboven: menu-knop -->
+    <div id="hud-topleft">
+      <button id="btn-menu" class="bubble-btn" aria-label="Menu" aria-expanded="false">🚽</button>
+      <div id="main-menu" hidden role="menu">
+        <button class="menu-item" data-action="sound">🔊 Geluid</button>
+        <button class="menu-item" data-action="credits">ℹ️ Credits</button>
+        <button class="menu-item" data-action="fullscreen">⛶ Volledig scherm</button>
+        <button class="menu-item" data-action="camera-reset">🎯 Camera reset</button>
       </div>
     </div>
-    <button id="btn-shop" class="btn-header">🛒 Winkel</button>
-  </header>
 
-  <!-- Speelgebied -->
-  <div class="game-area">
+    <!-- Rechtsboven: score + winkel -->
+    <div id="hud-topright">
+      <div id="score-bubble">
+        <span id="score-value">0</span>
+        <div class="score-meta">
+          <span id="high-score">Beste: 0</span>
+          <div class="streak-row">
+            <span id="streak-count" title="Spoelbeurten zonder verstopping">🚽 ×0</span>
+            <span id="streak-best"  title="Langste reeks">🏆 0</span>
+            <span id="level-display" title="Huidig level">Lv.1</span>
+          </div>
+        </div>
+      </div>
+      <button id="btn-shop" class="btn-shop-floating">🛒 Winkel</button>
+    </div>
 
-    <!-- Badkamer scène -->
-    <div id="bathroom-scene" data-tiles="tiles-default" data-floor="floor-basic">
-
-      <!-- Waterstandbalk links -->
+    <!-- Links midden: waterbalk + gereedschappen -->
+    <div id="hud-left">
       <div class="water-bar" title="Waterstand">
         <div id="water-bar-fill" class="water-bar-fill water-ok" style="height:0%"></div>
       </div>
+      <div id="inventory-bar"></div>
+    </div>
 
-      <!-- Statusbericht -->
-      <div id="status-msg"></div>
-
-      <!-- Comboweergave -->
-      <div id="combo-display"></div>
-
-      <!-- Decoratie-slot (rechts bovenin) -->
-      <div id="decoration-slot"></div>
-
-      <!-- Toilet -->
-      <div id="toilet-wrapper">
-        <svg id="toilet-svg" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg"
-             role="img" aria-label="Toilet">
-
-          <defs>
-            <!-- Porselein: licht linksboven → warm grijs rechtsonder -->
-            <linearGradient id="g-pors" x1="0.15" y1="0" x2="0.85" y2="1">
-              <stop offset="0%"   stop-color="#fdfcf5"/>
-              <stop offset="48%"  stop-color="#f0eedf"/>
-              <stop offset="100%" stop-color="#dedad0"/>
-            </linearGradient>
-            <!-- Zitring / deksel -->
-            <linearGradient id="g-seat" x1="0.1" y1="0" x2="0.9" y2="1">
-              <stop offset="0%"   stop-color="#eceadb"/>
-              <stop offset="100%" stop-color="#d0cebe"/>
-            </linearGradient>
-            <!-- Tank -->
-            <linearGradient id="g-tank" x1="0.1" y1="0" x2="0.6" y2="1">
-              <stop offset="0%"   stop-color="#fdfcf5"/>
-              <stop offset="100%" stop-color="#e2e0d0"/>
-            </linearGradient>
-            <!-- Kom interieur (holte) -->
-            <radialGradient id="g-bowl-dark" cx="50%" cy="42%" r="55%">
-              <stop offset="0%"   stop-color="#b8b5a4"/>
-              <stop offset="100%" stop-color="#787570"/>
-            </radialGradient>
-            <!-- Water -->
-            <radialGradient id="g-water" cx="40%" cy="38%" r="60%">
-              <stop offset="0%"   stop-color="#8ee3fc"/>
-              <stop offset="100%" stop-color="#28a8da"/>
-            </radialGradient>
-          </defs>
-
-          <!-- Vloerschaduw -->
-          <ellipse cx="100" cy="291" rx="58" ry="9" fill="rgba(0,0,0,0.12)"/>
-
-          <!-- ── Voetstuk ── -->
-          <path class="toilet-porcelain" fill="url(#g-pors)"
-                d="M54,252 Q48,270 52,280 Q100,287 148,280 Q152,270 146,252 Z"/>
-          <path fill="rgba(255,255,255,0.22)"
-                d="M57,252 Q100,248 143,252 Q100,255 57,252 Z" pointer-events="none"/>
-
-          <!-- ── Kom buitenkant ── -->
-          <path class="toilet-porcelain" fill="url(#g-pors)"
-                d="M28,218 Q26,258 100,266 Q174,258 172,218 L164,190 Q100,182 36,190 Z"/>
-
-          <!-- ── Kom interieur (donkere holte) ── -->
-          <ellipse cx="100" cy="226" rx="54" ry="36" fill="url(#g-bowl-dark)"/>
-
-          <!-- ── Zitring ── -->
-          <path class="toilet-seat" fill="url(#g-seat)"
-                d="M33,214 Q31,252 100,260 Q169,252 167,214 L160,192 Q100,184 40,192 Z"/>
-          <path fill="rgba(255,255,255,0.16)"
-                d="M40,193 Q100,186 160,193 Q100,197 40,193 Z" pointer-events="none"/>
-
-          <!-- ── Water in kom ── -->
-          <ellipse id="bowl-water" cx="100" cy="233" rx="44" ry="29" fill="url(#g-water)"/>
-
-          <!-- Waterglans groot -->
-          <ellipse cx="87" cy="224" rx="16" ry="8"
-                   fill="rgba(255,255,255,0.44)" transform="rotate(-20,87,224)"
-                   pointer-events="none"/>
-          <!-- Waterglans klein -->
-          <ellipse cx="80" cy="230" rx="7" ry="3.5"
-                   fill="rgba(255,255,255,0.28)" transform="rotate(-20,80,230)"
-                   pointer-events="none"/>
-
-          <!-- ── Verbindingsstuk tank→kom ── -->
-          <rect class="toilet-porcelain" fill="url(#g-pors)"
-                x="74" y="120" width="52" height="74" rx="6"/>
-          <!-- Zijschaduw verbindingsstuk -->
-          <rect fill="rgba(0,0,0,0.05)" x="74" y="120" width="8" height="74" rx="3"
-                pointer-events="none"/>
-
-          <!-- ── Tank lichaam ── -->
-          <rect class="toilet-tank" fill="url(#g-tank)"
-                x="40" y="24" width="120" height="98" rx="9"/>
-          <!-- Tank rechter glansstreep -->
-          <rect fill="rgba(255,255,255,0.28)" x="144" y="28" width="7" height="44" rx="4"
-                pointer-events="none"/>
-
-          <!-- Water in tank -->
-          <rect x="48" y="62" width="104" height="54" rx="4" fill="#c2e8ff" opacity="0.52"/>
-          <rect x="48" y="62" width="104" height="6"  rx="3"
-                fill="rgba(255,255,255,0.28)" pointer-events="none"/>
-
-          <!-- Tankrand -->
-          <line x1="48" y1="118" x2="152" y2="118" stroke="#c6c4b4"
-                stroke-width="1.5" opacity="0.7" stroke-linecap="round"/>
-
-          <!-- ── Tank deksel ── -->
-          <rect class="toilet-tank-lid" fill="url(#g-seat)"
-                x="34" y="10" width="132" height="22" rx="8"/>
-          <rect fill="rgba(255,255,255,0.32)" x="40" y="13" width="50" height="7" rx="4"
-                pointer-events="none"/>
-
-          <!-- ── Spoelknop op tank (rechtsboven) ── -->
-          <rect x="132" y="46" width="33" height="14" rx="6" fill="#c8c6b0"/>
-          <rect x="134" y="48" width="29" height="10" rx="4" fill="#b2b09a"/>
-          <rect x="135" y="49" width="14" height="3"  rx="2"
-                fill="rgba(255,255,255,0.38)" pointer-events="none"/>
-
-          <!-- ── Spoelhendel links ── -->
-          <rect x="28" y="56" width="19" height="9" rx="5" fill="#b6b5a0"/>
-          <line x1="36" y1="56" x2="36" y2="44" stroke="#b6b5a0" stroke-width="3.5"
-                stroke-linecap="round"/>
-          <circle cx="36" cy="42" r="5" fill="#8c8a7a"/>
-          <circle cx="35" cy="41" r="2" fill="rgba(255,255,255,0.32)"
-                  pointer-events="none"/>
-
-        </svg>
-
-        <!-- Prop die het toilet verstopt (zichtbaar bij verstopping) -->
-        <div id="clog-prop" aria-hidden="true"></div>
-
-      </div><!-- /toilet-wrapper -->
-
-      <!-- Prullenbak (rechts van toilet) -->
-      <div id="trash-bin" title="Prullenbak — tik om te legen" role="button" aria-label="Prullenbak">
-        <div id="trash-items"></div>
-        <div class="trash-icon">🗑️</div>
-        <div id="trash-count"></div>
-      </div>
-
-      <!-- Verstoppings-waarschuwing (persistent terwijl verstopt) -->
-      <div id="clog-warning" aria-hidden="true">🚨 VERSTOPT! 🚨</div>
-
-      <!-- Ontstoppings-banner (tijdelijk bij oplossen) -->
-      <div id="unclog-banner" aria-hidden="true"></div>
-
-      <!-- Level-up banner (tijdelijk bij level stijging) -->
-      <div id="levelup-banner" aria-hidden="true"></div>
-
-    </div><!-- /bathroom-scene -->
-
-    <!-- Spoelknopgebied -->
-    <div class="flush-area">
+    <!-- Onderin midden: spoelknop -->
+    <div id="hud-bottom">
       <button id="flush-btn" aria-label="Spoelen">
         <span>🚿</span>
         <span class="flush-label">SPOELEN</span>
       </button>
     </div>
 
-  </div><!-- /game-area -->
+    <!-- Rechtsonder: mand-info -->
+    <div id="basket-info">
+      <span id="basket-vol">0 / 20 L</span>
+      <button id="btn-basket" class="basket-btn" aria-label="Mand bekijken">🧺</button>
+    </div>
 
-  <!-- Inventarisbalk -->
-  <div class="inventory-bar-wrap">
-    <div class="inv-label">Gereedschappen</div>
-    <div id="inventory-bar"></div>
+    <!-- Overige overlays -->
+    <div id="status-msg"></div>
+    <div id="combo-display"></div>
+    <div id="decoration-slot"></div>
+    <div id="clog-warning" aria-hidden="true">🚨 VERSTOPT! 🚨</div>
+    <div id="unclog-banner" aria-hidden="true"></div>
+    <div id="levelup-banner" aria-hidden="true"></div>
+
+  </div><!-- /bathroom-scene -->
+
+  <!-- Credits modal -->
+  <div id="credits-modal" hidden role="dialog" aria-label="Credits">
+    <div id="credits-content">
+      <h2>🚽 The Flush Factor</h2>
+      <p><strong>Three.js</strong> v0.170.0 — MIT license</p>
+      <p><strong>HDRI</strong> "Bathroom" — Poly Haven, CC0</p>
+      <p><strong>Tegels/Vloer PBR</strong> — ambientCG (Tiles101, WoodFloor041), CC0</p>
+      <p><strong>Toilet 3D-model</strong> — opengameart.org, CC0<br>
+         Bestand: Toilet/toilet.glb uit cupschairstoilet.zip</p>
+      <button id="btn-credits-close" class="bubble-btn">✕</button>
+    </div>
   </div>
 
 </div><!-- /game-screen -->
@@ -223,6 +191,7 @@
   <div class="shop-tabs">
     <button class="shop-tab active" data-tab="tools">🔧 Gereedschap</button>
     <button class="shop-tab" data-tab="cosmetics">🎨 Cosmetica</button>
+    <button class="shop-tab" data-tab="baskets">🧺 Manden</button>
   </div>
 
   <div id="shop-items"></div>

@@ -11,6 +11,18 @@ All assets are CC0 (Creative Commons Zero / Public Domain) unless otherwise note
   - Source: https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/RGBELoader.js
   - License: MIT
   - File: `js/vendor/RGBELoader.js`
+- **OrbitControls.js** (v0.170.0)
+  - Source: https://github.com/mrdoob/three.js/blob/dev/examples/jsm/controls/OrbitControls.js
+  - License: MIT
+  - File: `js/vendor/OrbitControls.js`
+- **GLTFLoader.js** (v0.170.0)
+  - Source: https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/GLTFLoader.js
+  - License: MIT
+  - File: `js/vendor/GLTFLoader.js`
+- **DRACOLoader.js** (v0.170.0)
+  - Source: https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/DRACOLoader.js
+  - License: MIT
+  - File: `js/vendor/DRACOLoader.js`
 
 ## HDRI Environment Map
 - **bathroom.hdr** — "Bathroom" 1K HDR
@@ -36,5 +48,8 @@ All assets are CC0 (Creative Commons Zero / Public Domain) unless otherwise note
   - Resolution: 1024 × 1024 px
 
 ## Toilet 3D Model
-The toilet is generated procedurally in code (LatheGeometry + BoxGeometry) —
-no external model file required. No attribution needed.
+- **toilet.glb** — Toilet 3D model
+  - Source: https://opengameart.org/ (bestand: cupschairstoilet.zip, map: Toilet/)
+  - Author: opengameart.org bijdrager
+  - License: CC0 1.0 Universal — https://creativecommons.org/publicdomain/zero/1.0/
+  - File: `assets/models/toilet.glb`
