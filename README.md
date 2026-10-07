@@ -46,6 +46,37 @@ the-flush-factor/
 └── ROADMAP.md
 ```
 
+## Telefoonpreview op desktop
+
+Op een brede (niet-touch) desktop of laptop wordt het spel automatisch gecentreerd
+in een telefoonframe met neutrale achtergrond. Op een echte telefoon of tablet
+verandert er niets: het spel draait gewoon fullscreen.
+
+### Testknoppen (boven het frame)
+
+| Knop | Werking |
+|------|---------|
+| **Klein / Standaard / Groot** | Schermformaat 360×740 · 390×844 · 430×932 |
+| **↻ Draaien** | Wissel tussen portret- en liggende stand |
+| **✕ Volledig scherm** | Zet de preview uit (onthouden in localStorage) |
+
+### URL-parameters
+
+| Parameter | Gedrag |
+|-----------|--------|
+| `?preview=phone` | Forceert telefoonframe, ook op tablet/laptop-touchscreen |
+| `?preview=off` | Forceert fullscreen, ook op desktop |
+
+Om de preview na het uitschakelen via de knop opnieuw in te schakelen,
+open de URL met `?preview=phone`.
+
+### Cache verversen na update
+
+Het spel heeft een service worker. Als je een nieuwe versie wil forceren,
+doe dan een **harde herlaad** in de browser (`Ctrl + Shift + R` / `Cmd + Shift + R`).
+De service worker-versie is automatisch gebumpt naar `flushfactor-v2` en ruimt de
+oude cache op zodra de SW actief wordt.
+
 ## TWA (Google Play Store)
 
 De app is voorbereid voor TWA (Trusted Web Activity):

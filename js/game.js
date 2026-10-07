@@ -425,4 +425,7 @@ function loadState() {
 function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 // ──────── START ────────
-window.addEventListener('DOMContentLoaded', init);
+// Sla init over als phone-preview.js de host-pagina beheert.
+window.addEventListener('DOMContentLoaded', function () {
+  if (!window.__PHONE_PREVIEW_ACTIVE) init();
+});
