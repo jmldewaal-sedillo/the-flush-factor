@@ -1,8 +1,31 @@
 // ============================================================
 // THE FLUSH FACTOR — items.js
-// All static game data: tools, cosmetics, messages.
+// All static game data: tools, cosmetics, messages, levels.
 // To add new content, just add entries to these arrays.
 // ============================================================
+
+// ──────── LEVEL CONFIG ────────
+export const LEVEL_CONFIG = [
+  { level: 1, minScore: 0,    name: 'Beginner',     waterRiseRate: 6,   maxChance: 0.05,  minTimeBetweenClogs: 15000 },
+  { level: 2, minScore: 200,  name: 'Doorgespoeld', waterRiseRate: 7.5, maxChance: 0.065, minTimeBetweenClogs: 13000 },
+  { level: 3, minScore: 600,  name: 'Loodgieter',   waterRiseRate: 9,   maxChance: 0.08,  minTimeBetweenClogs: 11000 },
+  { level: 4, minScore: 1500, name: 'Expert',       waterRiseRate: 11,  maxChance: 0.10,  minTimeBetweenClogs: 9000  },
+  { level: 5, minScore: 4000, name: 'Meester',      waterRiseRate: 14,  maxChance: 0.12,  minTimeBetweenClogs: 7000  },
+];
+
+// ──────── DINGEN DIE HET TOILET VERSTOPPEN ────────
+export const CLOG_PROPS = [
+  { id: 'toilet-paper', emoji: '🧻', name: 'wc-papier' },
+  { id: 'rubber-duck',  emoji: '🦆', name: 'rubberen eendje' },
+  { id: 'sock',         emoji: '🧦', name: 'sok' },
+  { id: 'toy-car',      emoji: '🚗', name: 'speelgoedautootje' },
+  { id: 'phone',        emoji: '📱', name: 'telefoon' },
+  { id: 'teddy',        emoji: '🧸', name: 'teddybeer' },
+  { id: 'fish',         emoji: '🐟', name: 'visje' },
+  { id: 'banana',       emoji: '🍌', name: 'bananenschil' },
+  { id: 'lego',         emoji: '🧱', name: 'legoblokje' },
+  { id: 'key',          emoji: '🗝️',  name: 'sleutel' },
+];
 
 export const TOOLS = [
   // ──────── WERKENDE GEREEDSCHAPPEN ────────
@@ -95,6 +118,7 @@ export const TOOLS = [
 ];
 
 export const PREMIUM_TOOLS = [
+  // ── Level 1 (altijd zichtbaar) ──
   {
     id: 'super-plunger',
     name: 'Super Ontstopper 3000',
@@ -106,6 +130,7 @@ export const PREMIUM_TOOLS = [
     cooldown: 8000,
     startingTool: false,
     price: 500,
+    minLevel: 1,
   },
   {
     id: 'ninja-unclogger',
@@ -118,6 +143,7 @@ export const PREMIUM_TOOLS = [
     cooldown: 5000,
     startingTool: false,
     price: 350,
+    minLevel: 1,
   },
   {
     id: 'magic-wand',
@@ -129,6 +155,7 @@ export const PREMIUM_TOOLS = [
     cooldown: 8000,
     startingTool: false,
     price: 200,
+    minLevel: 1,
   },
   {
     id: 'tiny-elephant',
@@ -140,6 +167,62 @@ export const PREMIUM_TOOLS = [
     cooldown: 15000,
     startingTool: false,
     price: 300,
+    minLevel: 1,
+  },
+  // ── Level 2 ──
+  {
+    id: 'megaphone',
+    name: 'Megafoon',
+    emoji: '📢',
+    description: 'SCHREEUW HET SCHOON! (het werkt niet)',
+    effectType: 'chaos',
+    chaosEffect: 'megaphone',
+    cooldown: 10000,
+    startingTool: false,
+    price: 250,
+    minLevel: 2,
+  },
+  // ── Level 3 ──
+  {
+    id: 'electric-plunger',
+    name: 'Elektrische Ontstopper',
+    emoji: '⚡',
+    description: '3000 RPM motoraandrijving. Voel de kracht.',
+    effectType: 'working',
+    effectiveness: 100,
+    unclogChance: 1.0,
+    cooldown: 6000,
+    startingTool: false,
+    price: 750,
+    minLevel: 3,
+  },
+  // ── Level 4 ──
+  {
+    id: 'hydro-jet',
+    name: 'Hogedrukspuit',
+    emoji: '💦',
+    description: 'Industriële waterdruk. FWOOSH. Weg ermee.',
+    effectType: 'working',
+    effectiveness: 100,
+    unclogChance: 1.0,
+    cooldown: 4000,
+    startingTool: false,
+    price: 1500,
+    minLevel: 4,
+  },
+  // ── Level 5 ──
+  {
+    id: 'robot-arm',
+    name: 'Robotarm',
+    emoji: '🦾',
+    description: 'Grijpen. Uitrekken. Winnen. Altijd.',
+    effectType: 'working',
+    effectiveness: 100,
+    unclogChance: 1.0,
+    cooldown: 2000,
+    startingTool: false,
+    price: 3000,
+    minLevel: 5,
   },
 ];
 
@@ -213,5 +296,11 @@ export const MESSAGES = {
   ],
   comboBreak: [
     'Combo verbroken!', 'Back to basics.', 'Oops.',
+  ],
+  levelUp: [
+    'LEVEL UP!', 'Hoger niveau!', 'Je wordt pro!', 'Volgende stap!',
+  ],
+  unclogSuccess: [
+    'ONTSTOPT!', 'YES YES YES!', 'VRIJ!!!', 'Meesterwerk!', 'Victorie!',
   ],
 };

@@ -65,24 +65,42 @@ export class ShopSystem {
     grid.className = 'shop-grid';
 
     items.forEach(item => {
-      const owned   = this.state.purchasedItems.has(item.id) || item.price === 0;
-      const active  = this._isActive(item);
-      const canBuy  = !owned && this.state.score >= item.price;
+      const minLevel = item.minLevel || 1;
+      const locked   = type === 'tool' && minLevel > this.state.level;
+      const owned    = !locked && (this.state.purchasedItems.has(item.id) || item.price === 0);
+      const active   = !locked && this._isActive(item);
+      const canBuy   = !locked && !owned && this.state.score >= item.price;
 
       const card = document.createElement('div');
-      card.className = `shop-card ${owned ? 'owned' : ''} ${active ? 'active' : ''} ${!owned && !canBuy ? 'expensive' : ''}`;
-      card.innerHTML = `
-        <div class="shop-card-emoji">${item.emoji}</div>
-        <div class="shop-card-name">${item.name}</div>
-        <div class="shop-card-desc">${item.description}</div>
-        <div class="shop-card-price">
-          ${active   ? '<span class="badge badge-active">Actief</span>'  :
-            owned    ? '<span class="badge badge-owned">In bezit</span>' :
-            `<span class="price-tag">💰 ${item.price}</span>`}
-        </div>
-      `;
+      card.className = [
+        'shop-card',
+        locked                        ? 'locked'    : '',
+        owned                         ? 'owned'     : '',
+        active                        ? 'active'    : '',
+        !locked && !owned && !canBuy  ? 'expensive' : '',
+      ].filter(Boolean).join(' ');
 
-      card.addEventListener('click', () => this._handleCardClick(item, type, owned, active));
+      if (locked) {
+        card.innerHTML = `
+          <div class="shop-card-emoji" style="opacity:.4">${item.emoji}</div>
+          <div class="shop-card-name">${item.name}</div>
+          <div class="shop-card-desc">${item.description}</div>
+          <div class="shop-card-price"><span class="badge badge-locked">🔒 Lv.${minLevel}</span></div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="shop-card-emoji">${item.emoji}</div>
+          <div class="shop-card-name">${item.name}</div>
+          <div class="shop-card-desc">${item.description}</div>
+          <div class="shop-card-price">
+            ${active   ? '<span class="badge badge-active">Actief</span>'  :
+              owned    ? '<span class="badge badge-owned">In bezit</span>' :
+              `<span class="price-tag">💰 ${item.price}</span>`}
+          </div>
+        `;
+        card.addEventListener('click', () => this._handleCardClick(item, type, owned, active));
+      }
+
       grid.appendChild(card);
     });
 

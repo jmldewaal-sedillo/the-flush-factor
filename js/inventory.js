@@ -108,12 +108,13 @@ export class InventorySystem {
     if (!scene) return;
 
     switch (effect) {
-      case 'ducks':   this._chaosDucks(scene); break;
-      case 'confetti':this._chaosConfetti(scene); break;
-      case 'flamingo':this._chaosFlamingo(scene); break;
-      case 'disco':   this._chaosDisco(scene); break;
-      case 'magic':   this._chaosMagic(scene); break;
-      case 'elephant':this._chaosElephant(scene); break;
+      case 'ducks':     this._chaosDucks(scene); break;
+      case 'confetti':  this._chaosConfetti(scene); break;
+      case 'flamingo':  this._chaosFlamingo(scene); break;
+      case 'disco':     this._chaosDisco(scene); break;
+      case 'magic':     this._chaosMagic(scene); break;
+      case 'elephant':  this._chaosElephant(scene); break;
+      case 'megaphone': this._chaosMegaphone(scene); break;
     }
   }
 
@@ -225,5 +226,16 @@ export class InventorySystem {
   _chaosElephant(scene) {
     this._spawnEmoji(scene, '🐘', 1, 3000, 'elephant-big');
     this._spawnEmoji(scene, '💧', 10, 3000);
+  }
+
+  _chaosMegaphone(scene) {
+    this._spawnEmoji(scene, '📢', 6, 2500);
+    this._spawnEmoji(scene, '🔊', 4, 2500);
+    const toilet = document.getElementById('toilet-wrapper');
+    if (toilet) {
+      toilet.classList.add('toilet-wiggle');
+      const t = setTimeout(() => toilet.classList.remove('toilet-wiggle'), 2000);
+      this._chaosCleanupFns.push(() => { clearTimeout(t); toilet.classList.remove('toilet-wiggle'); });
+    }
   }
 }

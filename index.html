@@ -28,6 +28,7 @@
       <div class="streak-row">
         <span id="streak-count" title="Spoelbeurten zonder verstopping">🚽 ×0</span>
         <span id="streak-best"  title="Langste reeks">🏆 0</span>
+        <span id="level-display" title="Huidig level">Lv.1</span>
       </div>
     </div>
     <button id="btn-shop" class="btn-header">🛒 Winkel</button>
@@ -165,7 +166,27 @@
                   pointer-events="none"/>
 
         </svg>
+
+        <!-- Prop die het toilet verstopt (zichtbaar bij verstopping) -->
+        <div id="clog-prop" aria-hidden="true"></div>
+
       </div><!-- /toilet-wrapper -->
+
+      <!-- Prullenbak (rechts van toilet) -->
+      <div id="trash-bin" title="Prullenbak — tik om te legen" role="button" aria-label="Prullenbak">
+        <div id="trash-items"></div>
+        <div class="trash-icon">🗑️</div>
+        <div id="trash-count"></div>
+      </div>
+
+      <!-- Verstoppings-waarschuwing (persistent terwijl verstopt) -->
+      <div id="clog-warning" aria-hidden="true">🚨 VERSTOPT! 🚨</div>
+
+      <!-- Ontstoppings-banner (tijdelijk bij oplossen) -->
+      <div id="unclog-banner" aria-hidden="true"></div>
+
+      <!-- Level-up banner (tijdelijk bij level stijging) -->
+      <div id="levelup-banner" aria-hidden="true"></div>
 
     </div><!-- /bathroom-scene -->
 

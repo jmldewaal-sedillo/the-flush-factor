@@ -532,6 +532,152 @@ html, body {
 }
 #shop-message.visible { opacity: 1; }
 
+/* ──────── LEVEL DISPLAY ──────── */
+#level-display {
+  font-size: 0.6rem;
+  font-weight: 800;
+  background: rgba(255,255,255,0.25);
+  border-radius: 8px;
+  padding: 1px 5px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ──────── CLOG PROP (prop in de kom) ──────── */
+#clog-prop {
+  position: absolute;
+  left: 50%;
+  top: 75%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  z-index: 7;
+  display: none;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45));
+}
+#clog-prop.visible {
+  display: block;
+}
+
+/* ──────── VERSTOPPINGS-WAARSCHUWING ──────── */
+#clog-warning {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(220,30,30,0.9);
+  color: #fff;
+  padding: 5px 18px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 22;
+  display: none;
+  box-shadow: 0 2px 12px rgba(220,30,30,0.5);
+}
+#clog-warning.visible {
+  display: block;
+  animation: clogWarningPulse 0.7s ease-in-out infinite alternate;
+}
+
+/* ──────── PRULLENBAK ──────── */
+#trash-bin {
+  position: absolute;
+  right: 5%;
+  bottom: 27%;
+  width: 52px;
+  background: rgba(255,255,255,0.88);
+  border: 2px solid rgba(0,0,0,0.15);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 3px 2px;
+  z-index: 8;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.3s, background 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  gap: 0;
+}
+#trash-bin:active { transform: scale(0.9); }
+.trash-icon { font-size: 1.7rem; line-height: 1; }
+#trash-items {
+  font-size: 0.65rem;
+  line-height: 1;
+  text-align: center;
+  min-height: 10px;
+  letter-spacing: -1px;
+}
+#trash-count {
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: var(--color-muted);
+  line-height: 1.2;
+}
+#trash-bin.trash-full {
+  border-color: var(--color-danger);
+  background: rgba(255,210,210,0.95);
+}
+#trash-bin.trash-full .trash-icon {
+  animation: trashFullBob 0.45s ease-in-out infinite alternate;
+}
+
+/* ──────── ONTSTOPPINGS-BANNER ──────── */
+#unclog-banner {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #2a9d8f, #57cc99);
+  padding: 8px 24px;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(42,157,143,0.6);
+  letter-spacing: 2px;
+  pointer-events: none;
+  z-index: 30;
+  display: none;
+  white-space: nowrap;
+}
+#unclog-banner.visible {
+  display: block;
+  animation: unclogBanner 1.8s ease forwards;
+}
+
+/* ──────── LEVEL-UP BANNER ──────── */
+#levelup-banner {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #f4a261, #e76f51);
+  padding: 8px 20px;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(244,162,97,0.6);
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 35;
+  display: none;
+  white-space: nowrap;
+  text-align: center;
+}
+#levelup-banner.visible {
+  display: block;
+  animation: levelUpBanner 2.5s ease forwards;
+}
+
+/* ──────── WINKELKAART VERGRENDELD ──────── */
+.shop-card.locked { opacity: 0.5; cursor: default; }
+.badge-locked { background: #888; color: #eee; }
+
 /* ──────── CHAOS EMOJI ──────── */
 .elephant-big { font-size: 80px !important; left: 50% !important; transform: translateX(-50%); top: 20% !important; }
 

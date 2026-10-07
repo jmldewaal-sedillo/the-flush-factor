@@ -113,6 +113,14 @@ export class ClogSystem {
     return false; // deels opgelost
   }
 
+  // Pas moeilijkheid aan op basis van level
+  setLevel(level, cfg) {
+    if (!cfg) return;
+    this.cfg.waterRiseRate        = cfg.waterRiseRate;
+    this.cfg.maxChancePerSecond   = cfg.maxChance;
+    this.cfg.minTimeBetweenClogs  = cfg.minTimeBetweenClogs;
+  }
+
   // Forceer een verstopping (voor testen/debug)
   forceClog() {
     this._triggerClog();
