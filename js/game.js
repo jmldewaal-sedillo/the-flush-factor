@@ -15,6 +15,8 @@ const state = {
   combo: 1,
   lastFlushTime: 0,
   isFlushing: false,
+  streak: 0,        // Spoelbeurten zonder verstopping
+  bestStreak: 0,    // Langste reeks ooit
   activeCosmetics: {
     toilet: 'toilet-standard',
     tiles: 'tiles-default',
@@ -113,10 +115,23 @@ function flush() {
   showMsg(rnd(MESSAGES.flushSuccess));
   animateFlush();
 
+  // Streak bijhouden
+  state.streak++;
+  if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+  updateStreakUI();
+
   if (state.combo >= 4) showComboMsg();
 
   setTimeout(() => { state.isFlushing = false; }, 700);
   saveState();
+}
+
+// ──────── STREAK UI ────────
+function updateStreakUI() {
+  const sc = $('streak-count');
+  if (sc) sc.textContent = `🚽 ×${state.streak}`;
+  const sb = $('streak-best');
+  if (sb) sb.textContent = `🏆 ${state.bestStreak}`;
 }
 
 // ──────── SCORE ────────
@@ -191,6 +206,15 @@ function shakeToilet() {
   if (!w) return;
   w.classList.add('toilet-shake');
   setTimeout(() => w.classList.remove('toilet-shake'), 400);
+
+  // Water probeert weg te spoelen maar slaagt er niet in
+  const water = $('bowl-water');
+  if (water) {
+    water.classList.remove('clog-water');
+    void water.offsetWidth; // herstart animatie
+    water.classList.add('clog-water');
+    setTimeout(() => water.classList.remove('clog-water'), 800);
+  }
 }
 
 // ──────── WATERSTAND UI ────────
@@ -214,8 +238,8 @@ function updateWaterUI() {
       const rise = pct * 0.12; // max 12px hoger
       bowl.setAttribute('ry', Math.max(20, 30 - rise));
     } else {
-      bowl.style.fill = '#5BC8F5';
-      bowl.setAttribute('ry', '30');
+      bowl.style.fill = '';   // Herstel gradient via SVG-attribuut
+      bowl.setAttribute('ry', '29');
     }
   }
 
@@ -239,6 +263,8 @@ function interpolateColor(hex1, hex2, t) {
 function setupClogEvents() {
   clog.on('clog', () => {
     state.stats.totalClogs++;
+    state.streak = 0;
+    updateStreakUI();
     showMsg(rnd(MESSAGES.clogStart));
     const w = $('toilet-wrapper');
     if (w) w.classList.add('clogged');
@@ -395,6 +421,8 @@ function saveState() {
     score: state.score,
     highScore: state.highScore,
     combo: state.combo,
+    streak: state.streak,
+    bestStreak: state.bestStreak,
     activeCosmetics: state.activeCosmetics,
     purchasedItems: [...state.purchasedItems],
     ownedTools: inv.getAll().map(t => t.id),
@@ -412,6 +440,8 @@ function loadState() {
     state.score          = data.score          ?? 0;
     state.highScore      = data.highScore       ?? 0;
     state.combo          = data.combo           ?? 1;
+    state.streak         = data.streak          ?? 0;
+    state.bestStreak     = data.bestStreak       ?? 0;
     state.activeCosmetics= data.activeCosmetics ?? state.activeCosmetics;
     state.purchasedItems = new Set(data.purchasedItems ?? []);
     state.ownedTools     = data.ownedTools      ?? null;
@@ -419,6 +449,7 @@ function loadState() {
     state.stats          = data.stats           ?? state.stats;
   } catch {}
   updateScoreUI();
+  updateStreakUI();
 }
 
 // ──────── HULP ────────

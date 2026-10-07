@@ -8,34 +8,45 @@
   'use strict';
 
   // ── Stap 1: Zitten we al in een iframe? ──
-  // Als dat zo is, draait het spel normaal en stoppen we hier.
   var inIframe = (function () {
     try { return window.self !== window.top; } catch (e) { return true; }
   })();
   if (inIframe) return;
 
   // ── Stap 2: Bepaal of de preview getoond moet worden ──
-  var params   = new URLSearchParams(location.search);
-  var urlParam = params.get('preview'); // 'phone' | 'off' | null
+  var params     = new URLSearchParams(location.search);
+  var urlParam   = params.get('preview'); // 'phone' | 'off' | null
+  var savedMode  = '';
 
-  // Detecteer een touchscherm (= echte telefoon/tablet)
   var isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
   var showPreview;
   if (urlParam === 'off') {
-    // URL forceert uit
     showPreview = false;
   } else if (urlParam === 'phone') {
-    // URL forceert aan
     showPreview = true;
   } else {
-    // Auto-detect: toon alleen op niet-touchscherm
-    var savedMode = '';
     try { savedMode = localStorage.getItem('flushfactor_preview_mode') || ''; } catch (e) {}
     showPreview = savedMode !== 'off' && !isTouchDevice;
   }
 
-  if (!showPreview) return;
+  // ── Toon kleine heractiveer-knop als preview handmatig werd uitgeschakeld ──
+  if (!showPreview) {
+    if (!isTouchDevice && urlParam !== 'off' && savedMode === 'off') {
+      document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.createElement('button');
+        btn.id      = 'pv-reopen';
+        btn.title   = 'Telefoonpreview inschakelen';
+        btn.textContent = '📱';
+        btn.addEventListener('click', function () {
+          try { localStorage.removeItem('flushfactor_preview_mode'); } catch (e) {}
+          location.href = location.pathname;
+        });
+        document.body.appendChild(btn);
+      });
+    }
+    return;
+  }
 
   // ── Stap 3: Markeer dat game.js niet mag initiëren op de host-pagina ──
   window.__PHONE_PREVIEW_ACTIVE = true;
@@ -57,7 +68,7 @@
       isLandscape = localStorage.getItem('flushfactor_preview_landscape') === 'true';
     } catch (e) {}
 
-    // ── CSS voor de preview-UI (buiten het frame) ──
+    // ── CSS voor de preview-UI ──
     var style = document.createElement('style');
     style.textContent =
       'body.pv-active{overflow:hidden!important;background:#1a1a2e!important}' +
@@ -104,7 +115,9 @@
         '<div class="pv-sep"></div>' +
         '<button class="pv-btn" id="pv-rotate">\u21bb Draaien</button>' +
         '<div class="pv-sep"></div>' +
-        '<button class="pv-btn pv-off" id="pv-disable">\u2715 Volledig scherm</button>' +
+        '<button class="pv-btn" id="pv-fullscreen">\u26f6 Volledig</button>' +
+        '<div class="pv-sep"></div>' +
+        '<button class="pv-btn pv-off" id="pv-disable">\u2715 Sluit preview</button>' +
       '</div>' +
       '<div id="pv-stage">' +
         '<div id="pv-frame">' +
@@ -150,7 +163,7 @@
 
     applySize();
 
-    // Pas schaal aan bij venster-resize (debounced via rAF)
+    // Herbereken schaal bij venstergrootte-wijziging
     var resizeRaf;
     window.addEventListener('resize', function () {
       cancelAnimationFrame(resizeRaf);
@@ -166,17 +179,49 @@
       });
     });
 
-    // ── Draaien ──
+    // ── Draaien (portret ↔ liggend) ──
     document.getElementById('pv-rotate').addEventListener('click', function () {
       isLandscape = !isLandscape;
       try { localStorage.setItem('flushfactor_preview_landscape', String(isLandscape)); } catch (e) {}
       applySize();
     });
 
+    // ── Volledig scherm aan/uit ──
+    var fsBtn = document.getElementById('pv-fullscreen');
+    if (fsBtn) {
+      fsBtn.addEventListener('click', function () {
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      });
+      document.addEventListener('fullscreenchange', function () {
+        if (document.fullscreenElement) {
+          fsBtn.textContent = '\u2715 Sluit volledig scherm';
+          fsBtn.classList.add('active');
+        } else {
+          fsBtn.textContent = '\u26f6 Volledig';
+          fsBtn.classList.remove('active');
+        }
+        // Herbereken na fullscreen-overgang
+        setTimeout(applySize, 150);
+      });
+    }
+
     // ── Preview uitschakelen → spel volledig scherm ──
     document.getElementById('pv-disable').addEventListener('click', function () {
-      try { localStorage.setItem('flushfactor_preview_mode', 'off'); } catch (e) {}
-      location.href = location.pathname;
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().then(function () {
+          try { localStorage.setItem('flushfactor_preview_mode', 'off'); } catch (e) {}
+          location.href = location.pathname;
+        });
+      } else {
+        try { localStorage.setItem('flushfactor_preview_mode', 'off'); } catch (e) {}
+        location.href = location.pathname;
+      }
     });
 
   }); // einde DOMContentLoaded

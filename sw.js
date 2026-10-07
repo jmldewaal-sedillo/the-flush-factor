@@ -3,7 +3,7 @@
 // Service Worker: offline caching voor PWA/TWA.
 // ============================================================
 
-const CACHE = 'flushfactor-v2';
+const CACHE = 'flushfactor-v3';
 const ASSETS = [
   '/',
   '/index.html',

@@ -12,16 +12,34 @@
   100% { transform: scale(1); }
 }
 
+/* Water draait en zakt weg; fase 88-100 vult het water weer -->*/
 @keyframes waterSwirl {
-  0%   { transform: scale(1) rotate(0deg); opacity: 1; }
-  40%  { transform: scale(0.6) rotate(180deg); opacity: 0.5; }
-  70%  { transform: scale(0.3) rotate(360deg); opacity: 0.1; }
-  85%  { transform: scale(0.1) rotate(400deg); opacity: 0; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0%   { transform: scale(1)    rotate(0deg);   opacity: 1;    }
+  28%  { transform: scale(0.82) rotate(150deg); opacity: 0.82; }
+  55%  { transform: scale(0.48) rotate(295deg); opacity: 0.38; }
+  74%  { transform: scale(0.16) rotate(415deg); opacity: 0.04; }
+  82%  { transform: scale(0.05) rotate(440deg); opacity: 0;    }
+  88%  { transform: scale(0.05) rotate(440deg); opacity: 0;    }
+  100% { transform: scale(1)    rotate(0deg);   opacity: 1;    }
 }
 
-#toilet-wrapper.flushing { animation: flushPulse 0.7s ease; }
-#bowl-water.flushing-water { animation: waterSwirl 0.7s ease forwards; }
+/* Water probeert weg te spoelen bij verstopping, maar slaagt er niet in */
+@keyframes waterClogSwirl {
+  0%   { transform: scale(1)    rotate(0deg);   opacity: 1;    }
+  35%  { transform: scale(0.88) rotate(75deg);  opacity: 0.88; }
+  65%  { transform: scale(0.94) rotate(120deg); opacity: 0.94; }
+  100% { transform: scale(1)    rotate(0deg);   opacity: 1;    }
+}
+
+/* Zorgt dat transform-origin het midden van de waterellips is */
+#bowl-water {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+#toilet-wrapper.flushing     { animation: flushPulse 0.7s ease; }
+#bowl-water.flushing-water   { animation: waterSwirl 0.75s ease forwards; }
+#bowl-water.clog-water       { animation: waterClogSwirl 0.8s ease; }
 
 /* ──────── SCHUDDEN ──────── */
 @keyframes shake {
