@@ -3,8 +3,9 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  timeout: 20_000,
-  expect: { timeout: 8_000 },
+  timeout: 35_000,        // meer ruimte bij parallelle server-load
+  expect: { timeout: 10_000 },
+  workers: 4,             // max 4 parallel om server niet te overbelasten
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

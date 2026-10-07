@@ -77,36 +77,25 @@ function init() {
     });
   });
 
-  // Mand-knop: korte tik → zoom (3D) / lang indrukken → leeg
+  // Mand-knop: tik → zoom in 3D, anders info tonen
   const basketBtn = $('btn-basket');
   if (basketBtn) {
-    let pressTimer = null;
-    basketBtn.addEventListener('pointerdown', () => {
-      pressTimer = setTimeout(() => {
-        pressTimer = null;
-        emptyBasket();
-      }, 600);
-    });
-    basketBtn.addEventListener('pointerup', () => {
-      if (pressTimer !== null) {
-        clearTimeout(pressTimer);
-        pressTimer = null;
-        // Korte tik
-        if (window.__3D_ACTIVE) {
-          zoomToBasket?.();
-        } else {
-          emptyBasket();
-        }
+    basketBtn.addEventListener('click', () => {
+      if (window.__3D_ACTIVE) {
+        zoomToBasket?.();
+      } else {
+        showMsg('🧺 Tik op "Mand legen" om te legen.');
       }
-    });
-    basketBtn.addEventListener('pointercancel', () => {
-      if (pressTimer !== null) { clearTimeout(pressTimer); pressTimer = null; }
     });
   }
 
-  // Terugknop vanuit mandzoom (punt 28)
+  // Terugknop vanuit mandzoom (punt 28 + punt 38: linksboven)
   const basketBackBtn = $('btn-basket-back');
   if (basketBackBtn) basketBackBtn.addEventListener('click', () => basketBack?.());
+
+  // Mand-legen-knop (punt 39)
+  const basketEmptyBtn = $('btn-basket-empty');
+  if (basketEmptyBtn) basketEmptyBtn.addEventListener('click', emptyBasket);
 
   // Basket upgrade event
   document.addEventListener('basket:upgraded', e => {
@@ -539,6 +528,8 @@ function emptyBasket() {
   }
   state.basketVolume = 0;
   state.basketItems  = [];
+  // Punt 39 fix: stuur event naar 3D-renderer zodat items verdwijnen
+  document.dispatchEvent(new CustomEvent('basket:empty'));
   updateBasketUI();
   showMsg('🧺 Mand geleegd!');
   saveState();
@@ -551,6 +542,9 @@ function updateBasketUI() {
   if (btn) {
     btn.classList.toggle('basket-full', state.basketVolume >= state.basketCapacity);
   }
+  // Punt 39: legen-knop zichtbaar wanneer mand niet leeg
+  const emptyBtn = $('btn-basket-empty');
+  if (emptyBtn) emptyBtn.hidden = state.basketVolume <= 0;
 }
 
 // ──────── CLOG-EVENTS ────────

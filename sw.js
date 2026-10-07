@@ -1,10 +1,10 @@
 // ============================================================
 // THE FLUSH FACTOR — sw.js
 // Service Worker: offline caching voor PWA/TWA.
-// VERSIE: flushfactor-v8
+// VERSIE: flushfactor-v10
 // ============================================================
 
-const CACHE = 'flushfactor-v8';
+const CACHE = 'flushfactor-v10';
 const ASSETS = [
   '/',
   '/index.html',
@@ -23,6 +23,7 @@ const ASSETS = [
   '/js/vendor/GLTFLoader.js',
   '/js/vendor/DRACOLoader.js',
   '/js/utils/BufferGeometryUtils.js',
+  '/assets/models/toilet-2k.glb',
   '/assets/models/toilet.glb',
   '/manifest.json',
 ];

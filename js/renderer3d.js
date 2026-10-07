@@ -11,17 +11,35 @@ import { GLTFLoader }    from './vendor/GLTFLoader.js';
 import { DRACOLoader }   from './vendor/DRACOLoader.js';
 
 // ──────── KAMER-AFMETINGEN (WC-hokje) ────────
-const ROOM_W   = 1.2;    // halve breedte = 0.6m aan iedere kant
-const ROOM_H   = 2.4;    // hoogte
-const ROOM_BACK_Z = -0.65; // achterwand Z
-const ROOM_FRONT_Z = 1.15; // voorkant / "deuropening"
+const ROOM_W       = 1.5;   // halve breedte — WC-hokje-gevoel; zijmuren zichtbaar op tablet landscape
+const ROOM_H       = 3.2;   // hoogte — geeft zichtbare wandruimte boven toilet (punt 35)
+const ROOM_BACK_Z  = -1.2;  // achterwand achter het toilet, wandruimte zichtbaar aan beide kanten
+const ROOM_FRONT_Z = 6.5;   // voorkant voorbij camera (Z=5.5) → vloer dekt onderkant frustum
+
+// ──────── DECORATIE-ANKERPUNTEN (punt 35) ────────
+// Vaste plekken op wanden/vloer voor toekomstige decoratie uit de winkel.
+// normal = richting waarnaar het object "uitkijkt" (loodrecht op de wand).
+export const DECO_ANCHORS = {
+  // Achterwand — decoratie boven het toilet (spiegel, plank, schilderij) en opzij
+  wallBack:   { position: [0,            1.8,  ROOM_BACK_Z + 0.02],  normal: [0,  0,  1] },
+  wallBackL:  { position: [-0.9,         1.5,  ROOM_BACK_Z + 0.02],  normal: [0,  0,  1] },
+  wallBackR:  { position: [ 0.9,         1.5,  ROOM_BACK_Z + 0.02],  normal: [0,  0,  1] },
+  // Zijwanden — kastje, plank, haak
+  wallLeft:   { position: [-ROOM_W + 0.02, 1.3,  0.5],               normal: [1,  0,  0] },
+  wallRight:  { position: [ ROOM_W - 0.02, 1.3,  0.5],               normal: [-1, 0,  0] },
+  // Vloer links/rechts van toilet
+  floorLeft:  { position: [-0.8,           0,    0.3],                normal: [0,  1,  0] },
+  floorRight: { position: [ 0.8,           0,    0.3],                  normal: [0,  1,  0] },
+};
 
 // ──────── MODULE-STATE ────────
 let renderer, scene, camera, clock, controls;
 let toiletGroup, toiletGLB, waterMesh, propSprite, basketGroup;
+let isHippoModel = false;  // punt 34: onderscheid HippoStance vs OpenGameArt
 let floorMesh, backWallMesh, leftWallMesh, rightWallMesh;
 let qualityTier = 'medium';
-let basketItems3D = [];   // actieve items boven mand
+let basketItems3D = [];   // actieve items boven mand (animerend)
+let basketSprites  = new Set(); // ALLE mand-sprites (ook na voltooide animatie)
 let basketZoomed  = false; // is camera ingezoomd op mand?
 
 // GLB node references (zijn null als model geen aparte nodes heeft)
@@ -37,18 +55,20 @@ const waterU = {
 };
 
 // Animatie-tijdlijnen
-let flushAnim   = null;   // { start, dur }
-let clogAnim    = null;   // { start, dur, to }
-let unclogAnim  = null;   // { start, dur }
-let cameraAnim  = null;   // { start, dur, fromPos, toPos, fromTarget, toTarget }
+let flushAnim      = null;   // { start, dur }
+let clogAnim       = null;   // { start, dur, to }
+let unclogAnim     = null;   // { start, dur }
+let cameraAnim     = null;   // { start, dur, fromPos, toPos, fromTarget, toTarget }
+let basketTiltAnim = null;   // { start, dur } — kantelt mand bij legen (punt 39)
+let basketHandle   = null;   // hengsel-mesh (punt 38)
 
-// ── Cameraposities (aangepast aan WC-hokje) ──
-const CAM_DEFAULT        = new THREE.Vector3(0, 1.4, 3.5);
-const CAM_TARGET_DEFAULT = new THREE.Vector3(0, 0.85, 0);
-const CAM_CLOG           = new THREE.Vector3(0, 0.95, 1.9);
+// ── Cameraposities (punt 35: verder uitgezoomd, wandruimte zichtbaar) ──
+const CAM_DEFAULT        = new THREE.Vector3(0, 2.0, 5.5);
+const CAM_TARGET_DEFAULT = new THREE.Vector3(0, 0.7, 0);
+const CAM_CLOG           = new THREE.Vector3(0, 0.95, 2.2);
 const CAM_TARGET_CLOG    = new THREE.Vector3(0, 0.55, 0.3);
 // Mandzoom: vogelperspectief op mand (positie wordt berekend na laden mand)
-let CAM_BASKET        = new THREE.Vector3(0.45, 1.3, 1.3);
+let CAM_BASKET        = new THREE.Vector3(0.45, 1.5, 1.5);
 let CAM_BASKET_TARGET = new THREE.Vector3(0.45, 0.25, 0.85);
 
 // Toestand
@@ -125,6 +145,10 @@ export function zoomToBasket() {
   if (!camera) return;
   basketZoomed = true;
   _setBasketBackVisible(true);
+  // Verberg hengsel + spoelknop bij mandcamera (punt 38)
+  if (basketHandle) basketHandle.visible = false;
+  const flush = document.getElementById('flush-btn');
+  if (flush) flush.hidden = true;
   _flyCamera(CAM_BASKET, CAM_BASKET_TARGET);
 }
 
@@ -132,6 +156,10 @@ export function basketBack() {
   if (!camera) return;
   basketZoomed = false;
   _setBasketBackVisible(false);
+  // Herstel hengsel + spoelknop (punt 38)
+  if (basketHandle) basketHandle.visible = true;
+  const flush = document.getElementById('flush-btn');
+  if (flush) flush.hidden = false;
   _flyCamera(CAM_DEFAULT, CAM_TARGET_DEFAULT);
 }
 
@@ -194,9 +222,10 @@ function _buildRenderer() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   }
 
-  const w = scene3d.clientWidth  || 390;
-  const h = scene3d.clientHeight || 560;
-  renderer.setSize(w, h);
+  // Gebruik window.innerWidth/Height voor betrouwbare initiële grootte (punt 36)
+  const w = window.innerWidth  || scene3d.clientWidth  || 390;
+  const h = window.innerHeight || scene3d.clientHeight || 560;
+  renderer.setSize(w, h, false); // false = CSS handelt display-grootte af
 
   camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 30);
   camera.position.copy(CAM_DEFAULT);
@@ -213,8 +242,8 @@ function _buildControls() {
   controls.maxPolarAngle = Math.PI / 2.05;
   controls.minAzimuthAngle = -Math.PI / 2.4;
   controls.maxAzimuthAngle =  Math.PI / 2.4;
-  controls.minDistance = 1.2;
-  controls.maxDistance = 4.5;
+  controls.minDistance = 1.5;
+  controls.maxDistance = 8.0;  // punt 35: uitzoomen voor wandruimte zichtbaar
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.target.copy(CAM_TARGET_DEFAULT);
@@ -229,8 +258,9 @@ function _buildControls() {
 // ──────── SCÈNE ────────
 function _buildScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xd4e8f2);
-  scene.fog = new THREE.Fog(0xd4e8f2, 5, 12);
+  // Punt 36: achtergrondkleur matcht CSS body-achtergrond → onzichtbare canvas-rand
+  scene.background = new THREE.Color(0xc8dde8);
+  scene.fog = new THREE.Fog(0xc8dde8, 8, 18);
 }
 
 // ──────── VERLICHTING ────────
@@ -274,7 +304,7 @@ function _buildRoom() {
   const tileRoughness = loader.load('assets/textures/Tiles101_1K-JPG_Roughness.jpg');
   [tileAlbedo, tileNormal, tileRoughness].forEach(t => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(2, 3);
+    t.repeat.set(3, 3); // 3×3m wand → tegel ~1.0m×1.0m
   });
 
   const tileMat = new THREE.MeshStandardMaterial({
@@ -318,7 +348,7 @@ function _buildRoom() {
   const floorRoughness = loader.load('assets/textures/WoodFloor041_1K-JPG_Roughness.jpg');
   [floorAlbedo, floorNormal, floorRoughness].forEach(t => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(2, 3);
+    t.repeat.set(3, 5); // 3m breedte, 7.7m diepte → plank ~1.0m×1.54m
   });
 
   const floorMat = new THREE.MeshStandardMaterial({
@@ -349,15 +379,16 @@ function _buildPaperHolder() {
   const chromeMat = new THREE.MeshPhysicalMaterial({ color: 0xddddcc, metalness: 0.85, roughness: 0.15 });
   const paperMat  = new THREE.MeshStandardMaterial({ color: 0xfafaf5, roughness: 0.85 });
 
-  // Aan de rechterwand, naast het toilet
+  // Aan de rechterwand, naast het toilet (vaste positie onafhankelijk van ROOM_W)
+  const holderX = 1.2;
   const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.18, 12), chromeMat);
   arm.rotation.z = Math.PI / 2;
-  arm.position.set(ROOM_W - 0.08, 0.88, 0.15);
+  arm.position.set(holderX, 0.88, 0.15);
   scene.add(arm);
 
   const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.14, 24), paperMat);
   roll.rotation.z = Math.PI / 2;
-  roll.position.set(ROOM_W - 0.08, 0.88, 0.15);
+  roll.position.set(holderX, 0.88, 0.15);
   scene.add(roll);
 }
 
@@ -471,7 +502,8 @@ function _buildToilet() {
   scene.add(toiletGroup);
 }
 
-// ──────── GLB MODEL LADEN ────────
+// ──────── GLB MODEL LADEN (punt 34) ────────
+// Probeert eerst toilet-2k.glb (HippoStance, CC-BY), dan toilet.glb (OpenGameArt, CC0).
 function _loadToiletModel() {
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
@@ -479,83 +511,87 @@ function _loadToiletModel() {
   const gltfLoader = new GLTFLoader();
   gltfLoader.setDRACOLoader(dracoLoader);
 
-  gltfLoader.load(
-    'assets/models/toilet.glb',
-    (gltf) => {
-      // Het GLB bevat meerdere modellen — gebruik alleen Toilet_Round_A
-      const toiletNode = gltf.scene.getObjectByName('Toilet_Round_A');
-      if (!toiletNode) {
-        // Naam niet gevonden → gebruik gehele scene als fallback
-        toiletGLB = gltf.scene;
-      } else {
+  function _setup(gltf, hippo) {
+    isHippoModel = hippo;
+
+    if (hippo) {
+      // HippoStance: volledige GLTF-scene (Sketchfab_model bevat coördinaten-matrix)
+      toiletGLB = gltf.scene;
+    } else {
+      // OpenGameArt multi-toilet pack: gebruik alleen Toilet_Round_A
+      const node = gltf.scene.getObjectByName('Toilet_Round_A');
+      if (node) {
         toiletGLB = new THREE.Group();
-        toiletGLB.add(toiletNode);
-        // Reset positie (elk node heeft eigen world-space positie in de atlas-scene)
-        toiletNode.position.set(0, 0, 0);
+        toiletGLB.add(node);
+        node.position.set(0, 0, 0);
+      } else {
+        toiletGLB = gltf.scene;
       }
-
-      // PBR-materialen aanmaken
-      glbToiletMat = new THREE.MeshPhysicalMaterial({
-        color:              0xfdfcf5,
-        roughness:          0.12,
-        metalness:          0.0,
-        clearcoat:          0.65,
-        clearcoatRoughness: 0.08,
-        envMapIntensity:    1.0,
-      });
-      const seatGlbMat = new THREE.MeshPhysicalMaterial({
-        color:     0xf5f3ee,
-        roughness: 0.25,
-        metalness: 0.0,
-      });
-      const flusherMat = new THREE.MeshStandardMaterial({
-        color:    0xcccccc,
-        roughness: 0.3,
-        metalness: 0.7,
-      });
-
-      // Traverseer en ken materialen toe, zoek animeerbare nodes
-      toiletGLB.traverse(child => {
-        if (!child.isMesh) return;
-        child.castShadow    = qualityTier === 'high';
-        child.receiveShadow = qualityTier === 'high';
-
-        const nm = child.name.toLowerCase();
-        if (nm.includes('flusher')) {
-          child.material = flusherMat;
-        } else if (nm.includes('seat_cover') || nm.includes('seat')) {
-          child.material = seatGlbMat;
-          if (nm.includes('seat_cover')) toiletLidNode = child;
-        } else {
-          child.material = glbToiletMat;
-        }
-      });
-
-      // Schaal naar ~1.8m hoogte
-      const box = new THREE.Box3().setFromObject(toiletGLB);
-      const size = box.getSize(new THREE.Vector3());
-      const scale = 1.8 / Math.max(size.x, size.y, size.z);
-      toiletGLB.scale.setScalar(scale);
-
-      // Baseer op Y=0
-      const box2 = new THREE.Box3().setFromObject(toiletGLB);
-      toiletGLB.position.set(0, -box2.min.y, 0.3);
-
-      // Verberg procedureel model
-      toiletGroup.visible = false;
-
-      scene.add(toiletGLB);
-
-      // Water NADAT model in scene staat: pas positie aan op echte kom-geometrie
-      _positionWaterInBowl();
-
-      dracoLoader.dispose();
-    },
-    undefined,
-    () => {
-      // Laden mislukt → procedureel toilet blijft zichtbaar
-      dracoLoader.dispose();
     }
+
+    // PBR-materialen
+    glbToiletMat = new THREE.MeshPhysicalMaterial({
+      color: 0xfdfcf5, roughness: 0.12, metalness: 0.0,
+      clearcoat: 0.65, clearcoatRoughness: 0.08, envMapIntensity: 1.0,
+    });
+    const seatGlbMat = new THREE.MeshPhysicalMaterial({
+      color: 0xf5f3ee, roughness: 0.25, metalness: 0.0,
+    });
+    const flusherMat = new THREE.MeshStandardMaterial({
+      color: 0xcccccc, roughness: 0.3, metalness: 0.7,
+    });
+
+    // Materialen toewijzen — ondersteunt HippoStance (seatcover, seatmount) én OGA (seat_cover)
+    toiletGLB.traverse(child => {
+      if (!child.isMesh) return;
+      child.castShadow    = qualityTier === 'high';
+      child.receiveShadow = qualityTier === 'high';
+      const nm = child.name.toLowerCase();
+      if (nm.includes('flushhandle') || nm.includes('flusher')) {
+        child.material = flusherMat;
+      } else if (
+        nm.includes('seatcover') || nm.includes('seat_cover') ||
+        nm.includes('seatmount') || nm.includes('seat')
+      ) {
+        child.material = seatGlbMat;
+      } else {
+        child.material = glbToiletMat;
+      }
+    });
+
+    // Deksel-node voor open/dicht animatie
+    // HippoStance: Object3D 'ToiletSeatCover'; OGA: mesh 'Toilet_Round_A_Seat_Cover'
+    toiletLidNode = gltf.scene.getObjectByName('ToiletSeatCover')
+                 || gltf.scene.getObjectByName('Toilet_Round_A_Seat_Cover');
+
+    // Normaliseer naar ~1.0 Three.js eenheden — realistisch (toilet ~0.7m in Three.js units)
+    const box  = new THREE.Box3().setFromObject(toiletGLB);
+    const size = box.getSize(new THREE.Vector3());
+    toiletGLB.scale.setScalar(1.0 / Math.max(size.x, size.y, size.z));
+
+    // Baseer onderkant op Y=0
+    const box2 = new THREE.Box3().setFromObject(toiletGLB);
+    toiletGLB.position.set(0, -box2.min.y, 0.3);
+
+    toiletGroup.visible = false;
+    scene.add(toiletGLB);
+
+    _positionWaterInBowl();
+    _openLid();
+    dracoLoader.dispose();
+  }
+
+  // Laad HippoStance eerst; bij mislukking → OpenGameArt fallback
+  gltfLoader.load(
+    'assets/models/toilet-2k.glb',
+    (gltf) => _setup(gltf, true),
+    undefined,
+    () => gltfLoader.load(
+      'assets/models/toilet.glb',
+      (gltf) => _setup(gltf, false),
+      undefined,
+      () => dracoLoader.dispose()
+    )
   );
 }
 
@@ -563,35 +599,44 @@ function _loadToiletModel() {
 function _positionWaterInBowl() {
   if (!waterMesh || !toiletGLB) return;
 
-  // Gebruik de bril-node om de opening van de kom te vinden
-  let seatNode = null;
-  toiletGLB.traverse(child => {
-    if (child.name === 'Toilet_Round_A_Seat') seatNode = child;
-  });
+  // Zoek bril-node: HippoStance ('ToiletSeat') of OpenGameArt ('Toilet_Round_A_Seat')
+  const seatNode = toiletGLB.getObjectByName('ToiletSeat')
+                || toiletGLB.getObjectByName('Toilet_Round_A_Seat');
+
+  toiletGLB.updateWorldMatrix(true, true);
 
   if (seatNode) {
-    // Update world matrices zodat Box3 correcte wereldcoördinaten geeft
-    toiletGLB.updateWorldMatrix(true, true);
     const seatBox = new THREE.Box3().setFromObject(seatNode);
 
-    // Water zit net onder de onderkant van de bril
-    const waterY = seatBox.min.y - 0.03;
-
-    // Binnenradius = ca. 40% van de bril-breedte (seat is de buitenring)
+    // Water net onder de bril, binnenradius ~40% van de bril-breedte
     const halfW = (seatBox.max.x - seatBox.min.x) * 0.40;
     const halfD = (seatBox.max.z - seatBox.min.z) * 0.40;
     const cx    = (seatBox.min.x + seatBox.max.x) / 2;
     const cz    = (seatBox.min.z + seatBox.max.z) / 2;
+    const waterY = seatBox.min.y - 0.03;
 
     waterMesh.position.set(cx, waterY, cz);
-    // waterMesh gebruikt SphereGeometry(0.44) → schaal naar gewenste grootte
     waterMesh.scale.set(halfW / 0.44, 0.20, halfD / 0.44);
   } else {
-    // Fallback: schat op basis van GLB bounding box
+    // Fallback: schat op basis van volledige GLB bounding box
     const box = new THREE.Box3().setFromObject(toiletGLB);
     const cx  = (box.min.x + box.max.x) / 2;
     const cz  = (box.min.z + box.max.z) / 2;
     waterMesh.position.set(cx, box.max.y * 0.32, cz);
+  }
+}
+
+// ──────── DEKSEL OPENEN (punt 34) ────────
+function _openLid() {
+  if (!toiletLidNode) return;
+  if (isHippoModel) {
+    // HippoStance: alle nodes delen scène-oorsprong als draaipin → rotatie ziet er verkeerd uit.
+    // Oplossing: deksel verbergen zodat de kom en het water zichtbaar zijn.
+    // (Correcte scharnieranimatie kan later worden toegevoegd met een helper-group.)
+    toiletLidNode.visible = false;
+  } else {
+    // OpenGameArt: aparte node-origin bij de achterkant → draai ~100° achterwaarts.
+    toiletLidNode.rotation.x = -Math.PI * 0.56;
   }
 }
 
@@ -694,14 +739,20 @@ function _buildBasket() {
   );
   rim.position.y = 0.42;
 
+  // Hengsel (punt 38): half-torus bovenop de mand
+  const handleCurve = new THREE.TorusGeometry(0.16, 0.018, 8, 16, Math.PI);
+  basketHandle = new THREE.Mesh(handleCurve, rimMat);
+  basketHandle.rotation.z = Math.PI;          // open kant naar boven
+  basketHandle.position.y = 0.56;             // boven de rand
+
   basketGroup = new THREE.Group();
-  basketGroup.add(bottom, wall, rim);
+  basketGroup.add(bottom, wall, rim, basketHandle);
   // Naast toilet rechts, binnen het hokje
-  basketGroup.position.set(0.45, 0, 0.85);
+  basketGroup.position.set(0.55, 0, 0.85);
   scene.add(basketGroup);
 
-  // Sla cameraposities op voor mandzoom
-  CAM_BASKET        = new THREE.Vector3(basketGroup.position.x, 1.35, basketGroup.position.z + 0.45);
+  // Sla cameraposities op voor mandzoom (punt 28)
+  CAM_BASKET        = new THREE.Vector3(basketGroup.position.x, 1.5, basketGroup.position.z + 0.5);
   CAM_BASKET_TARGET = new THREE.Vector3(basketGroup.position.x, 0.22, basketGroup.position.z);
 
   // Raycaster: klik op mand → inzoomen
@@ -822,6 +873,7 @@ function _bindEvents() {
   document.addEventListener('game:chaos',         _onChaos);
   document.addEventListener('cosmetic:changed',   _onCosmetic);
   document.addEventListener('basket:add',         _onBasketAdd);
+  document.addEventListener('basket:empty',       _onBasketEmpty);
   document.addEventListener('camera:reset',       () => resetCamera());
   document.addEventListener('camera:basket-zoom', () => zoomToBasket());
   document.addEventListener('camera:basket-back', () => basketBack());
@@ -883,6 +935,19 @@ function _onCosmetic(e) {
 function _onBasketAdd(e) {
   const emoji = e.detail?.emoji;
   if (emoji) _stackItemInBasket(emoji);
+}
+
+// ──────── MAND LEGEN (punt 39) ────────
+function _onBasketEmpty() {
+  // Verwijder ALLE mand-sprites (ook voltooide animaties) uit de scène
+  basketSprites.forEach(sprite => scene.remove(sprite));
+  basketSprites.clear();
+  basketItems3D = [];
+
+  // Korte kantelanimatie van de mand
+  if (basketGroup && clock) {
+    basketTiltAnim = { start: clock.getElapsedTime(), dur: 0.55 };
+  }
 }
 
 // ──────── CAMERA VLIEGEN ────────
@@ -994,6 +1059,7 @@ function _stackItemInBasket(emoji) {
   const bz = basketGroup.position.z + (Math.random() - 0.5) * 0.15;
   sprite.position.set(bx, basketGroup.position.y + 1.2, bz);
   scene.add(sprite);
+  basketSprites.add(sprite);
 
   // Einddoel in de mand (gestapeld)
   const count = basketItems3D.length;
@@ -1175,6 +1241,13 @@ function _loop() {
 
   if (basketGroup) {
     basketGroup.rotation.y = Math.sin(now * 0.4) * 0.02;
+    // Kantelanimatie bij legen (punt 39)
+    if (basketTiltAnim) {
+      const p = Math.min((now - basketTiltAnim.start) / basketTiltAnim.dur, 1);
+      const tilt = Math.sin(p * Math.PI) * 0.45; // heen-en-terug kantel
+      basketGroup.rotation.z = tilt;
+      if (p >= 1) { basketGroup.rotation.z = 0; basketTiltAnim = null; }
+    }
   }
 
   _advanceFlush(now);

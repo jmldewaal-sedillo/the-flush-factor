@@ -20,9 +20,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
+  /* Punt 36: 100dvh vult volledig scherm op mobiel met dynamische werkbalk */
   height: 100%;
+  min-height: 100dvh;
   font-family: var(--font);
-  background: #0a0f1a;
+  /* Achtergrond matcht Three.js scene.background → canvas-rand onzichtbaar */
+  background: #c8dde8;
   color: var(--color-text);
   overflow: hidden;
   user-select: none;
@@ -43,7 +46,8 @@ html, body {
   display: block;
   overflow: hidden;
   transition: background-color 0.4s;
-  background-color: #d4e8f2;
+  /* Punt 36: transparent — body-achtergrond vult eventuele canvas-randen in */
+  background-color: transparent;
 }
 
 /* 3D canvas (toegevoegd door renderer3d.js) — pointer-events aan voor OrbitControls */
@@ -205,23 +209,42 @@ html, body {
   pointer-events: all;
 }
 
-/* Terugknop vanuit mandzoom (punt 28) */
+/* Terugknop vanuit mandzoom (punt 38: linksboven onder menuknop, geen overlap) */
 .basket-back-btn {
   position: absolute;
-  bottom: max(env(safe-area-inset-bottom, 0px) + 110px, 110px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: max(env(safe-area-inset-top, 0px) + 76px, 76px);
+  left: max(env(safe-area-inset-left, 0px) + 12px, 12px);
+  transform: none;
   z-index: 25;
   width: auto;
-  min-width: 110px;
+  min-width: 100px;
   height: 44px;
-  padding: 0 18px;
+  padding: 0 16px;
   border-radius: 22px;
   font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 .basket-back-btn[hidden] { display: none; }
+
+/* Mand-legen-knop (punt 39) */
+.basket-empty-btn {
+  border: none;
+  border-radius: 14px;
+  background: rgba(230, 57, 70, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  transition: transform 0.1s, opacity 0.1s;
+}
+.basket-empty-btn:active { transform: scale(0.92); opacity: 0.85; }
+.basket-empty-btn[hidden] { display: none; }
 
 /* ──────── BUBBLE-KNOP (menu) ──────── */
 .bubble-btn {
@@ -505,15 +528,8 @@ html, body {
   transform: scale(0.92);
   box-shadow: 0 2px 10px rgba(0,119,204,0.4);
 }
-#flush-btn .flush-label {
-  font-size: 0.4em;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  line-height: 1;
-  max-width: 60px;
-  overflow: hidden;
-}
+/* Punt 37: tekst verwijderd uit de knop; class blijft voor backwards-compat */
+#flush-btn .flush-label { display: none; }
 #flush-btn.clogged {
   background: radial-gradient(circle at 35% 35%, #ff6b6b, #cc2200) !important;
   box-shadow: 0 6px 24px rgba(204,34,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2) !important;
@@ -937,7 +953,8 @@ html, body {
   #basket-info {
     bottom: max(env(safe-area-inset-bottom, 0px) + 74px, 74px);
   }
+  /* Terugknop in landschapsmodus iets minder hoog */
   .basket-back-btn {
-    bottom: max(env(safe-area-inset-bottom, 0px) + 74px, 74px);
+    top: max(env(safe-area-inset-top, 0px) + 58px, 58px);
   }
 }

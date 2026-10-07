@@ -6,7 +6,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#2c7da0">
+  <meta name="theme-color" content="#c8dde8">
   <title>The Flush Factor</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
@@ -137,19 +137,26 @@
       <div id="inventory-bar"></div>
     </div>
 
-    <!-- Onderin midden: spoelknop -->
+    <!-- Onderin midden: spoelknop (punt 37: alleen icoon, geen tekst) -->
     <div id="hud-bottom">
       <button id="flush-btn" aria-label="Spoelen">
-        <span>🚿</span>
-        <span class="flush-label">SPOELEN</span>
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none"
+             stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <path d="M17.5 6.5A8 8 0 1 0 20 12"/>
+          <polyline points="20 6 20 12 14 12"/>
+        </svg>
       </button>
     </div>
 
-    <!-- Rechtsonder: mand-info + terugknop vanuit mandzoom -->
+    <!-- Rechtsonder: mand-info + legen-knop (punt 39) -->
     <div id="basket-info">
       <span id="basket-vol">0 / 20 L</span>
       <button id="btn-basket" class="basket-btn" aria-label="Mand bekijken">🧺</button>
+      <button id="btn-basket-empty" class="basket-empty-btn" hidden aria-label="Mand legen">🗑️ Legen</button>
     </div>
+
+    <!-- Terugknop vanuit mandzoom (punt 38: linksboven, niet over spoelknop) -->
     <button id="btn-basket-back" class="bubble-btn basket-back-btn" hidden aria-label="Terug naar toilet">← Terug</button>
 
     <!-- Overige overlays -->
@@ -169,8 +176,9 @@
       <p><strong>Three.js</strong> v0.170.0 — MIT license</p>
       <p><strong>HDRI</strong> "Bathroom" — Poly Haven, CC0</p>
       <p><strong>Tegels/Vloer PBR</strong> — ambientCG (Tiles101, WoodFloor041), CC0</p>
-      <p><strong>Toilet 3D-model</strong> — "Toilets" pack, loafbrr_1, opengameart.org, CC0<br>
-         Bestand: toilets_fbx_gltf_blend.zip → Toilet_Round_A</p>
+      <p><strong>Toilet 3D-model</strong> — "Toilet" by HippoStance, Sketchfab, CC BY 4.0<br>
+         <a href="https://skfb.ly/6S9CM" target="_blank" rel="noopener">skfb.ly/6S9CM</a></p>
+      <p><strong>Toilet fallback-model</strong> — "Toilets" pack, loafbrr_1, opengameart.org, CC0</p>
       <button id="btn-credits-close" class="bubble-btn">✕</button>
     </div>
   </div>

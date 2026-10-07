@@ -105,6 +105,39 @@
 
 ---
 
+## 🔧 Sprint 5 (punten 33–39)
+
+- [ ] **33. Beter toiletmodel (Sketchfab HippoStance)** — CC-BY model met nodes Toilet, ToiletSeatCover, ToiletSeat, ToiletSeatMount, ToiletFlushHandle; bestand `assets/models/toilet-2k.glb`; vereist handmatig downloaden van Sketchfab (authenticatie vereist — niet automatisch te doen). Naamsvermelding in CREDITS.md.
+
+- [ ] **34. Controle toiletmodel (eerst doen)**
+  - Controleer of het Sketchfab-model van HippoStance (`assets/models/toilet-2k.glb`, nodes Toilet, ToiletSeatCover, ToiletSeat, ToiletSeatMount, ToiletFlushHandle) echt in gebruik is. De samenvatting noemde "Toilet_Round_A_Seat", wat niet uit dit model komt. Is punt 33 niet (volledig) uitgevoerd, doe dat dan eerst.
+  - Het deksel (ToiletSeatCover) staat nu dicht, waardoor je het water niet ziet. Standaard moet het deksel OPEN staan (rechtop tegen de stortbak), zodat je in de pot en het water kijkt.
+
+- [ ] **35. Startbeeld verder uitgezoomd**
+  - Zoom het startbeeld verder uit, zodat er duidelijk vrije wandruimte is BOVEN het toilet en AAN BEIDE ZIJKANTEN. Daar komen later kastjes, planken, spiegel, schilderijtjes en andere decoratie uit de winkel.
+  - Maak hiervoor ankerpunten aan: wand boven het toilet, linkerwand, rechterwand, en vloer links/rechts. Leg ze vast in een config, zodat decoratie later op een vaste plek kan worden gezet.
+  - Het hokje mag daarvoor iets breder worden als dat nodig is, maar moet wel als wc-ruimte blijven voelen.
+  - Het toilet en de mand blijven goed zichtbaar en niet bedekt door de knoppen.
+
+- [ ] **36. 3D-scène vult het hele scherm**
+  - De 3D-scène moet doorlopen tot helemaal bovenin (achter de notch) en helemaal onderin. Nu zit er bovenin een grijze strook en onderin een lichtblauwe balk.
+  - Verwijder die balken/achtergronden; ALLE knoppen (spoelknop, terug, mand, gereedschappen, score, winkel, menu) zweven over de scène heen, met safe-area-insets zodat ze niet achter de notch of de home-balk vallen.
+  - Controleer in alle formaten (telefoon klein/standaard/groot, tablet mini/groot, staand en liggend).
+
+- [ ] **37. Spoelknop met icoon**
+  - Haal de tekst "SPOELEN" uit de spoelknop. Gebruik alleen een duidelijk icoon van een spoelhendel / flush-symbool (SVG, zie punt 43 voor de icon-set). Geef de knop wel een aria-label "Spoelen" voor toegankelijkheid.
+
+- [ ] **38. Inzoomen op de mand**
+  - Bij het inzoomen op de mand zit het hengsel in de weg. Verberg het hengsel (of draai het plat weg) zolang de camera ingezoomd is, en laat het weer zien bij teruggaan.
+  - De knop "Terug" overlapt nu met de spoelknop. Verplaats "Terug" naar een plek zonder overlap (bv. linksboven onder de menuknop) en verberg de spoelknop zolang je in de mand kijkt.
+
+- [ ] **39. Mand legen werkt niet (fout)**
+  - Het legen van de mand werkt niet; de teller (bv. 3,5 / 20 L) blijft staan en de voorwerpen blijven liggen. Zoek de oorzaak en los het op.
+  - Duidelijke manier om te legen: een knop "Mand legen" die verschijnt bij de mandknop en in de ingezoomde mandweergave. Bij legen: korte animatie (mand kantelt / voorwerpen verdwijnen), teller terug naar 0 L, opgeslagen in localStorage.
+  - Voeg een Playwright-test toe die de mand vult, leegt en controleert dat teller en 3D-inhoud echt leeg zijn, ook na herladen van de pagina.
+
+---
+
 ## 🔜 Versie 0.2 — Verbeteringen & uitbreiding
 
 ### Prioriteit hoog
@@ -148,4 +181,33 @@
 
 ---
 
-*Bijgewerkt: versie 0.1 — initiële release.*
+## 🔮 Toekomstplan (nog niet bouwen)
+
+- [ ] **40. Profiel**
+  - Onder de scorebubbel een profielknop.
+  - Fase 1: spelen als gast (lokaal profiel met naam/avatar).
+  - Fase 2: account aanmaken met e-mailadres, Google of Facebook, zodat voortgang op meerdere apparaten bewaard blijft. Gastvoortgang moet bij het aanmaken van een account overgezet worden.
+  - Uitzoeken: backend (bv. Firebase Authentication + Firestore of Supabase), privacyverklaring en AVG, account verwijderen moet mogelijk zijn (verplicht in de Play Store).
+
+- [ ] **41. Aankopen met echt geld**
+  - Kostenprofiel / betaalomgeving voor aankopen met echt geld (bv. puntenpakketten, premium items).
+  - Let op: voor digitale aankopen in een app via de Google Play Store is Google Play Billing verplicht. Voor de PWA/TWA gaat dat via de Digital Goods API + Payment Request API. Andere betaalmethoden (Stripe, PayPal) zijn voor in-app digitale items niet toegestaan.
+  - Aankopen moeten server-side gecontroleerd worden en aan het account (punt 40) gekoppeld zijn.
+  - Duidelijke prijzen, geen misleidende aankopen; nadenken over leeftijdsclassificatie en ouderlijk toezicht.
+
+- [ ] **42. Winkel met uitklapmenu's**
+  - De winkel wordt één overzicht met alle categorieën als kopjes (bv. Gereedschap, Toiletten, Tegels, Vloeren, Decoratie, Manden). Elke categorie klapt uit (accordion/dropdown) als je erop tikt, zodat je in één oogopslag alle categorieën ziet.
+
+- [ ] **43. Eigen icon-set in plaats van emoji's**
+  - Alle emoji's in het spel vervangen door één consistente set SVG-iconen met een vrije licentie. Opties om te vergelijken:
+    - game-icons.net (veel spel-iconen, CC BY 3.0, naamsvermelding nodig)
+    - Kenney.nl (CC0, game-UI en iconen)
+    - Lucide, Tabler Icons of Phosphor (MIT, strakke UI-iconen)
+  - Voorstel maken welke set het best past, inclusief een lijst van alle plekken in het spel waar nu een emoji staat. Credits in CREDITS.md.
+
+- [ ] **44. Meer gratis layout- en decoratie-ideeën**
+  - Lijst maken van gratis (CC0/CC-BY) 3D-modellen en textures voor de winkel: andere tegels en vloeren (ambientCG, Poly Haven), kastjes, planken, spiegels, planten, wc-rolhouders, posters, verlichting (Poly Haven, Kenney, Sketchfab met filter Downloadable + CC-licentie), en complete badkamerthema's (bv. retro, luxe hotel, festival-dixi, oud café).
+
+---
+
+*Bijgewerkt: Sprint 5 — punten 34–39 toegevoegd/uitgewerkt; punten 40–44 vastgelegd als toekomstplan.*

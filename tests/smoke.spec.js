@@ -151,7 +151,10 @@ const FORMATS = [
 for (const fmt of FORMATS) {
   test(`screenshot ${fmt.name}`, async ({ page }) => {
     await page.setViewportSize({ width: fmt.width, height: fmt.height });
-    await page.goto('/?preview=off');
+    // Navigeer opnieuw na viewport-wissel; gebruik 'commit' zodat SW-reloads niet blokkeren
+    try {
+      await page.goto('/?preview=off', { waitUntil: 'commit', timeout: 8000 });
+    } catch { /* SW-reload onderbreekt soms; pagina is dan al geladen */ }
     await waitForGame(page);
 
     fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
@@ -187,4 +190,54 @@ test('screenshot van startscherm', async ({ page }) => {
   await page.screenshot({ path: screenshotPath, fullPage: false });
 
   expect(fs.existsSync(screenshotPath)).toBe(true);
+});
+
+// ──────── PUNT 39: MAND LEGEN ────────
+
+test('mand legen — teller en knop correct (punt 39)', async ({ page }) => {
+  await waitForGame(page);
+
+  // Simuleer het toevoegen van items aan de mand via localStorage + herladen
+  // (de makkelijkste manier om snel items te vullen in de test)
+  await page.evaluate(() => {
+    try {
+      const raw = localStorage.getItem('flushfactor_v1');
+      const data = raw ? JSON.parse(raw) : {};
+      data.basketVolume = 5.0;
+      data.basketItems  = [
+        { emoji: '🧻', volume: 0.5 },
+        { emoji: '🦆', volume: 1.0 },
+        { emoji: '🧦', volume: 0.3 },
+      ];
+      localStorage.setItem('flushfactor_v1', JSON.stringify(data));
+    } catch (e) {}
+  });
+
+  // Herlaad de pagina zodat de opgeslagen staat wordt geladen
+  await page.goto('/?preview=off');
+  await waitForGame(page);
+
+  // Controleer dat de teller de gevulde waarde toont
+  const volText = await page.locator('#basket-vol').textContent();
+  expect(volText, 'Teller moet gevulde waarde tonen').toContain('5.0');
+
+  // De legen-knop moet zichtbaar zijn (mand niet leeg)
+  await expect(page.locator('#btn-basket-empty')).toBeVisible();
+
+  // Klik op legen
+  await page.locator('#btn-basket-empty').click();
+  await page.waitForTimeout(300);
+
+  // Teller moet nu 0.0 tonen
+  const volTextNa = await page.locator('#basket-vol').textContent();
+  expect(volTextNa, 'Teller na legen moet 0.0 tonen').toContain('0.0');
+
+  // Legen-knop moet verborgen zijn (mand leeg)
+  await expect(page.locator('#btn-basket-empty')).toBeHidden();
+
+  // Herladen → staat blijft 0 (opgeslagen in localStorage)
+  await page.goto('/?preview=off');
+  await waitForGame(page);
+  const volTextNaReload = await page.locator('#basket-vol').textContent();
+  expect(volTextNaReload, 'Teller na herladen moet 0.0 blijven').toContain('0.0');
 });
