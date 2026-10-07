@@ -48,8 +48,9 @@ All assets are CC0 (Creative Commons Zero / Public Domain) unless otherwise note
   - Resolution: 1024 × 1024 px
 
 ## Toilet 3D Model
-- **toilet.glb** — Toilet 3D model
-  - Source: https://opengameart.org/ (bestand: cupschairstoilet.zip, map: Toilet/)
-  - Author: opengameart.org bijdrager
+- **toilet.glb** — "Toilets" pack (Toilet_Round_A gebruikt als speeltoilet)
+  - Source: https://opengameart.org/content/toilets (bestand: toilets_fbx_gltf_blend.zip)
+  - Author: loafbrr_1
   - License: CC0 1.0 Universal — https://creativecommons.org/publicdomain/zero/1.0/
+  - Bevat: 6 toilet varianten + 3 wastafels + 2 urinoirs, aparte seat/cover/flusher nodes
   - File: `assets/models/toilet.glb`

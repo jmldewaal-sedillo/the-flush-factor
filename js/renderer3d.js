@@ -420,7 +420,6 @@ function _buildToilet() {
 // ──────── GLB MODEL LADEN ────────
 function _loadToiletModel() {
   const dracoLoader = new DRACOLoader();
-  // Gebruik gstatic CDN voor DRACO-decoders (werkt online)
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
 
   const gltfLoader = new GLTFLoader();
@@ -429,45 +428,69 @@ function _loadToiletModel() {
   gltfLoader.load(
     'assets/models/toilet.glb',
     (gltf) => {
-      toiletGLB = gltf.scene;
+      // Het GLB bevat meerdere modellen — gebruik alleen Toilet_Round_A
+      const toiletNode = gltf.scene.getObjectByName('Toilet_Round_A');
+      if (!toiletNode) {
+        // Naam niet gevonden → gebruik gehele scene als fallback
+        toiletGLB = gltf.scene;
+      } else {
+        toiletGLB = new THREE.Group();
+        toiletGLB.add(toiletNode);
+        // Reset positie (elk node heeft eigen world-space positie in de atlas-scene)
+        toiletNode.position.set(0, 0, 0);
+      }
 
-      // Bounding box → schaal naar ~1.8m hoog
+      // PBR-materialen aanmaken
+      glbToiletMat = new THREE.MeshPhysicalMaterial({
+        color:              0xfdfcf5,
+        roughness:          0.12,
+        metalness:          0.0,
+        clearcoat:          0.65,
+        clearcoatRoughness: 0.08,
+        envMapIntensity:    1.0,
+      });
+      const seatGlbMat = new THREE.MeshPhysicalMaterial({
+        color:     0xf5f3ee,
+        roughness: 0.25,
+        metalness: 0.0,
+      });
+      const flusherMat = new THREE.MeshStandardMaterial({
+        color:    0xcccccc,
+        roughness: 0.3,
+        metalness: 0.7,
+      });
+
+      // Traverseer en ken materialen toe, zoek animeerbare nodes
+      toiletGLB.traverse(child => {
+        if (!child.isMesh) return;
+        child.castShadow    = qualityTier === 'high';
+        child.receiveShadow = qualityTier === 'high';
+
+        const nm = child.name.toLowerCase();
+        if (nm.includes('flusher')) {
+          child.material = flusherMat;
+        } else if (nm.includes('seat_cover') || nm.includes('seat')) {
+          child.material = seatGlbMat;
+          if (nm.includes('seat_cover')) toiletLidNode = child;
+        } else {
+          child.material = glbToiletMat;
+        }
+      });
+
+      // Schaal naar ~1.8m hoogte
       const box = new THREE.Box3().setFromObject(toiletGLB);
       const size = box.getSize(new THREE.Vector3());
       const scale = 1.8 / Math.max(size.x, size.y, size.z);
       toiletGLB.scale.setScalar(scale);
 
-      // Basiscentrering op Y=0
+      // Baseer op Y=0
       const box2 = new THREE.Box3().setFromObject(toiletGLB);
-      toiletGLB.position.y = -box2.min.y;
-      toiletGLB.position.z = 0.3;
-
-      // Sla materialen op voor cosmetica
-      toiletGLB.traverse(child => {
-        if (child.isMesh) {
-          child.castShadow = qualityTier === 'high';
-          child.receiveShadow = qualityTier === 'high';
-          // Vervang materiaal door PBR porselein
-          glbToiletMat = new THREE.MeshPhysicalMaterial({
-            color:      0xfdfcf5,
-            roughness:  0.12,
-            metalness:  0.0,
-            clearcoat:  0.6,
-            clearcoatRoughness: 0.08,
-            envMapIntensity: 1.0,
-          });
-          child.material = glbToiletMat;
-
-          // Zoek node names voor animeerbare onderdelen
-          const nm = child.name.toLowerCase();
-          if (nm.includes('lid') || nm.includes('deksel')) toiletLidNode = child;
-        }
-      });
+      toiletGLB.position.set(0, -box2.min.y, 0.3);
 
       // Verberg procedureel model
       toiletGroup.visible = false;
 
-      // Water aanpassen: GLB hoger
+      // Water aanpassen
       if (waterMesh) waterMesh.position.y = 1.05;
 
       scene.add(toiletGLB);
