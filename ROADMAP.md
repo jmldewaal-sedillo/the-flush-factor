@@ -83,6 +83,16 @@
 
 ---
 
+## 🔧 Sprint 3 (punten 21–25)
+
+- [x] **21. Oorzaak 3D-fallback vinden en oplossen** — Root-cause: ontbrekende `js/utils/BufferGeometryUtils.js` (relatieve import in GLTFLoader.js); toegevoegd aan `js/utils/`; zichtbare foutbanner bij onverwachte fallback; SW v7 stuurt `SW_UPDATED` → game.js herlaadt pagina automatisch.
+- [ ] **22. Realistisch toiletmodel** — Gedetailleerder CC0/CC-BY model zoeken en downloaden, of 2–3 directe links rapporteren.
+- [x] **23. Layout die altijd herstelt bij schermwissel** — Centrale resize-functie in renderer3d.js + game.js; ResizeObserver + resize/orientationchange/fullscreenchange/visualViewport; `position:fixed;inset:0` layout.
+- [x] **24. Kleine UI-fouten** — Waterbalk `position:relative` fix; spoelknop label verkleind; preview-heractiveerknop toont "📱 Preview" label.
+- [x] **25. Automatische tests** — Playwright smoke-tests (`tests/smoke.spec.js`); `playwright.config.js`; GitHub Actions workflow (`.github/workflows/ci.yml`); screenshots in `tests/screenshots/`.
+
+---
+
 ## 🔜 Versie 0.2 — Verbeteringen & uitbreiding
 
 ### Prioriteit hoog

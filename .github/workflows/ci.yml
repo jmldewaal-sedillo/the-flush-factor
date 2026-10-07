@@ -1,0 +1,35 @@
+name: Smoke tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installeer dependencies
+        run: npm ci
+
+      - name: Installeer Playwright-browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke-tests
+        run: npm test
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: tests/screenshots/
+          retention-days: 7

@@ -7,7 +7,7 @@ import { MESSAGES, CLOG_PROPS, LEVEL_CONFIG } from './items.js';
 import { ClogSystem } from './clog.js';
 import { InventorySystem } from './inventory.js';
 import { ShopSystem } from './shop.js';
-import { init3D, resetCamera } from './renderer3d.js';
+import { init3D, resetCamera, onResize } from './renderer3d.js';
 
 // ──────── STATE ────────
 const state = {
@@ -97,6 +97,28 @@ function init() {
   updateBasketUI();
 
   init3D();
+
+  // Centrale resize-handler: roep ook onResize aan bij elk viewport-event
+  {
+    let raf = 0;
+    const scheduleResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => onResize?.());
+    };
+    window.addEventListener('resize',            scheduleResize);
+    window.addEventListener('orientationchange', scheduleResize);
+    document.addEventListener('fullscreenchange', scheduleResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', scheduleResize);
+    }
+  }
+
+  // Service worker update → herlaad de pagina voor de nieuwste versie
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'SW_UPDATED') window.location.reload();
+    });
+  }
 
   requestAnimationFrame(gameLoop);
 }

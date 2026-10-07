@@ -51,30 +51,56 @@ let particles = [];       // actieve deeltjessystemen
 // ──────── ENTRY POINT ────────
 export function init3D() {
   qualityTier = _detectQuality();
-  if (!qualityTier) return;   // geen WebGL → 2D-modus
+  if (!qualityTier) {
+    // WebGL echt niet beschikbaar
+    console.warn('[3D] WebGL niet beschikbaar — 2D-modus actief.');
+    return;
+  }
 
-  _buildRenderer();
-  _buildScene();
-  _buildLights();
-  _buildRoom();
-  _buildToilet();         // procedureel (fallback)
-  _buildWater();
-  _buildBasket();
-  _buildDecoration();
-  _loadHDRI();
-  _buildControls();
-  _hide2D();
-  _bindEvents();
-  _setupResize();
+  try {
+    _buildRenderer();
+    _buildScene();
+    _buildLights();
+    _buildRoom();
+    _buildToilet();         // procedureel (fallback)
+    _buildWater();
+    _buildBasket();
+    _buildDecoration();
+    _loadHDRI();
+    _buildControls();
+    _hide2D();
+    _bindEvents();
+    _setupResize();
 
-  // Probeer GLB te laden (verbergt procedureel toilet bij succes)
-  _loadToiletModel();
+    // Probeer GLB te laden (verbergt procedureel toilet bij succes)
+    _loadToiletModel();
 
-  window.__3D_ACTIVE = true;
-  isActive = true;
+    window.__3D_ACTIVE = true;
+    isActive = true;
 
-  clock = new THREE.Clock();
-  _loop();
+    clock = new THREE.Clock();
+    _loop();
+  } catch (err) {
+    console.error('[3D] Initialisatie mislukt:', err);
+    _showInitError(err);
+  }
+}
+
+function _showInitError(err) {
+  const scene3d = document.getElementById('bathroom-scene');
+  if (!scene3d) return;
+  const banner = document.createElement('div');
+  banner.style.cssText = [
+    'position:absolute', 'inset:0', 'z-index:99',
+    'display:flex', 'flex-direction:column',
+    'align-items:center', 'justify-content:center',
+    'background:rgba(20,0,0,0.82)',
+    'color:#ff8080', 'font-size:0.85rem',
+    'font-family:monospace', 'padding:20px',
+    'text-align:center', 'pointer-events:none',
+  ].join(';');
+  banner.innerHTML = `<strong>⚠️ 3D kon niet starten</strong><br><br><code style="font-size:0.7rem;opacity:0.8">${err?.message ?? err}</code><br><br><span style="opacity:0.6;font-size:0.75rem">Open DevTools (F12) voor meer details.</span>`;
+  scene3d.appendChild(banner);
 }
 
 // ──────── PUBLIEKE API ────────
@@ -587,18 +613,39 @@ function _hide2D() {
 }
 
 // ──────── RESIZE ────────
+export function onResize() {
+  if (!renderer || !camera) return;
+  const scene3d = document.getElementById('bathroom-scene');
+  const w = scene3d ? scene3d.clientWidth  : window.innerWidth;
+  const h = scene3d ? scene3d.clientHeight : window.innerHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false); // false = do not set CSS size (CSS handles it)
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  if (controls) controls.update();
+}
+
 function _setupResize() {
   const scene3d = document.getElementById('bathroom-scene');
-  if (!scene3d || !renderer) return;
-  const obs = new ResizeObserver(() => {
-    const w = scene3d.clientWidth;
-    const h = scene3d.clientHeight;
-    if (!w || !h) return;
-    renderer.setSize(w, h);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  });
-  obs.observe(scene3d);
+
+  // ResizeObserver op de scene-container (meest betrouwbaar)
+  if (scene3d) {
+    const obs = new ResizeObserver(() => onResize());
+    obs.observe(scene3d);
+  }
+
+  // Aanvullende events voor DevTools / fullscreen / oriëntatieverandering
+  let rafId = 0;
+  const scheduleResize = () => {
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(onResize);
+  };
+  window.addEventListener('resize',            scheduleResize);
+  window.addEventListener('orientationchange', scheduleResize);
+  document.addEventListener('fullscreenchange', scheduleResize);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', scheduleResize);
+  }
 }
 
 // ──────── GAME-EVENTS ────────

@@ -1,0 +1,14 @@
+{
+  "name": "the-flush-factor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "serve": "npx serve . -p 5000 --no-clipboard"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "serve": "^14.2.3"
+  }
+}

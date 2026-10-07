@@ -37,7 +37,7 @@
         var btn = document.createElement('button');
         btn.id      = 'pv-reopen';
         btn.title   = 'Telefoonpreview inschakelen';
-        btn.textContent = '📱';
+        btn.innerHTML = '<span style="font-size:1.1em">📱</span><span style="font-size:0.6rem;display:block;line-height:1.2;margin-top:1px">Preview</span>';
         btn.addEventListener('click', function () {
           try { localStorage.removeItem('flushfactor_preview_mode'); } catch (e) {}
           location.href = location.pathname;
