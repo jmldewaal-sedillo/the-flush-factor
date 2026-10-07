@@ -102,8 +102,8 @@
 
     <!-- ── HUD-ZONES ── -->
 
-    <!-- Linksboven: menu-knop -->
-    <div id="hud-topleft">
+    <!-- Midden boven: menu-knop (punt 29) -->
+    <div id="hud-topcenter">
       <button id="btn-menu" class="bubble-btn" aria-label="Menu" aria-expanded="false">🚽</button>
       <div id="main-menu" hidden role="menu">
         <button class="menu-item" data-action="sound">🔊 Geluid</button>
@@ -145,11 +145,12 @@
       </button>
     </div>
 
-    <!-- Rechtsonder: mand-info -->
+    <!-- Rechtsonder: mand-info + terugknop vanuit mandzoom -->
     <div id="basket-info">
       <span id="basket-vol">0 / 20 L</span>
       <button id="btn-basket" class="basket-btn" aria-label="Mand bekijken">🧺</button>
     </div>
+    <button id="btn-basket-back" class="bubble-btn basket-back-btn" hidden aria-label="Terug naar toilet">← Terug</button>
 
     <!-- Overige overlays -->
     <div id="status-msg"></div>
@@ -168,8 +169,8 @@
       <p><strong>Three.js</strong> v0.170.0 — MIT license</p>
       <p><strong>HDRI</strong> "Bathroom" — Poly Haven, CC0</p>
       <p><strong>Tegels/Vloer PBR</strong> — ambientCG (Tiles101, WoodFloor041), CC0</p>
-      <p><strong>Toilet 3D-model</strong> — opengameart.org, CC0<br>
-         Bestand: Toilet/toilet.glb uit cupschairstoilet.zip</p>
+      <p><strong>Toilet 3D-model</strong> — "Toilets" pack, loafbrr_1, opengameart.org, CC0<br>
+         Bestand: toilets_fbx_gltf_blend.zip → Toilet_Round_A</p>
       <button id="btn-credits-close" class="bubble-btn">✕</button>
     </div>
   </div>

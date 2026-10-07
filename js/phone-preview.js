@@ -55,17 +55,22 @@
   document.addEventListener('DOMContentLoaded', function () {
 
     var SIZES = {
-      small:    { w: 360, h: 740 },
-      standard: { w: 390, h: 844 },
-      large:    { w: 430, h: 932 }
+      small:    { w: 360,  h: 740,  type: 'phone'  },
+      standard: { w: 390,  h: 844,  type: 'phone'  },
+      large:    { w: 430,  h: 932,  type: 'phone'  },
+      'tablet-s': { w: 768,  h: 1024, type: 'tablet' },
+      'tablet-l': { w: 820,  h: 1180, type: 'tablet' }
     };
 
     var currentSize = 'standard';
+    // isLandscape wordt per formaat-type bewaard
     var isLandscape = false;
     try {
       var ls = localStorage.getItem('flushfactor_preview_size');
       if (ls && SIZES[ls]) currentSize = ls;
-      isLandscape = localStorage.getItem('flushfactor_preview_landscape') === 'true';
+      // Laad oriëntatie voor huidig formaat-type
+      var lsType = SIZES[currentSize].type;
+      isLandscape = localStorage.getItem('flushfactor_preview_landscape_' + lsType) === 'true';
     } catch (e) {}
 
     // ── CSS voor de preview-UI ──
@@ -105,13 +110,19 @@
     root.id = 'pv-root';
     root.innerHTML =
       '<div id="pv-toolbar">' +
-        '<span class="pv-lbl">Formaat:</span>' +
+        '<span class="pv-lbl">📱 Telefoon:</span>' +
         '<button class="pv-btn" data-size="small">Klein ' +
           '<small style="opacity:.65">360\u00d7740</small></button>' +
         '<button class="pv-btn" data-size="standard">Standaard ' +
           '<small style="opacity:.65">390\u00d7844</small></button>' +
         '<button class="pv-btn" data-size="large">Groot ' +
           '<small style="opacity:.65">430\u00d7932</small></button>' +
+        '<div class="pv-sep"></div>' +
+        '<span class="pv-lbl">Tablet:</span>' +
+        '<button class="pv-btn" data-size="tablet-s">Mini ' +
+          '<small style="opacity:.65">768\u00d71024</small></button>' +
+        '<button class="pv-btn" data-size="tablet-l">Groot ' +
+          '<small style="opacity:.65">820\u00d71180</small></button>' +
         '<div class="pv-sep"></div>' +
         '<button class="pv-btn" id="pv-rotate">\u21bb Draaien</button>' +
         '<div class="pv-sep"></div>' +
@@ -149,11 +160,15 @@
       frame.style.height    = h + 'px';
       frame.style.transform = 'scale(' + scale.toFixed(4) + ')';
 
-      // Notch en home-balk alleen in portretstand
+      // Tablet vs telefoon: aangepaste hoekrondingen
+      var isTablet = s.type === 'tablet';
+      frame.style.borderRadius = isTablet ? '18px' : '44px';
+
+      // Notch en home-balk alleen bij telefoon in portretstand
       var notch   = document.getElementById('pv-notch');
       var homebar = document.getElementById('pv-homebar');
-      if (notch)   notch.style.display   = isLandscape ? 'none' : '';
-      if (homebar) homebar.style.display = isLandscape ? 'none' : '';
+      if (notch)   notch.style.display   = (isTablet || isLandscape) ? 'none' : '';
+      if (homebar) homebar.style.display = (isTablet || isLandscape) ? 'none' : '';
 
       // Actieve formaatknop markeren
       document.querySelectorAll('[data-size]').forEach(function (btn) {
@@ -173,7 +188,18 @@
     // ── Formaatknoppen ──
     document.querySelectorAll('[data-size]').forEach(function (btn) {
       btn.addEventListener('click', function () {
+        var prevType = SIZES[currentSize].type;
         currentSize = btn.dataset.size;
+        var newType  = SIZES[currentSize].type;
+        // Bij wisselen van formaat-type: herstel naar portret
+        if (prevType !== newType) {
+          isLandscape = false;
+        } else {
+          // Laad opgeslagen oriëntatie voor dit type
+          try {
+            isLandscape = localStorage.getItem('flushfactor_preview_landscape_' + newType) === 'true';
+          } catch (e) {}
+        }
         try { localStorage.setItem('flushfactor_preview_size', currentSize); } catch (e) {}
         applySize();
       });
@@ -182,7 +208,8 @@
     // ── Draaien (portret ↔ liggend) ──
     document.getElementById('pv-rotate').addEventListener('click', function () {
       isLandscape = !isLandscape;
-      try { localStorage.setItem('flushfactor_preview_landscape', String(isLandscape)); } catch (e) {}
+      var type = SIZES[currentSize].type;
+      try { localStorage.setItem('flushfactor_preview_landscape_' + type, String(isLandscape)); } catch (e) {}
       applySize();
     });
 

@@ -10,12 +10,19 @@ import { OrbitControls } from './vendor/OrbitControls.js';
 import { GLTFLoader }    from './vendor/GLTFLoader.js';
 import { DRACOLoader }   from './vendor/DRACOLoader.js';
 
+// ──────── KAMER-AFMETINGEN (WC-hokje) ────────
+const ROOM_W   = 1.2;    // halve breedte = 0.6m aan iedere kant
+const ROOM_H   = 2.4;    // hoogte
+const ROOM_BACK_Z = -0.65; // achterwand Z
+const ROOM_FRONT_Z = 1.15; // voorkant / "deuropening"
+
 // ──────── MODULE-STATE ────────
 let renderer, scene, camera, clock, controls;
 let toiletGroup, toiletGLB, waterMesh, propSprite, basketGroup;
 let floorMesh, backWallMesh, leftWallMesh, rightWallMesh;
 let qualityTier = 'medium';
 let basketItems3D = [];   // actieve items boven mand
+let basketZoomed  = false; // is camera ingezoomd op mand?
 
 // GLB node references (zijn null als model geen aparte nodes heeft)
 let toiletLidNode = null;
@@ -35,11 +42,14 @@ let clogAnim    = null;   // { start, dur, to }
 let unclogAnim  = null;   // { start, dur }
 let cameraAnim  = null;   // { start, dur, fromPos, toPos, fromTarget, toTarget }
 
-// Standaard cameraposities
-const CAM_DEFAULT = new THREE.Vector3(0, 2.8, 7.0);
-const CAM_TARGET_DEFAULT = new THREE.Vector3(0, 0.9, 0);
-const CAM_CLOG = new THREE.Vector3(0, 1.6, 2.6);
-const CAM_TARGET_CLOG = new THREE.Vector3(0, 0.8, 0);
+// ── Cameraposities (aangepast aan WC-hokje) ──
+const CAM_DEFAULT        = new THREE.Vector3(0, 1.4, 3.5);
+const CAM_TARGET_DEFAULT = new THREE.Vector3(0, 0.85, 0);
+const CAM_CLOG           = new THREE.Vector3(0, 0.95, 1.9);
+const CAM_TARGET_CLOG    = new THREE.Vector3(0, 0.55, 0.3);
+// Mandzoom: vogelperspectief op mand (positie wordt berekend na laden mand)
+let CAM_BASKET        = new THREE.Vector3(0.45, 1.3, 1.3);
+let CAM_BASKET_TARGET = new THREE.Vector3(0.45, 0.25, 0.85);
 
 // Toestand
 let isActive = false;
@@ -106,7 +116,28 @@ function _showInitError(err) {
 // ──────── PUBLIEKE API ────────
 export function resetCamera() {
   if (!camera) return;
+  basketZoomed = false;
+  _setBasketBackVisible(false);
   _flyCamera(CAM_DEFAULT, CAM_TARGET_DEFAULT);
+}
+
+export function zoomToBasket() {
+  if (!camera) return;
+  basketZoomed = true;
+  _setBasketBackVisible(true);
+  _flyCamera(CAM_BASKET, CAM_BASKET_TARGET);
+}
+
+export function basketBack() {
+  if (!camera) return;
+  basketZoomed = false;
+  _setBasketBackVisible(false);
+  _flyCamera(CAM_DEFAULT, CAM_TARGET_DEFAULT);
+}
+
+function _setBasketBackVisible(visible) {
+  const btn = document.getElementById('btn-basket-back');
+  if (btn) btn.hidden = !visible;
 }
 
 // ──────── KWALITEITSDETECTIE ────────
@@ -167,7 +198,7 @@ function _buildRenderer() {
   const h = scene3d.clientHeight || 560;
   renderer.setSize(w, h);
 
-  camera = new THREE.PerspectiveCamera(44, w / h, 0.1, 100);
+  camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 30);
   camera.position.copy(CAM_DEFAULT);
   camera.lookAt(CAM_TARGET_DEFAULT);
 }
@@ -177,23 +208,29 @@ function _buildControls() {
   if (!camera || !renderer) return;
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enablePan = false;
-  controls.minPolarAngle = 0.15;
+  // Aangepast aan WC-hokje: beperkt roteren zodat je niet door de muren kijkt
+  controls.minPolarAngle = 0.2;
   controls.maxPolarAngle = Math.PI / 2.05;
-  controls.minAzimuthAngle = -Math.PI / 2.2;
-  controls.maxAzimuthAngle =  Math.PI / 2.2;
-  controls.minDistance = 2.5;
-  controls.maxDistance = 9.5;
+  controls.minAzimuthAngle = -Math.PI / 2.4;
+  controls.maxAzimuthAngle =  Math.PI / 2.4;
+  controls.minDistance = 1.2;
+  controls.maxDistance = 4.5;
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.target.copy(CAM_TARGET_DEFAULT);
   controls.update();
+
+  // Esc = terugvliegen vanuit mandzoom
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && basketZoomed) basketBack();
+  });
 }
 
 // ──────── SCÈNE ────────
 function _buildScene() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xd4e8f2);
-  scene.fog = new THREE.Fog(0xd4e8f2, 12, 22);
+  scene.fog = new THREE.Fog(0xd4e8f2, 5, 12);
 }
 
 // ──────── VERLICHTING ────────
@@ -227,46 +264,61 @@ function _buildLights() {
   }
 }
 
-// ──────── BADKAMER (wanden + vloer) ────────
+// ──────── BADKAMER (WC-hokje: smal + diep) ────────
 function _buildRoom() {
   const loader = new THREE.TextureLoader();
+  const roomDepth = ROOM_FRONT_Z - ROOM_BACK_Z; // 1.8m
 
   const tileAlbedo    = loader.load('assets/textures/Tiles101_1K-JPG_Color.jpg',    t => { t.colorSpace = THREE.SRGBColorSpace; });
   const tileNormal    = loader.load('assets/textures/Tiles101_1K-JPG_NormalGL.jpg');
   const tileRoughness = loader.load('assets/textures/Tiles101_1K-JPG_Roughness.jpg');
   [tileAlbedo, tileNormal, tileRoughness].forEach(t => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(4, 3);
+    t.repeat.set(2, 3);
   });
 
   const tileMat = new THREE.MeshStandardMaterial({
     map:          tileAlbedo,
     normalMap:    tileNormal,
     roughnessMap: tileRoughness,
-    roughness:    0.6,
+    roughness:    0.55,
     metalness:    0.0,
   });
 
-  backWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), tileMat);
-  backWallMesh.position.set(0, 2.5, -1.8);
+  const midZ = (ROOM_BACK_Z + ROOM_FRONT_Z) / 2;
+  const midY = ROOM_H / 2;
+
+  // Achterwand
+  backWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W * 2, ROOM_H), tileMat);
+  backWallMesh.position.set(0, midY, ROOM_BACK_Z);
   scene.add(backWallMesh);
 
-  leftWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(5, 6), tileMat.clone());
+  // Linkerwand
+  leftWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, ROOM_H), tileMat.clone());
   leftWallMesh.rotation.y = Math.PI / 2;
-  leftWallMesh.position.set(-3.5, 2.5, 1);
+  leftWallMesh.position.set(-ROOM_W, midY, midZ);
   scene.add(leftWallMesh);
 
-  rightWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(5, 6), tileMat.clone());
+  // Rechterwand
+  rightWallMesh = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, ROOM_H), tileMat.clone());
   rightWallMesh.rotation.y = -Math.PI / 2;
-  rightWallMesh.position.set(3.5, 2.5, 1);
+  rightWallMesh.position.set(ROOM_W, midY, midZ);
   scene.add(rightWallMesh);
 
+  // Plafond
+  const ceilMat = new THREE.MeshStandardMaterial({ color: 0xfafaf5, roughness: 0.85 });
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W * 2, roomDepth), ceilMat);
+  ceil.rotation.x = Math.PI / 2;
+  ceil.position.set(0, ROOM_H, midZ);
+  scene.add(ceil);
+
+  // Vloer
   const floorAlbedo    = loader.load('assets/textures/WoodFloor041_1K-JPG_Color.jpg',    t => { t.colorSpace = THREE.SRGBColorSpace; });
   const floorNormal    = loader.load('assets/textures/WoodFloor041_1K-JPG_NormalGL.jpg');
   const floorRoughness = loader.load('assets/textures/WoodFloor041_1K-JPG_Roughness.jpg');
   [floorAlbedo, floorNormal, floorRoughness].forEach(t => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(5, 4);
+    t.repeat.set(2, 3);
   });
 
   const floorMat = new THREE.MeshStandardMaterial({
@@ -277,15 +329,16 @@ function _buildRoom() {
     metalness:    0.0,
   });
 
-  floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), floorMat);
+  floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W * 2, roomDepth), floorMat);
   floorMesh.rotation.x = -Math.PI / 2;
-  floorMesh.position.set(0, 0, 1);
+  floorMesh.position.set(0, 0, midZ);
   floorMesh.receiveShadow = qualityTier === 'high';
   scene.add(floorMesh);
 
+  // Plinten langs achterwand
   const plinthMat = new THREE.MeshStandardMaterial({ color: 0xfdfcf5, roughness: 0.3 });
-  const plinth = new THREE.Mesh(new THREE.BoxGeometry(8, 0.12, 0.08), plinthMat);
-  plinth.position.set(0, 0.06, -1.76);
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(ROOM_W * 2, 0.1, 0.06), plinthMat);
+  plinth.position.set(0, 0.05, ROOM_BACK_Z + 0.03);
   scene.add(plinth);
 
   _buildPaperHolder();
@@ -296,14 +349,15 @@ function _buildPaperHolder() {
   const chromeMat = new THREE.MeshPhysicalMaterial({ color: 0xddddcc, metalness: 0.85, roughness: 0.15 });
   const paperMat  = new THREE.MeshStandardMaterial({ color: 0xfafaf5, roughness: 0.85 });
 
+  // Aan de rechterwand, naast het toilet
   const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.18, 12), chromeMat);
   arm.rotation.z = Math.PI / 2;
-  arm.position.set(1.1, 0.95, 0.0);
+  arm.position.set(ROOM_W - 0.08, 0.88, 0.15);
   scene.add(arm);
 
-  const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.16, 24), paperMat);
+  const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.14, 24), paperMat);
   roll.rotation.z = Math.PI / 2;
-  roll.position.set(1.1, 0.95, 0.0);
+  roll.position.set(ROOM_W - 0.08, 0.88, 0.15);
   scene.add(roll);
 }
 
@@ -490,10 +544,11 @@ function _loadToiletModel() {
       // Verberg procedureel model
       toiletGroup.visible = false;
 
-      // Water aanpassen
-      if (waterMesh) waterMesh.position.y = 1.05;
-
       scene.add(toiletGLB);
+
+      // Water NADAT model in scene staat: pas positie aan op echte kom-geometrie
+      _positionWaterInBowl();
+
       dracoLoader.dispose();
     },
     undefined,
@@ -502,6 +557,42 @@ function _loadToiletModel() {
       dracoLoader.dispose();
     }
   );
+}
+
+// ──────── WATER POSITIONEREN IN KOM ────────
+function _positionWaterInBowl() {
+  if (!waterMesh || !toiletGLB) return;
+
+  // Gebruik de bril-node om de opening van de kom te vinden
+  let seatNode = null;
+  toiletGLB.traverse(child => {
+    if (child.name === 'Toilet_Round_A_Seat') seatNode = child;
+  });
+
+  if (seatNode) {
+    // Update world matrices zodat Box3 correcte wereldcoördinaten geeft
+    toiletGLB.updateWorldMatrix(true, true);
+    const seatBox = new THREE.Box3().setFromObject(seatNode);
+
+    // Water zit net onder de onderkant van de bril
+    const waterY = seatBox.min.y - 0.03;
+
+    // Binnenradius = ca. 40% van de bril-breedte (seat is de buitenring)
+    const halfW = (seatBox.max.x - seatBox.min.x) * 0.40;
+    const halfD = (seatBox.max.z - seatBox.min.z) * 0.40;
+    const cx    = (seatBox.min.x + seatBox.max.x) / 2;
+    const cz    = (seatBox.min.z + seatBox.max.z) / 2;
+
+    waterMesh.position.set(cx, waterY, cz);
+    // waterMesh gebruikt SphereGeometry(0.44) → schaal naar gewenste grootte
+    waterMesh.scale.set(halfW / 0.44, 0.20, halfD / 0.44);
+  } else {
+    // Fallback: schat op basis van GLB bounding box
+    const box = new THREE.Box3().setFromObject(toiletGLB);
+    const cx  = (box.min.x + box.max.x) / 2;
+    const cz  = (box.min.z + box.max.z) / 2;
+    waterMesh.position.set(cx, box.max.y * 0.32, cz);
+  }
 }
 
 // ──────── WATER ────────
@@ -577,7 +668,7 @@ function _buildWater() {
   scene.add(waterMesh);
 }
 
-// ──────── MAND (3D decoratief, vervangt prullenbak) ────────
+// ──────── MAND (3D decoratief, binnen het WC-hokje) ────────
 function _buildBasket() {
   const wickerMat = new THREE.MeshStandardMaterial({ color: 0xC8892A, roughness: 0.85, metalness: 0.0 });
   const rimMat    = new THREE.MeshStandardMaterial({ color: 0xA06820, roughness: 0.7,  metalness: 0.0 });
@@ -605,8 +696,60 @@ function _buildBasket() {
 
   basketGroup = new THREE.Group();
   basketGroup.add(bottom, wall, rim);
-  basketGroup.position.set(1.5, 0, 1.1);
+  // Naast toilet rechts, binnen het hokje
+  basketGroup.position.set(0.45, 0, 0.85);
   scene.add(basketGroup);
+
+  // Sla cameraposities op voor mandzoom
+  CAM_BASKET        = new THREE.Vector3(basketGroup.position.x, 1.35, basketGroup.position.z + 0.45);
+  CAM_BASKET_TARGET = new THREE.Vector3(basketGroup.position.x, 0.22, basketGroup.position.z);
+
+  // Raycaster: klik op mand → inzoomen
+  _buildBasketRaycaster();
+}
+
+// ──────── RAYCASTER: KLIK OP MAND ────────
+function _buildBasketRaycaster() {
+  if (!renderer || !basketGroup) return;
+  const raycaster = new THREE.Raycaster();
+  const pointer   = new THREE.Vector2();
+  let   pointerDown = null; // { x, y } bij mousedown/touchstart
+
+  const canvas = renderer.domElement;
+
+  const onDown = e => {
+    const rect  = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    pointerDown = { x: clientX, y: clientY };
+  };
+
+  const onUp = e => {
+    if (!pointerDown) return;
+    const rect  = canvas.getBoundingClientRect();
+    const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+    // Alleen als tap, geen drag (< 8px beweging)
+    const dx = Math.abs(clientX - pointerDown.x);
+    const dy = Math.abs(clientY - pointerDown.y);
+    pointerDown = null;
+    if (dx > 8 || dy > 8) return;
+
+    pointer.x = ((clientX - rect.left) / rect.width)  * 2 - 1;
+    pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+
+    const hits = raycaster.intersectObject(basketGroup, true);
+    if (hits.length > 0) {
+      if (basketZoomed) basketBack(); else zoomToBasket();
+    }
+  };
+
+  canvas.addEventListener('mousedown',  onDown);
+  canvas.addEventListener('touchstart', onDown, { passive: true });
+  canvas.addEventListener('mouseup',    onUp);
+  canvas.addEventListener('touchend',   onUp,   { passive: true });
 }
 
 // ──────── HDRI LADEN ────────
@@ -680,6 +823,8 @@ function _bindEvents() {
   document.addEventListener('cosmetic:changed',   _onCosmetic);
   document.addEventListener('basket:add',         _onBasketAdd);
   document.addEventListener('camera:reset',       () => resetCamera());
+  document.addEventListener('camera:basket-zoom', () => zoomToBasket());
+  document.addEventListener('camera:basket-back', () => basketBack());
   document.addEventListener('game:waterLevel', e => {
     waterU.uWaterLevel.value = (e.detail?.waterLevel ?? 0) / 100;
   });
@@ -705,7 +850,7 @@ function _onClog(e) {
 function _onUnclog(e) {
   clogAnim = { start: clock.getElapsedTime(), dur: 0.6, to: 0.0 };
   unclogAnim = { start: clock.getElapsedTime(), dur: 0.55 };
-  _spawnParticleBurst(basketGroup ? basketGroup.position : new THREE.Vector3(1.5, 0.4, 1.1));
+  _spawnParticleBurst(basketGroup ? basketGroup.position : new THREE.Vector3(0.45, 0.4, 0.85));
   // Terugvliegen naar standaard
   setTimeout(() => _flyCamera(CAM_DEFAULT, CAM_TARGET_DEFAULT), 700);
 }
@@ -986,9 +1131,9 @@ function _advanceUnclog(now) {
   const p = Math.min((now - unclogAnim.start) / unclogAnim.dur, 1);
 
   const sx = 0, sy = 1.18, sz = 0.30;
-  const ex = basketGroup ? basketGroup.position.x : 1.5;
+  const ex = basketGroup ? basketGroup.position.x : 0.45;
   const ey = (basketGroup ? basketGroup.position.y : 0) + 0.5;
-  const ez = basketGroup ? basketGroup.position.z : 1.1;
+  const ez = basketGroup ? basketGroup.position.z : 0.85;
 
   propSprite.position.set(
     sx + (ex - sx) * p,

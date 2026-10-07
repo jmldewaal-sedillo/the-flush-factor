@@ -154,13 +154,17 @@ html, body {
 
 /* ──────── HUD POSITIES ──────── */
 
-/* Linksboven: menu-knop */
-#hud-topleft {
+/* Midden boven: menu-knop (punt 29) */
+#hud-topcenter {
   position: absolute;
   top: max(env(safe-area-inset-top, 0px) + 12px, 12px);
-  left: max(env(safe-area-inset-left, 0px) + 12px, 12px);
-  z-index: 20;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
   pointer-events: all;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Rechtsboven: score + winkel */
@@ -176,12 +180,13 @@ html, body {
   gap: 8px;
 }
 
-/* Links midden: waterbalk + gereedschappen */
+/* Links: waterbalk + gereedschappen (punt 30: altijd op scherm) */
 #hud-left {
   position: absolute;
-  top: 50%;
+  /* Verankerd tussen topright-hoogte en flush-knop */
+  top: max(env(safe-area-inset-top, 0px) + 76px, 76px);
+  bottom: max(env(safe-area-inset-bottom, 0px) + 110px, 110px);
   left: max(env(safe-area-inset-left, 0px) + 8px, 8px);
-  transform: translateY(-50%);
   z-index: 20;
   pointer-events: all;
   display: flex;
@@ -199,6 +204,24 @@ html, body {
   z-index: 20;
   pointer-events: all;
 }
+
+/* Terugknop vanuit mandzoom (punt 28) */
+.basket-back-btn {
+  position: absolute;
+  bottom: max(env(safe-area-inset-bottom, 0px) + 110px, 110px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  width: auto;
+  min-width: 110px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.basket-back-btn[hidden] { display: none; }
 
 /* ──────── BUBBLE-KNOP (menu) ──────── */
 .bubble-btn {
@@ -221,11 +244,12 @@ html, body {
 }
 .bubble-btn:active { transform: scale(0.92); opacity: 0.85; }
 
-/* Menu-uitklap */
+/* Menu-uitklap (punt 29: gecentreerd onder de knop) */
 #main-menu {
   position: absolute;
   top: 60px;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(20, 60, 80, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -346,12 +370,35 @@ html, body {
 .water-warning { background: linear-gradient(180deg, #ffd93d, #f4a261); }
 .water-danger  { background: linear-gradient(180deg, #ff4d4d, #e63946); animation: dangerPulse 0.5s infinite alternate; }
 
-/* ──────── INVENTARIS (verticaal) ──────── */
+/* ──────── INVENTARIS (verticaal, punt 30: altijd op scherm) ──────── */
 #inventory-bar {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Scroll wanneer er meer items zijn dan schermruimte */
+  overflow-y: auto;
+  overflow-x: visible;
+  max-height: 100%;
+  /* Fade aan boven- en onderkant */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  padding: 6px 0;
+  /* Verberg scrollbar */
+  scrollbar-width: none;
 }
+#inventory-bar::-webkit-scrollbar { display: none; }
 
 /* Tool-knop met circulaire cooldown */
 .tool-btn {
@@ -862,3 +909,35 @@ html, body {
 }
 #pv-reopen:hover  { background: rgba(44,125,160,1); }
 #pv-reopen:active { transform: scale(0.92); }
+
+/* ──────── LANDSCAPE (punt 30): kleinere tool-knoppen ──────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Tool-knoppen kleiner zodat er meer passen */
+  .tool-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .tool-emoji { font-size: 1.1rem; }
+
+  /* Waterbalk iets smaller */
+  .water-bar { width: 10px; }
+
+  /* HUD-bottom iets omhoog */
+  #hud-bottom {
+    bottom: max(env(safe-area-inset-bottom, 0px) + 10px, 10px);
+  }
+  #flush-btn {
+    width: 62px;
+    height: 62px;
+    font-size: 1.4rem;
+  }
+  .flush-label { font-size: 0.42em; }
+
+  /* Mand-info dichter bij de onderkant */
+  #basket-info {
+    bottom: max(env(safe-area-inset-bottom, 0px) + 74px, 74px);
+  }
+  .basket-back-btn {
+    bottom: max(env(safe-area-inset-bottom, 0px) + 74px, 74px);
+  }
+}

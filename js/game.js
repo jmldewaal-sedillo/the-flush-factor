@@ -7,7 +7,7 @@ import { MESSAGES, CLOG_PROPS, LEVEL_CONFIG } from './items.js';
 import { ClogSystem } from './clog.js';
 import { InventorySystem } from './inventory.js';
 import { ShopSystem } from './shop.js';
-import { init3D, resetCamera, onResize } from './renderer3d.js';
+import { init3D, resetCamera, onResize, zoomToBasket, basketBack } from './renderer3d.js';
 
 // ──────── STATE ────────
 const state = {
@@ -77,9 +77,36 @@ function init() {
     });
   });
 
-  // Mand-knop
+  // Mand-knop: korte tik → zoom (3D) / lang indrukken → leeg
   const basketBtn = $('btn-basket');
-  if (basketBtn) basketBtn.addEventListener('click', emptyBasket);
+  if (basketBtn) {
+    let pressTimer = null;
+    basketBtn.addEventListener('pointerdown', () => {
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        emptyBasket();
+      }, 600);
+    });
+    basketBtn.addEventListener('pointerup', () => {
+      if (pressTimer !== null) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+        // Korte tik
+        if (window.__3D_ACTIVE) {
+          zoomToBasket?.();
+        } else {
+          emptyBasket();
+        }
+      }
+    });
+    basketBtn.addEventListener('pointercancel', () => {
+      if (pressTimer !== null) { clearTimeout(pressTimer); pressTimer = null; }
+    });
+  }
+
+  // Terugknop vanuit mandzoom (punt 28)
+  const basketBackBtn = $('btn-basket-back');
+  if (basketBackBtn) basketBackBtn.addEventListener('click', () => basketBack?.());
 
   // Basket upgrade event
   document.addEventListener('basket:upgraded', e => {

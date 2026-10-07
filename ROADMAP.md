@@ -93,6 +93,18 @@
 
 ---
 
+## 🔧 Sprint 4 (punten 26–32)
+
+- [x] **26. Water zit niet in de pot (fout)** — Wateroppervlak zweeft boven het toilet; fix positie/grootte/vorm op basis van GLB bounding box van de kom; Playwright-screenshot van bovenaf.
+- [x] **27. Smallere ruimte, echt een wc-hokje** — Ca. 0,9–1,0 m breed, 1,5–1,8 m diep, 2,4 m hoog; toilet tegen achterwand; camera vanuit deuropening; OrbitControls-limieten aanpassen.
+- [x] **28. Inzoomen op de mand** — Klik op 3D-mand of mandknop → camera zoomt soepel naar kijk-van-bovenaf; terugknop + Esc.
+- [x] **29. Toilet-logo naar midden boven** — Ronde blauwe knop van linksboven naar midden boven.
+- [x] **30. Gereedschapsmenu past altijd op het scherm** — Max hoogte = viewport min boven/onder; scrollbaar met fade; liggend: kleinere knoppen of twee kolommen.
+- [x] **31. Preview-werkbalk: tablet staand + terug naar telefoon** — Tabletformaten (768×1024, 820×1180); altijd staand openen; Draaien togglet; alle formaten wisselbaar.
+- [x] **32. Testen uitbreiden** — Tablet staand/liggend, wisselen telefoon↔tablet↔gedraaid; overlap-checks; screenshots.
+
+---
+
 ## 🔜 Versie 0.2 — Verbeteringen & uitbreiding
 
 ### Prioriteit hoog

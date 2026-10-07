@@ -16,8 +16,29 @@ module.exports = defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Pixel 5'] },
+      name: 'phone-portrait',
+      use: { ...devices['Pixel 5'] },          // 393×851
+    },
+    {
+      name: 'phone-landscape',
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 851, height: 393 },
+      },
+    },
+    {
+      name: 'tablet-portrait',
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 768, height: 1024 },
+      },
+    },
+    {
+      name: 'tablet-landscape',
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 1024, height: 768 },
+      },
     },
   ],
   webServer: {
