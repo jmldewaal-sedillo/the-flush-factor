@@ -41,10 +41,35 @@ the-flush-factor/
 │   ├── clog.js         – Verstoppingssysteem
 │   ├── inventory.js    – Gereedschapsbeheer
 │   ├── shop.js         – Winkelsysteem
-│   └── game.js         – Hoofdspellogica & coördinatie
+│   ├── game.js         – Hoofdspellogica & coördinatie
+│   ├── renderer3d.js   – Three.js 3D-scène (toilet, water, kamer)
+│   └── vendor/
+│       ├── three.module.min.js  – Three.js 0.170.0 (MIT, lokaal voor PWA)
+│       └── RGBELoader.js        – HDRI-loader (MIT)
+├── assets/
+│   ├── hdri/
+│   │   └── bathroom.hdr         – Omgevingskaart (CC0, Poly Haven)
+│   ├── textures/
+│   │   ├── Tiles101_1K-JPG_*    – Wandtegels PBR (CC0, ambientCG)
+│   │   └── WoodFloor041_1K-JPG_* – Houten vloer PBR (CC0, ambientCG)
+│   └── CREDITS.md               – Bronvermelding alle assets
 ├── README.md
 └── ROADMAP.md
 ```
+
+## 3D Renderer
+
+Het spel gebruikt **Three.js 0.170.0** voor een realistische 3D-badkamerschène:
+
+- **Procedureel toilet** — LatheGeometry (kom, zitring, voetstuk) + BoxGeometry (stortbak) met MeshPhysicalMaterial (clearcoat, glanzend porselein)
+- **Aangepaste water-shader** — golfjes, draaikolk bij spoelen, kleurovergang helder→troebel bij verstopping
+- **PBR-texturen** — CC0-tegels en houten vloer van ambientCG (albedo, normal, roughness)
+- **HDRI-omgeving** — CC0 badkamerfoto van Poly Haven voor realistische reflecties
+- **ACESFilmic tone mapping** + sRGB-output voor fotografische belichting
+- **Kwaliteitsniveaus** — laag/midden/hoog automatisch gedetecteerd via GPU-renderer string; schaduwen en pixelRatio afgestemd
+- **WebGL-fallback** — als WebGL niet beschikbaar is, blijft de SVG-weergave actief
+
+De 3D-renderer (`renderer3d.js`) luistert uitsluitend via DOM-events (`game:flush`, `game:clog`, `game:unclog`, `game:chaos`, `cosmetic:changed`) en raakt de spellogica niet aan. Alle Three.js-bestanden zijn lokaal opgeslagen zodat de PWA offline werkt.
 
 ## Telefoonpreview op desktop
 

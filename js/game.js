@@ -7,6 +7,7 @@ import { MESSAGES, CLOG_PROPS, LEVEL_CONFIG } from './items.js';
 import { ClogSystem } from './clog.js';
 import { InventorySystem } from './inventory.js';
 import { ShopSystem } from './shop.js';
+import { init3D } from './renderer3d.js';
 
 // ──────── STATE ────────
 const state = {
@@ -85,6 +86,9 @@ function init() {
   updateLevelUI();
   updateTrashUI();
 
+  // 3D renderer opstarten (WebGL-fallback: bij fout blijft 2D actief)
+  init3D();
+
   requestAnimationFrame(gameLoop);
 }
 
@@ -129,6 +133,7 @@ function flush() {
   spawnPointPopup(pts);
   showMsg(rnd(MESSAGES.flushSuccess));
   animateFlush();
+  document.dispatchEvent(new CustomEvent('game:flush', { detail: {} }));
 
   // Streak bijhouden
   state.streak++;
@@ -232,6 +237,7 @@ function showComboMsg() {
 
 // ──────── ANIMATIES ────────
 function animateFlush() {
+  if (window.__3D_ACTIVE) return;
   const wrapper = $('toilet-wrapper');
   if (!wrapper) return;
   wrapper.classList.add('flushing');
@@ -245,6 +251,7 @@ function animateFlush() {
 }
 
 function shakeToilet() {
+  if (window.__3D_ACTIVE) return;
   const w = $('toilet-wrapper');
   if (!w) return;
   w.classList.add('toilet-shake');
@@ -270,8 +277,11 @@ function updateWaterUI() {
     );
   }
 
+  // Stuur waterpeil naar 3D renderer
+  document.dispatchEvent(new CustomEvent('game:waterLevel', { detail: { waterLevel: pct } }));
+
   const bowl = $('bowl-water');
-  if (bowl) {
+  if (bowl && !window.__3D_ACTIVE) {
     if (clog.isClogged) {
       const t = Math.min(1, pct / 80);
       bowl.style.fill = interpolateColor('#5BC8F5', '#8B6914', t);
@@ -301,6 +311,7 @@ function interpolateColor(hex1, hex2, t) {
 
 // ──────── CLOG PROP (zichtbare verstopping) ────────
 function showClogProp(prop) {
+  if (window.__3D_ACTIVE) return;
   const el = $('clog-prop');
   if (!el || !prop) return;
   el.textContent = prop.emoji;
@@ -316,6 +327,7 @@ function showClogProp(prop) {
 }
 
 function hideClogProp() {
+  if (window.__3D_ACTIVE) return;
   const el = $('clog-prop');
   if (!el) return;
   el.classList.remove('visible', 'bobbing', 'dropping', 'chaos-shake');
@@ -325,6 +337,7 @@ function hideClogProp() {
 }
 
 function animatePropFlyToBin(prop) {
+  if (window.__3D_ACTIVE) return;
   const propEl = $('clog-prop');
   const binEl  = $('trash-bin');
   if (!propEl || !binEl || !propEl.classList.contains('visible')) return;
@@ -344,6 +357,7 @@ function animatePropFlyToBin(prop) {
 }
 
 function chaosPropEffect() {
+  if (window.__3D_ACTIVE) return;
   const el = $('clog-prop');
   if (!el || !el.classList.contains('visible')) return;
   el.classList.remove('bobbing');
@@ -428,6 +442,7 @@ function setupClogEvents() {
     showMsg(rnd(MESSAGES.clogStart));
     showClogProp(state.currentProp);
     showClogWarning(true);
+    document.dispatchEvent(new CustomEvent('game:clog', { detail: { prop: state.currentProp } }));
     const w = $('toilet-wrapper');
     if (w) w.classList.add('clogged');
     $('flush-btn')?.classList.add('clogged');
@@ -444,6 +459,7 @@ function setupClogEvents() {
 
     // Grote celebratie + bonuspunten
     showUnclogCelebration();
+    document.dispatchEvent(new CustomEvent('game:unclog', { detail: {} }));
     const bonus = 20 * state.level;
     addScore(bonus);
     spawnPointPopup(bonus);
@@ -524,10 +540,13 @@ function onToolClick(id) {
     case 'partial':
       showMsg('Iets beter! Blijf proberen…');
       break;
-    case 'chaos':
+    case 'chaos': {
       showMsg(rnd(MESSAGES.toolChaos));
       chaosPropEffect();
+      const chaosTool = inv.getAll().find(t => t.id === id);
+      document.dispatchEvent(new CustomEvent('game:chaos', { detail: { effect: chaosTool?.chaosEffect ?? 'confetti' } }));
       break;
+    }
     case 'not-clogged':
       showMsg(rnd(MESSAGES.toolNotClogged));
       break;

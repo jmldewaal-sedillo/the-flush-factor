@@ -48,6 +48,23 @@
 - [x] **9. Duidelijk zichtbare ontstopping**
   - Bij succesvol ontstoppen een groot, bevredigend moment: het gereedschap trekt het voorwerp er zichtbaar uit (dat vliegt richting de prullenbak, zie punt 7), het water spoelt in één keer weg met een kolk, en een grote "ONTSTOPT!"-melding met bonuspunten.
   - Werkt een gereedschap niet (chaos-item), dan blijft de prop zichtbaar zitten, zodat het verschil met een echte ontstopping meteen duidelijk is.
+- [x] **10. Realistische 3D-scène** — Three.js vervangt de SVG-weergave; zie deelstappen:
+  - [x] Three.js (0.170.0) lokaal opgeslagen in `js/vendor/` voor offline PWA.
+  - [x] Importmap in `index.html` zodat `three` en addon resolven naar lokale bestanden.
+  - [x] `js/renderer3d.js`: eigen 3D-module die luistert naar game-events (`game:flush`, `game:clog`, `game:unclog`, `game:chaos`).
+  - [x] Procedureel toilet-model via LatheGeometry + BoxGeometry, MeshPhysicalMaterial (glanzend porselein).
+  - [x] ACESFilmic tone mapping, sRGB-output, PCFSoftShadowMap (high-tier).
+  - [x] HDRI-omgevingskaart (`assets/hdri/bathroom.hdr`) voor realistische reflecties/belichting.
+  - [x] PBR-tegeltexturen (albedo, normal, roughness) voor wand en vloer, CC0 via ambientCG.
+  - [x] Water als ShaderMaterial: golfjes, transparant, kleurovergang helder→troebel bij verstopping.
+  - [x] SPOELEN: kolk-animatie, waterpeil zakt → vult opnieuw (uniform-driven).
+  - [x] VERSTOPT: prop verschijnt als 3D Sprite (emoji op CanvasTexture), water wordt troebel.
+  - [x] ONTSTOPT: prop vliegt in boog richting prullenbak, water klaart op + deeltjesburst.
+  - [x] Chaos-effecten in 3D-scène (eendjes/confetti als Sprites in 3D-ruimte).
+  - [x] Cosmetica-wissel: porselein-kleur/metalness op toilet-model; textuur-swap voor wand/vloer.
+  - [x] Kwaliteitsniveaus (laag/midden/hoog) o.b.v. GPU; schaduwen en pixelRatio omlaag bij laag.
+  - [x] WebGL-fallback: SVG-modus blijft werken als WebGL niet beschikbaar is.
+  - [x] Quickfixes: "SPOELEN" past in knop, gereendsschapnamen passen over twee regels, typo "entstoppen" → "ontstoppen".
 
 ---
 
@@ -88,7 +105,7 @@
 
 - Multiplayer: wie haalt de meeste punten in 60 seconden?
 - Seizoensgebonden events: "Kerst Chaos" met kersttegels.
-- Mini-games bij verstopping: swipe-puzzel om te entstoppen.
+- Mini-games bij verstopping: swipe-puzzel om te ontstoppen.
 - Toilet-upgrades die passieve punten geven.
 - Ranglijst (lokaal of online).
 
