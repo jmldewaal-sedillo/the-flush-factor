@@ -104,12 +104,40 @@
 
     <!-- Midden boven: menu-knop (punt 29) -->
     <div id="hud-topcenter">
-      <button id="btn-menu" class="bubble-btn" aria-label="Menu" aria-expanded="false">🚽</button>
+      <button id="btn-menu" class="bubble-btn" aria-label="Menu" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+             fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+      </button>
       <div id="main-menu" hidden role="menu">
-        <button class="menu-item" data-action="sound">🔊 Geluid</button>
-        <button class="menu-item" data-action="credits">ℹ️ Credits</button>
-        <button class="menu-item" data-action="fullscreen">⛶ Volledig scherm</button>
-        <button class="menu-item" data-action="camera-reset">🎯 Camera reset</button>
+        <button class="menu-item" data-action="sound">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          Geluid
+        </button>
+        <button class="menu-item" data-action="credits">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Credits
+        </button>
+        <button class="menu-item" data-action="fullscreen">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Volledig scherm
+        </button>
+        <button class="menu-item" data-action="camera-reset">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+          Camera reset
+        </button>
       </div>
     </div>
 
@@ -120,13 +148,18 @@
         <div class="score-meta">
           <span id="high-score">Beste: 0</span>
           <div class="streak-row">
-            <span id="streak-count" title="Spoelbeurten zonder verstopping">🚽 ×0</span>
-            <span id="streak-best"  title="Langste reeks">🏆 0</span>
+            <span id="streak-count" title="Spoelbeurten zonder verstopping"></span>
+            <span id="streak-best"  title="Langste reeks"></span>
             <span id="level-display" title="Huidig level">Lv.1</span>
           </div>
         </div>
       </div>
-      <button id="btn-shop" class="btn-shop-floating">🛒 Winkel</button>
+      <button id="btn-shop" class="btn-shop-floating">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        Winkel
+      </button>
     </div>
 
     <!-- Links midden: waterbalk + gereedschappen -->
@@ -152,18 +185,35 @@
     <!-- Rechtsonder: mand-info + legen-knop (punt 39) -->
     <div id="basket-info">
       <span id="basket-vol">0 / 20 L</span>
-      <button id="btn-basket" class="basket-btn" aria-label="Mand bekijken">🧺</button>
-      <button id="btn-basket-empty" class="basket-empty-btn" hidden aria-label="Mand legen">🗑️ Legen</button>
+      <button id="btn-basket" class="basket-btn" aria-label="Mand bekijken">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24"
+             fill="currentColor" aria-hidden="true">
+          <path d="M192 272L256 192 320 272z"/>
+          <path d="M112 288h288v144c0 26.5-21.5 48-48 48H160c-26.5 0-48-21.5-48-48V288z"/>
+          <rect x="112" y="272" width="288" height="32"/>
+        </svg>
+      </button>
+      <button id="btn-basket-empty" class="basket-empty-btn" hidden aria-label="Mand legen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        Legen
+      </button>
     </div>
 
     <!-- Terugknop vanuit mandzoom (punt 38: linksboven, niet over spoelknop) -->
-    <button id="btn-basket-back" class="bubble-btn basket-back-btn" hidden aria-label="Terug naar toilet">← Terug</button>
+    <button id="btn-basket-back" class="bubble-btn basket-back-btn" hidden aria-label="Terug naar toilet">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+           fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Terug
+    </button>
 
     <!-- Overige overlays -->
     <div id="status-msg"></div>
     <div id="combo-display"></div>
     <div id="decoration-slot"></div>
-    <div id="clog-warning" aria-hidden="true">🚨 VERSTOPT! 🚨</div>
+    <div id="clog-warning" aria-hidden="true">VERSTOPT!</div>
     <div id="unclog-banner" aria-hidden="true"></div>
     <div id="levelup-banner" aria-hidden="true"></div>
 
@@ -172,14 +222,19 @@
   <!-- Credits modal -->
   <div id="credits-modal" hidden role="dialog" aria-label="Credits">
     <div id="credits-content">
-      <h2>🚽 The Flush Factor</h2>
+      <h2>The Flush Factor</h2>
       <p><strong>Three.js</strong> v0.170.0 — MIT license</p>
       <p><strong>HDRI</strong> "Bathroom" — Poly Haven, CC0</p>
       <p><strong>Tegels/Vloer PBR</strong> — ambientCG (Tiles101, WoodFloor041), CC0</p>
       <p><strong>Toilet 3D-model</strong> — "Toilet" by HippoStance, Sketchfab, CC BY 4.0<br>
          <a href="https://skfb.ly/6S9CM" target="_blank" rel="noopener">skfb.ly/6S9CM</a></p>
       <p><strong>Toilet fallback-model</strong> — "Toilets" pack, loafbrr_1, opengameart.org, CC0</p>
-      <button id="btn-credits-close" class="bubble-btn">✕</button>
+      <p><strong>UI-iconen</strong> — Lucide (MIT); Speliconen — game-icons.net (CC BY 3.0, Delapouite/Lorc)</p>
+      <button id="btn-credits-close" class="bubble-btn" aria-label="Sluiten">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+             fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
     </div>
   </div>
 
@@ -192,16 +247,15 @@
 <div id="shop-screen" class="shop-screen" hidden>
 
   <header class="shop-header">
-    <button id="btn-shop-close" class="btn-header">← Terug</button>
-    <h2>🛒 Winkel</h2>
-    <span id="shop-score">💰 0</span>
+    <button id="btn-shop-close" class="btn-header">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Terug
+    </button>
+    <h2>Winkel</h2>
+    <span id="shop-score"></span>
   </header>
-
-  <div class="shop-tabs">
-    <button class="shop-tab active" data-tab="tools">🔧 Gereedschap</button>
-    <button class="shop-tab" data-tab="cosmetics">🎨 Cosmetica</button>
-    <button class="shop-tab" data-tab="baskets">🧺 Manden</button>
-  </div>
 
   <div id="shop-items"></div>
 

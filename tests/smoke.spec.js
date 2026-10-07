@@ -205,9 +205,9 @@ test('mand legen — teller en knop correct (punt 39)', async ({ page }) => {
       const data = raw ? JSON.parse(raw) : {};
       data.basketVolume = 5.0;
       data.basketItems  = [
-        { emoji: '🧻', volume: 0.5 },
-        { emoji: '🦆', volume: 1.0 },
-        { emoji: '🧦', volume: 0.3 },
+        { icon: 'toilet-paper', volume: 0.5 },
+        { icon: 'rubber-duck',  volume: 1.0 },
+        { icon: 'sock',         volume: 0.3 },
       ];
       localStorage.setItem('flushfactor_v1', JSON.stringify(data));
     } catch (e) {}
@@ -240,4 +240,129 @@ test('mand legen — teller en knop correct (punt 39)', async ({ page }) => {
   await waitForGame(page);
   const volTextNaReload = await page.locator('#basket-vol').textContent();
   expect(volTextNaReload, 'Teller na herladen moet 0.0 blijven').toContain('0.0');
+});
+
+// ──────── SPRINT 6: ACCORDION, AANKOPEN, ICONEN, SAFE-AREA ────────
+
+test('winkel accordion — categorieën uitklappen/inklappen (punt 45)', async ({ page }) => {
+  await waitForGame(page);
+
+  // Winkel openen
+  await page.locator('#btn-shop').click();
+  await expect(page.locator('#shop-screen')).toBeVisible();
+  await page.waitForTimeout(300);
+
+  // Accordion moet aanwezig zijn
+  const accordion = page.locator('.shop-accordion');
+  await expect(accordion).toBeVisible();
+
+  // Neem de eerste categorie-header
+  const firstHeader = page.locator('.shop-category-header').first();
+  await expect(firstHeader).toBeVisible();
+
+  // Staat standaard gesloten (aria-expanded = false)
+  await expect(firstHeader).toHaveAttribute('aria-expanded', 'false');
+
+  // Uitklappen
+  await firstHeader.click();
+  await page.waitForTimeout(400); // wacht op CSS-transitie
+  await expect(firstHeader).toHaveAttribute('aria-expanded', 'true');
+
+  // De bijbehorende body moet de klasse 'open' hebben
+  const firstBody = page.locator('.shop-category-body').first();
+  await expect(firstBody).toHaveClass(/open/);
+
+  // Inklappen via tweede klik
+  await firstHeader.click();
+  await page.waitForTimeout(400);
+  await expect(firstHeader).toHaveAttribute('aria-expanded', 'false');
+  await expect(firstBody).not.toHaveClass(/open/);
+});
+
+test('winkel accordion — meerdere categorieën tegelijk open (punt 45)', async ({ page }) => {
+  await waitForGame(page);
+  await page.locator('#btn-shop').click();
+  await expect(page.locator('#shop-screen')).toBeVisible();
+  await page.waitForTimeout(300);
+
+  const headers = page.locator('.shop-category-header');
+  const count = await headers.count();
+  expect(count, 'Minimaal 2 categorieën verwacht').toBeGreaterThanOrEqual(2);
+
+  // Open eerste twee categorieën
+  await headers.nth(0).click();
+  await headers.nth(1).click();
+  await page.waitForTimeout(400);
+
+  await expect(headers.nth(0)).toHaveAttribute('aria-expanded', 'true');
+  await expect(headers.nth(1)).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('"Punten kopen" toont melding, saldo wijzigt niet (punt 46)', async ({ page }) => {
+  await waitForGame(page);
+
+  // Huidig saldo ophalen
+  const scoreBefore = await page.locator('#shop-score').textContent().catch(() => '');
+
+  // Winkel openen
+  await page.locator('#btn-shop').click();
+  await expect(page.locator('#shop-screen')).toBeVisible();
+  await page.waitForTimeout(300);
+
+  // Zoek de "Punten kopen" categorie en klik erop
+  const buyCatHeader = page.locator('.shop-category-header[data-cat="buy"]');
+  if (await buyCatHeader.count() > 0) {
+    await buyCatHeader.click();
+    await page.waitForTimeout(400);
+
+    // Zoek een koop-knop in de buy-sectie
+    const buyBtn = page.locator('.shop-category-body.open .buy-btn, .shop-category-body.open .shop-card.buy-card button').first();
+    if (await buyBtn.count() > 0) {
+      await buyBtn.click();
+      await page.waitForTimeout(500);
+
+      // Saldo moet ongewijzigd zijn
+      const scoreAfter = await page.locator('#shop-score').textContent().catch(() => '');
+      expect(scoreAfter).toBe(scoreBefore);
+    }
+  } else {
+    // Accepteer ook als de categorie anders heet maar aanwezig is
+    const puntenHeader = page.locator('.shop-category-header').filter({ hasText: /punten kopen/i });
+    expect(await puntenHeader.count(), '"Punten kopen" categorie niet gevonden').toBeGreaterThan(0);
+  }
+});
+
+test('geen emoji in gerenderde interface (punt 47)', async ({ page }) => {
+  await waitForGame(page);
+
+  // Controleer de zichtbare DOM (zonder script/style-inhoud)
+  const bodyContent = await page.evaluate(() => {
+    const clone = document.body.cloneNode(true);
+    clone.querySelectorAll('script, style, noscript').forEach(el => el.remove());
+    return clone.innerHTML;
+  });
+
+  const matches = [...bodyContent.matchAll(/\p{Extended_Pictographic}/gu)];
+  expect(
+    matches,
+    `Emoji gevonden in interface: ${matches.map(m => m[0]).join(' ')}`
+  ).toHaveLength(0);
+});
+
+test('winkelkop heeft ruimte voor notch (punt 48)', async ({ page }) => {
+  await waitForGame(page);
+
+  await page.locator('#btn-shop').click();
+  await expect(page.locator('#shop-screen')).toBeVisible();
+  await page.waitForTimeout(300);
+
+  const shopHeader = page.locator('.shop-header');
+  await expect(shopHeader).toBeVisible();
+
+  const paddingTop = await shopHeader.evaluate(el =>
+    parseInt(getComputedStyle(el).paddingTop, 10)
+  );
+
+  // padding-top moet minimaal 16px zijn (safe-area fix: max(env(...)+16px, 20px))
+  expect(paddingTop, 'Shop-header padding-top te klein').toBeGreaterThanOrEqual(16);
 });

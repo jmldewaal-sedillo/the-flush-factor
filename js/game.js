@@ -8,6 +8,7 @@ import { ClogSystem } from './clog.js';
 import { InventorySystem } from './inventory.js';
 import { ShopSystem } from './shop.js';
 import { init3D, resetCamera, onResize, zoomToBasket, basketBack } from './renderer3d.js';
+import { icon, iconEl } from './icons.js';
 
 // ──────── STATE ────────
 const state = {
@@ -69,13 +70,6 @@ function init() {
   // Winkel
   $('btn-shop').addEventListener('click', () => shop.open());
   $('btn-shop-close').addEventListener('click', () => { shop.close(); saveState(); });
-  document.querySelectorAll('.shop-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      shop.render();
-    });
-  });
 
   // Mand-knop: tik → zoom in 3D, anders info tonen
   const basketBtn = $('btn-basket');
@@ -84,7 +78,7 @@ function init() {
       if (window.__3D_ACTIVE) {
         zoomToBasket?.();
       } else {
-        showMsg('🧺 Tik op "Mand legen" om te legen.');
+        showMsg('Tik op "Mand legen" om te legen.');
       }
     });
   }
@@ -182,7 +176,7 @@ function setupMenuEvents() {
 
     switch (action) {
       case 'sound':
-        showMsg('🔊 Geluid komt binnenkort!');
+        showMsg('Geluid komt binnenkort!');
         break;
       case 'credits':
         $('credits-modal').hidden = false;
@@ -257,9 +251,9 @@ function flush() {
 // ──────── STREAK UI ────────
 function updateStreakUI() {
   const sc = $('streak-count');
-  if (sc) sc.textContent = `🚽 ×${state.streak}`;
+  if (sc) sc.innerHTML = `${icon('toilet', 16)} ×${state.streak}`;
   const sb = $('streak-best');
-  if (sb) sb.textContent = `🏆 ${state.bestStreak}`;
+  if (sb) sb.innerHTML = `${icon('trophy', 16)} ${state.bestStreak}`;
 }
 
 // ──────── LEVEL SYSTEEM ────────
@@ -284,7 +278,7 @@ function updateLevelUI() {
 function showLevelUpBanner(cfg) {
   const el = $('levelup-banner');
   if (!el || !cfg) return;
-  el.textContent = `🎉 LEVEL ${cfg.level}: ${cfg.name.toUpperCase()}!`;
+  el.innerHTML = `${icon('sparkles', 18)} LEVEL ${cfg.level}: ${cfg.name.toUpperCase()}!`;
   el.classList.remove('visible');
   void el.offsetWidth;
   el.classList.add('visible');
@@ -305,7 +299,7 @@ function updateScoreUI() {
   const hi = $('high-score');
   if (hi) hi.textContent = `Beste: ${fmtNum(state.highScore)}`;
   const shopScore = $('shop-score');
-  if (shopScore) shopScore.textContent = `💰 ${fmtNum(state.score)}`;
+  if (shopScore) shopScore.innerHTML = `${icon('coins', 14)} ${fmtNum(state.score)}`;
 }
 
 function fmtNum(n) {
@@ -338,7 +332,7 @@ function showMsg(text) {
 function showComboMsg() {
   const comboEl = $('combo-display');
   if (!comboEl) return;
-  comboEl.textContent = `🔥 x${state.combo.toFixed(1)} COMBO!`;
+  comboEl.innerHTML = `${icon('flame', 16)} x${state.combo.toFixed(1)} COMBO!`;
   comboEl.classList.add('combo-pop');
   setTimeout(() => comboEl.classList.remove('combo-pop'), 400);
 }
@@ -421,7 +415,7 @@ function showClogProp(prop) {
   if (window.__3D_ACTIVE) return;
   const el = $('clog-prop');
   if (!el || !prop) return;
-  el.textContent = prop.emoji;
+  el.innerHTML = icon(prop.icon, 48);
   el.classList.remove('bobbing', 'dropping', 'chaos-shake');
   el.style.transition = '';
   el.style.transform  = '';
@@ -486,7 +480,7 @@ function showClogWarning(visible) {
 function showUnclogCelebration() {
   const el = $('unclog-banner');
   if (!el) return;
-  el.textContent = rnd(MESSAGES.unclogSuccess) + ' 🎉';
+  el.innerHTML = `${icon('circle-check', 18)} ${rnd(MESSAGES.unclogSuccess)}`;
   el.classList.remove('visible');
   void el.offsetWidth;
   el.classList.add('visible');
@@ -502,7 +496,7 @@ function addToBasket(prop) {
     // Mand zit vol → straf
     const penalty = 30;
     state.score = Math.max(0, state.score - penalty);
-    showMsg(`🧺 Mand vol! -${penalty}pts`);
+    showMsg(`Mand vol! -${penalty}pts`);
     updateScoreUI();
     const btn = $('btn-basket');
     if (btn) btn.classList.add('basket-full');
@@ -511,11 +505,11 @@ function addToBasket(prop) {
   }
 
   state.basketVolume += vol;
-  state.basketItems.push({ emoji: prop.emoji, volume: vol });
+  state.basketItems.push({ icon: prop.icon, volume: vol });
   if (state.basketItems.length > 30) state.basketItems = state.basketItems.slice(-30);
 
   // Stuur event naar 3D renderer
-  document.dispatchEvent(new CustomEvent('basket:add', { detail: { emoji: prop.emoji } }));
+  document.dispatchEvent(new CustomEvent('basket:add', { detail: { icon: prop.icon } }));
 
   updateBasketUI();
   saveState();
@@ -531,7 +525,7 @@ function emptyBasket() {
   // Punt 39 fix: stuur event naar 3D-renderer zodat items verdwijnen
   document.dispatchEvent(new CustomEvent('basket:empty'));
   updateBasketUI();
-  showMsg('🧺 Mand geleegd!');
+  showMsg('Mand geleegd!');
   saveState();
 }
 
@@ -557,7 +551,7 @@ function setupClogEvents() {
     showMsg(rnd(MESSAGES.clogStart));
     showClogProp(state.currentProp);
     showClogWarning(true);
-    document.dispatchEvent(new CustomEvent('game:clog', { detail: { prop: state.currentProp } }));
+    document.dispatchEvent(new CustomEvent('game:clog', { detail: { prop: state.currentProp, icon: state.currentProp?.icon } }));
     const w = $('toilet-wrapper');
     if (w) w.classList.add('clogged');
     $('flush-btn')?.classList.add('clogged');
@@ -618,7 +612,7 @@ function renderInventory() {
     btn.setAttribute('aria-label', tool.name);
 
     const badge = tool.discovered
-      ? `<span class="tool-badge ${tool.discovered === 'working' ? 'badge-working' : 'badge-chaos'}">${tool.discovered === 'working' ? '✅' : '💥'}</span>`
+      ? `<span class="tool-badge ${tool.discovered === 'working' ? 'badge-working' : 'badge-chaos'}">${tool.discovered === 'working' ? icon('circle-check', 14) : icon('zap', 14)}</span>`
       : '';
 
     btn.innerHTML = `
@@ -626,7 +620,7 @@ function renderInventory() {
         <circle class="cd-track" cx="30" cy="30" r="24"/>
         <circle class="cd-fill"  cx="30" cy="30" r="24"/>
       </svg>
-      <span class="tool-emoji">${tool.emoji}</span>
+      <span class="tool-icon icon-wrap">${icon(tool.icon, 26)}</span>
       <span class="cd-secs"></span>
       ${badge}
     `;
@@ -710,14 +704,16 @@ function applyCosmetic(category, id) {
   } else if (category === 'decoration') {
     const deco = $('decoration-slot');
     const decoMap = {
-      'deco-none':          '',
-      'deco-plant':         '🌱',
-      'deco-mirror':        '🪞',
-      'deco-painting':      '🖼️',
-      'deco-poster':        '💪',
-      'deco-rubber-duck-deco': '🦆',
+      'deco-none':    '',
+      'deco-plant':   'sprout',
+      'deco-mirror':  'mirror',
+      'deco-painting':'image',
+      'deco-poster':  'dumbbell',
     };
-    if (deco) deco.textContent = decoMap[id] || '';
+    if (deco) {
+      const iconName = decoMap[id];
+      deco.innerHTML = iconName ? icon(iconName, 40) : '';
+    }
   }
 }
 

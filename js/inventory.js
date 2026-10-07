@@ -4,6 +4,7 @@
 // ============================================================
 
 import { TOOLS, PREMIUM_TOOLS, MESSAGES } from './items.js';
+import { icon } from './icons.js';
 
 export class InventorySystem {
   constructor(gameState, clogSystem) {
@@ -118,15 +119,18 @@ export class InventorySystem {
     }
   }
 
-  _spawnEmoji(scene, emoji, count, durationMs, extraClass = '') {
+  _spawnIcons(scene, iconName, count, durationMs, extraClass = '') {
     const els = [];
     for (let i = 0; i < count; i++) {
       const el = document.createElement('div');
-      el.className = `chaos-emoji ${extraClass}`;
-      el.textContent = emoji;
+      el.className = `chaos-icon ${extraClass}`;
+      const size = 28 + Math.floor(Math.random() * 24);
+      el.innerHTML = icon(iconName, size);
+      // Willekeurige kleur via CSS currentColor
+      const hue = Math.floor(Math.random() * 360);
       el.style.cssText = `
         position:absolute;
-        font-size:${28 + Math.random() * 24}px;
+        color:hsl(${hue},70%,55%);
         left:${5 + Math.random() * 85}%;
         top:${5 + Math.random() * 80}%;
         animation: chaosFloat ${0.8 + Math.random() * 1.2}s ease-in-out infinite alternate;
@@ -134,6 +138,7 @@ export class InventorySystem {
         pointer-events:none;
         z-index:20;
         user-select:none;
+        display:inline-flex;
       `;
       scene.appendChild(el);
       els.push(el);
@@ -143,7 +148,7 @@ export class InventorySystem {
   }
 
   _chaosDucks(scene) {
-    this._spawnEmoji(scene, '🦆', 9, 3000);
+    this._spawnIcons(scene, 'rubber-duck', 9, 3000);
     const toilet = document.getElementById('toilet-wrapper');
     if (toilet) {
       toilet.classList.add('toilet-wiggle');
@@ -181,7 +186,8 @@ export class InventorySystem {
     const el = document.createElement('div');
     el.style.cssText = `
       position:absolute;
-      font-size:80px;
+      color:hotpink;
+      display:inline-flex;
       left:50%;transform:translateX(-50%);
       bottom:80px;
       animation:flamingoBounce 0.5s ease-in-out infinite alternate;
@@ -189,7 +195,7 @@ export class InventorySystem {
       z-index:25;
       filter:drop-shadow(0 4px 8px rgba(255,20,147,0.5));
     `;
-    el.textContent = '🦩';
+    el.innerHTML = icon('flamingo', 80);
     scene.appendChild(el);
     const t = setTimeout(() => el.remove(), 2500);
     this._chaosCleanupFns.push(() => { clearTimeout(t); el.remove(); });
@@ -219,18 +225,18 @@ export class InventorySystem {
   }
 
   _chaosMagic(scene) {
-    this._spawnEmoji(scene, '✨', 12, 2500);
-    this._spawnEmoji(scene, '⭐', 6, 2500);
+    this._spawnIcons(scene, 'sparkles', 12, 2500);
+    this._spawnIcons(scene, 'star', 6, 2500);
   }
 
   _chaosElephant(scene) {
-    this._spawnEmoji(scene, '🐘', 1, 3000, 'elephant-big');
-    this._spawnEmoji(scene, '💧', 10, 3000);
+    this._spawnIcons(scene, 'elephant', 1, 3000, 'elephant-big');
+    this._spawnIcons(scene, 'droplets', 10, 3000);
   }
 
   _chaosMegaphone(scene) {
-    this._spawnEmoji(scene, '📢', 6, 2500);
-    this._spawnEmoji(scene, '🔊', 4, 2500);
+    this._spawnIcons(scene, 'megaphone', 6, 2500);
+    this._spawnIcons(scene, 'volume-2', 4, 2500);
     const toilet = document.getElementById('toilet-wrapper');
     if (toilet) {
       toilet.classList.add('toilet-wiggle');

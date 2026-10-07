@@ -195,19 +195,34 @@
   - Aankopen moeten server-side gecontroleerd worden en aan het account (punt 40) gekoppeld zijn.
   - Duidelijke prijzen, geen misleidende aankopen; nadenken over leeftijdsclassificatie en ouderlijk toezicht.
 
-- [ ] **42. Winkel met uitklapmenu's**
+- [x] **42. Winkel met uitklapmenu's** *(uitgevoerd in Sprint 6 — zie punt 45)*
   - De winkel wordt één overzicht met alle categorieën als kopjes (bv. Gereedschap, Toiletten, Tegels, Vloeren, Decoratie, Manden). Elke categorie klapt uit (accordion/dropdown) als je erop tikt, zodat je in één oogopslag alle categorieën ziet.
 
-- [ ] **43. Eigen icon-set in plaats van emoji's**
-  - Alle emoji's in het spel vervangen door één consistente set SVG-iconen met een vrije licentie. Opties om te vergelijken:
-    - game-icons.net (veel spel-iconen, CC BY 3.0, naamsvermelding nodig)
-    - Kenney.nl (CC0, game-UI en iconen)
-    - Lucide, Tabler Icons of Phosphor (MIT, strakke UI-iconen)
-  - Voorstel maken welke set het best past, inclusief een lijst van alle plekken in het spel waar nu een emoji staat. Credits in CREDITS.md.
+- [x] **43. Eigen icon-set in plaats van emoji's** *(uitgevoerd in Sprint 6 — zie punt 47)*
+  - Alle emoji's in het spel vervangen door één consistente set SVG-iconen met een vrije licentie. Gekozen voor:
+    - **Lucide** (MIT) voor UI-iconen
+    - **game-icons.net** (CC BY 3.0, Delapouite/Lorc) voor spel-iconen
+  - Credits in `assets/CREDITS.md`.
 
 - [ ] **44. Meer gratis layout- en decoratie-ideeën**
   - Lijst maken van gratis (CC0/CC-BY) 3D-modellen en textures voor de winkel: andere tegels en vloeren (ambientCG, Poly Haven), kastjes, planken, spiegels, planten, wc-rolhouders, posters, verlichting (Poly Haven, Kenney, Sketchfab met filter Downloadable + CC-licentie), en complete badkamerthema's (bv. retro, luxe hotel, festival-dixi, oud café).
 
 ---
 
-*Bijgewerkt: Sprint 5 — punten 34–39 toegevoegd/uitgewerkt; punten 40–44 vastgelegd als toekomstplan.*
+---
+
+## 🔧 Sprint 6 (punten 45–49)
+
+- [x] **45. Winkel accordion** — Winkel herschreven als accordion met categorieën (Punten kopen, Gereedschap, Toiletmodellen, Tegelpatronen, Vloeren, Decoratie, Manden). Data-driven via `CATEGORIES`-array in `shop.js`. Meerdere categorieën tegelijk open. Staat opgeslagen in `localStorage` (`flushfactor_shop_open`). CSS-accordion via `grid-template-rows: 0fr → 1fr`.
+
+- [x] **46. Punten kopen** — "Punten kopen" als eerste categorie in de winkel, met vier pakketten (500 / 1.500 / 5.000 / 15.000 punten, €0,99–€17,99). Koppelpunt Digital Goods API / Google Play Billing via `purchaseService.buy(productId)` in `js/purchases.js` (dispatcht `purchase:pending`-event). Saldo wijzigt niet.
+
+- [x] **47. Eigen icon-set (emoji's weg)** — Alle emoji's vervangen door lokale SVG-iconen in `js/icons.js`. Lucide MIT voor UI; game-icons.net CC BY 3.0 voor spel-iconen. Exports: `icon()`, `iconEl()`, `iconDataUrl()`. Three.js sprites gebruiken `iconDataUrl(name, 128, 'white')`. Chaos-effecten via `_spawnIcons()`.
+
+- [x] **48. Safe-area shop-header** — `.shop-header { padding-top: max(env(safe-area-inset-top, 0px) + 16px, 20px) }` zodat de winkelkop niet achter notch/Dynamic Island valt.
+
+- [x] **49. Tests uitbreiden** — Nieuwe Playwright-tests: accordion uitklappen/inklappen, meerdere categorieën tegelijk, "Punten kopen" saldo ongewijzigd, emoji-scan (`\p{Extended_Pictographic}/gu`), notch-padding.
+
+---
+
+*Bijgewerkt: Sprint 6 — punten 45–49 uitgevoerd; punten 42/43 uit toekomstplan gemarkeerd als voltooid.*

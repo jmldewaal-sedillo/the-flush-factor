@@ -15,24 +15,24 @@ export const LEVEL_CONFIG = [
 
 // ──────── DINGEN DIE HET TOILET VERSTOPPEN ────────
 export const CLOG_PROPS = [
-  { id: 'toilet-paper', emoji: '🧻', name: 'wc-papier',         volume: 0.5 },
-  { id: 'rubber-duck',  emoji: '🦆', name: 'rubberen eendje',   volume: 1.0 },
-  { id: 'sock',         emoji: '🧦', name: 'sok',               volume: 0.3 },
-  { id: 'toy-car',      emoji: '🚗', name: 'speelgoedautootje', volume: 1.5 },
-  { id: 'phone',        emoji: '📱', name: 'telefoon',          volume: 0.8 },
-  { id: 'teddy',        emoji: '🧸', name: 'teddybeer',         volume: 2.0 },
-  { id: 'fish',         emoji: '🐟', name: 'visje',             volume: 0.6 },
-  { id: 'banana',       emoji: '🍌', name: 'bananenschil',      volume: 0.4 },
-  { id: 'lego',         emoji: '🧱', name: 'legoblokje',        volume: 1.5 },
-  { id: 'key',          emoji: '🗝️',  name: 'sleutel',          volume: 0.2 },
+  { id: 'toilet-paper', icon: 'toilet-paper', name: 'wc-papier',         volume: 0.5 },
+  { id: 'rubber-duck',  icon: 'rubber-duck',  name: 'rubberen eendje',   volume: 1.0 },
+  { id: 'sock',         icon: 'sock',         name: 'sok',               volume: 0.3 },
+  { id: 'toy-car',      icon: 'toy-car',      name: 'speelgoedautootje', volume: 1.5 },
+  { id: 'phone',        icon: 'smartphone',   name: 'telefoon',          volume: 0.8 },
+  { id: 'teddy',        icon: 'teddy-bear',   name: 'teddybeer',         volume: 2.0 },
+  { id: 'fish',         icon: 'fish',         name: 'visje',             volume: 0.6 },
+  { id: 'banana',       icon: 'banana',       name: 'bananenschil',      volume: 0.4 },
+  { id: 'lego',         icon: 'lego',         name: 'legoblokje',        volume: 1.5 },
+  { id: 'key',          icon: 'key',          name: 'sleutel',           volume: 0.2 },
 ];
 
 // ──────── MAND UPGRADES ────────
 export const BASKET_CONFIG = [
-  { id: 'basket-s',  name: 'Kleine mand',      capacity: 20,  price: 0,    emoji: '🧺', description: 'Standaard mand. Werkt prima.' },
-  { id: 'basket-m',  name: 'Middelgrote mand', capacity: 30,  price: 200,  emoji: '🧺', description: 'Meer ruimte voor meer troep.' },
-  { id: 'basket-l',  name: 'Grote mand',       capacity: 50,  price: 500,  emoji: '🧺', description: 'Voor de echte verzamelaar.' },
-  { id: 'basket-xl', name: 'XL-mand',          capacity: 100, price: 1500, emoji: '🧺', description: 'Je kunt eens per maand legen.' },
+  { id: 'basket-s',  name: 'Kleine mand',      capacity: 20,  price: 0,    icon: 'wicker-basket', description: 'Standaard mand. Werkt prima.' },
+  { id: 'basket-m',  name: 'Middelgrote mand', capacity: 30,  price: 200,  icon: 'wicker-basket', description: 'Meer ruimte voor meer troep.' },
+  { id: 'basket-l',  name: 'Grote mand',       capacity: 50,  price: 500,  icon: 'wicker-basket', description: 'Voor de echte verzamelaar.' },
+  { id: 'basket-xl', name: 'XL-mand',          capacity: 100, price: 1500, icon: 'wicker-basket', description: 'Je kunt eens per maand legen.' },
 ];
 
 export const TOOLS = [
@@ -40,18 +40,18 @@ export const TOOLS = [
   {
     id: 'plunger',
     name: 'Ontstopper',
-    emoji: '🪠',
+    icon: 'plunger',
     description: 'De klassieke oplossing. Pump pump pump!',
     effectType: 'working',
-    effectiveness: 45,     // waterLevel verlaging per gebruik
-    unclogChance: 0.70,    // kans per gebruik om te ontstoppen
-    cooldown: 12000,       // ms
+    effectiveness: 45,
+    unclogChance: 0.70,
+    cooldown: 12000,
     startingTool: true,
   },
   {
     id: 'toilet-snake',
     name: 'Toiletveer',
-    emoji: '🐍',
+    icon: 'snake',
     description: 'Gaat diep… diep… dieper…',
     effectType: 'working',
     effectiveness: 75,
@@ -62,7 +62,7 @@ export const TOOLS = [
   {
     id: 'drain-cleaner',
     name: 'Ontstoppingsmiddel',
-    emoji: '🧪',
+    icon: 'drain-cleaner',
     description: 'Chemisch geweld. Snel maar met gevolgen voor de planeet.',
     effectType: 'working',
     effectiveness: 90,
@@ -73,7 +73,7 @@ export const TOOLS = [
   {
     id: 'hot-water',
     name: 'Emmer Heet Water',
-    emoji: '🪣',
+    icon: 'bucket',
     description: 'Ouderwets maar effectief. Au au au!',
     effectType: 'working',
     effectiveness: 55,
@@ -86,7 +86,7 @@ export const TOOLS = [
   {
     id: 'rubber-duck',
     name: 'Rubberen Eendje',
-    emoji: '🦆',
+    icon: 'rubber-duck',
     description: 'Wetenschappelijk bewezen nutteloos.',
     effectType: 'chaos',
     chaosEffect: 'ducks',
@@ -96,7 +96,7 @@ export const TOOLS = [
   {
     id: 'confetti-cannon',
     name: 'Confettikanon',
-    emoji: '🎉',
+    icon: 'party-popper',
     description: 'Want soms moet je gewoon FEESTEN.',
     effectType: 'chaos',
     chaosEffect: 'confetti',
@@ -106,7 +106,7 @@ export const TOOLS = [
   {
     id: 'flamingo',
     name: 'Opblaasbare Flamingo',
-    emoji: '🦩',
+    icon: 'flamingo',
     description: 'Een roze flamingo in je toilet. Waarom niet.',
     effectType: 'chaos',
     chaosEffect: 'flamingo',
@@ -116,7 +116,7 @@ export const TOOLS = [
   {
     id: 'disco-ball',
     name: 'Discobal',
-    emoji: '🪩',
+    icon: 'disco-ball',
     description: 'Het toilet DANST. Het toilet DANST ECHT.',
     effectType: 'chaos',
     chaosEffect: 'disco',
@@ -130,7 +130,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'super-plunger',
     name: 'Super Ontstopper 3000',
-    emoji: '💪',
+    icon: 'muscle',
     description: 'TURBO KRACHT. GEEN DISCUSSIE.',
     effectType: 'working',
     effectiveness: 100,
@@ -143,7 +143,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'ninja-unclogger',
     name: 'Ninja Ontstopper',
-    emoji: '🥷',
+    icon: 'ninja',
     description: 'Zo snel dat je het bijna niet ziet.',
     effectType: 'working',
     effectiveness: 80,
@@ -156,7 +156,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'magic-wand',
     name: 'Toverstaf',
-    emoji: '🪄',
+    icon: 'magic-wand',
     description: 'Abracadabra! …Het werkt niet. Maar het ziet er GEWELDIG uit.',
     effectType: 'chaos',
     chaosEffect: 'magic',
@@ -168,7 +168,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'tiny-elephant',
     name: 'Mini Olifant',
-    emoji: '🐘',
+    icon: 'elephant',
     description: 'Spuit water. Chaos gegarandeerd.',
     effectType: 'chaos',
     chaosEffect: 'elephant',
@@ -181,7 +181,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'megaphone',
     name: 'Megafoon',
-    emoji: '📢',
+    icon: 'megaphone',
     description: 'SCHREEUW HET SCHOON! (het werkt niet)',
     effectType: 'chaos',
     chaosEffect: 'megaphone',
@@ -194,7 +194,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'electric-plunger',
     name: 'Elektrische Ontstopper',
-    emoji: '⚡',
+    icon: 'zap',
     description: '3000 RPM motoraandrijving. Voel de kracht.',
     effectType: 'working',
     effectiveness: 100,
@@ -208,7 +208,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'hydro-jet',
     name: 'Hogedrukspuit',
-    emoji: '💦',
+    icon: 'water-gun',
     description: 'Industriële waterdruk. FWOOSH. Weg ermee.',
     effectType: 'working',
     effectiveness: 100,
@@ -222,7 +222,7 @@ export const PREMIUM_TOOLS = [
   {
     id: 'robot-arm',
     name: 'Robotarm',
-    emoji: '🦾',
+    icon: 'robot-hand',
     description: 'Grijpen. Uitrekken. Winnen. Altijd.',
     effectType: 'working',
     effectiveness: 100,
@@ -236,29 +236,29 @@ export const PREMIUM_TOOLS = [
 
 export const COSMETICS = [
   // Toiletmodellen
-  { id: 'toilet-standard', category: 'toilet', name: 'Standaard', emoji: '🚽', price: 0, description: 'Het origineel.' },
-  { id: 'toilet-golden',   category: 'toilet', name: 'Gouden Troon', emoji: '👑', price: 1000, description: 'Want jij bent royalty.' },
-  { id: 'toilet-space',    category: 'toilet', name: 'Space Toilet', emoji: '🚀', price: 800,  description: 'Spoelen in de ruimte. 3… 2… 1…' },
-  { id: 'toilet-medieval', category: 'toilet', name: 'Middeleeuwse Ton', emoji: '🏰', price: 600, description: '"Toilet" is een groot woord hier.' },
+  { id: 'toilet-standard', category: 'toilet', name: 'Standaard',         icon: 'toilet',   price: 0,    description: 'Het origineel.' },
+  { id: 'toilet-golden',   category: 'toilet', name: 'Gouden Troon',      icon: 'crown',    price: 1000, description: 'Want jij bent royalty.' },
+  { id: 'toilet-space',    category: 'toilet', name: 'Space Toilet',      icon: 'rocket',   price: 800,  description: 'Spoelen in de ruimte. 3… 2… 1…' },
+  { id: 'toilet-medieval', category: 'toilet', name: 'Middeleeuwse Ton',  icon: 'landmark', price: 600,  description: '"Toilet" is een groot woord hier.' },
 
   // Tegelpatronen
-  { id: 'tiles-default',      category: 'tiles', name: 'Standaard Tegels', emoji: '⬜', price: 0,   description: 'Wit. Schoon. Saai.' },
-  { id: 'tiles-checkerboard', category: 'tiles', name: 'Schaakbord',        emoji: '♟️', price: 150, description: 'Jouw zet.' },
-  { id: 'tiles-stars',        category: 'tiles', name: 'Sterrenhemel',      emoji: '⭐', price: 200, description: 'Dromen terwijl je… je ding doet.' },
-  { id: 'tiles-zigzag',       category: 'tiles', name: 'Zigzag Fever',      emoji: '⚡', price: 175, description: 'ZIGZAG DOOR HET LEVEN.' },
+  { id: 'tiles-default',      category: 'tiles', name: 'Standaard Tegels', icon: 'grid-2x2',    price: 0,   description: 'Wit. Schoon. Saai.' },
+  { id: 'tiles-checkerboard', category: 'tiles', name: 'Schaakbord',        icon: 'checkerboard', price: 150, description: 'Jouw zet.' },
+  { id: 'tiles-stars',        category: 'tiles', name: 'Sterrenhemel',      icon: 'star',        price: 200, description: 'Dromen terwijl je… je ding doet.' },
+  { id: 'tiles-zigzag',       category: 'tiles', name: 'Zigzag Fever',      icon: 'zap',         price: 175, description: 'ZIGZAG DOOR HET LEVEN.' },
 
   // Vloertypen
-  { id: 'floor-basic',    category: 'floor', name: 'Standaard Vloer', emoji: '🟫', price: 0,   description: 'Functioneel.' },
-  { id: 'floor-marble',   category: 'floor', name: 'Marmer',          emoji: '🪨', price: 300, description: 'Wie loopt er op marmer? Jij.' },
-  { id: 'floor-rainbow',  category: 'floor', name: 'Regenboogvloer',  emoji: '🌈', price: 400, description: 'Dans op regenbogen.' },
-  { id: 'floor-lava',     category: 'floor', name: 'Lavavloer',       emoji: '🌋', price: 500, description: 'NIET AANRAKEN.' },
+  { id: 'floor-basic',    category: 'floor', name: 'Standaard Vloer', icon: 'layers',  price: 0,   description: 'Functioneel.' },
+  { id: 'floor-marble',   category: 'floor', name: 'Marmer',          icon: 'gem',     price: 300, description: 'Wie loopt er op marmer? Jij.' },
+  { id: 'floor-rainbow',  category: 'floor', name: 'Regenboogvloer',  icon: 'rainbow', price: 400, description: 'Dans op regenbogen.' },
+  { id: 'floor-lava',     category: 'floor', name: 'Lavavloer',       icon: 'flame',   price: 500, description: 'NIET AANRAKEN.' },
 
   // Decoraties
-  { id: 'deco-none',    category: 'decoration', name: 'Geen decoratie',  emoji: '❌', price: 0,   description: 'Kaal maar eerlijk.' },
-  { id: 'deco-plant',   category: 'decoration', name: 'Badkamerplant',   emoji: '🌱', price: 100, description: 'Zelfs planten overleven hier.' },
-  { id: 'deco-mirror',  category: 'decoration', name: 'Spiegel',         emoji: '🪞', price: 150, description: 'Kijk eens hoe goed je het doet.' },
-  { id: 'deco-painting',category: 'decoration', name: '"La Toilette"',   emoji: '🖼️', price: 200, description: 'Kunst in de badkamer. Verfijnd.' },
-  { id: 'deco-poster',  category: 'decoration', name: 'Motivatieposter', emoji: '💪', price: 75,  description: '"BELIEVE IN YOUR FLUSH" — Onbekend' },
+  { id: 'deco-none',    category: 'decoration', name: 'Geen decoratie',  icon: 'ban',      price: 0,   description: 'Kaal maar eerlijk.' },
+  { id: 'deco-plant',   category: 'decoration', name: 'Badkamerplant',   icon: 'sprout',   price: 100, description: 'Zelfs planten overleven hier.' },
+  { id: 'deco-mirror',  category: 'decoration', name: 'Spiegel',         icon: 'mirror',   price: 150, description: 'Kijk eens hoe goed je het doet.' },
+  { id: 'deco-painting',category: 'decoration', name: '"La Toilette"',   icon: 'image',    price: 200, description: 'Kunst in de badkamer. Verfijnd.' },
+  { id: 'deco-poster',  category: 'decoration', name: 'Motivatieposter', icon: 'dumbbell', price: 75,  description: '"BELIEVE IN YOUR FLUSH" — Onbekend' },
 ];
 
 export const MESSAGES = {

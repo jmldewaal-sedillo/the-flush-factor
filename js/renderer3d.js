@@ -9,6 +9,7 @@ import { RGBELoader }    from './vendor/RGBELoader.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { GLTFLoader }    from './vendor/GLTFLoader.js';
 import { DRACOLoader }   from './vendor/DRACOLoader.js';
+import { iconDataUrl }   from './icons.js';
 
 // ──────── KAMER-AFMETINGEN (WC-hokje) ────────
 const ROOM_W       = 1.5;   // halve breedte — WC-hokje-gevoel; zijmuren zichtbaar op tablet landscape
@@ -73,7 +74,7 @@ let CAM_BASKET_TARGET = new THREE.Vector3(0.45, 0.25, 0.85);
 
 // Toestand
 let isActive = false;
-let currentPropEmoji = null;
+let currentPropIcon = null;
 let porcelainMat, seatMat, waterMat;
 let glbToiletMat = null;  // materiaal van het GLB-model (voor cosmetica)
 let particles = [];       // actieve deeltjessystemen
@@ -892,8 +893,8 @@ function _onFlush() {
 }
 
 function _onClog(e) {
-  currentPropEmoji = e.detail?.prop?.emoji ?? '🧻';
-  _showProp(currentPropEmoji);
+  currentPropIcon = e.detail?.prop?.icon ?? e.detail?.icon ?? 'toilet-paper';
+  _showProp(currentPropIcon);
   clogAnim = { start: clock.getElapsedTime(), dur: 0.8, to: 1.0 };
   // Camera inzoomen op kom
   _flyCamera(CAM_CLOG, CAM_TARGET_CLOG);
@@ -933,8 +934,8 @@ function _onCosmetic(e) {
 }
 
 function _onBasketAdd(e) {
-  const emoji = e.detail?.emoji;
-  if (emoji) _stackItemInBasket(emoji);
+  const iconName = e.detail?.icon;
+  if (iconName) _stackItemInBasket(iconName);
 }
 
 // ──────── MAND LEGEN (punt 39) ────────
@@ -1026,32 +1027,32 @@ function _applyFloorCosmetic(id) {
 }
 
 // ──────── PROP (verstopping) ────────
-function _makeEmojiSprite(emoji) {
+function _makeIconSprite(iconName) {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 128;
   const ctx = canvas.getContext('2d');
-  ctx.font = '88px serif';
-  ctx.textAlign    = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(emoji, 64, 72);
   const tex = new THREE.CanvasTexture(canvas);
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(mat);
   sprite.scale.set(0.55, 0.55, 1);
+  // Render SVG icon op canvas via Image
+  const img = new Image(128, 128);
+  img.onload = () => { ctx.drawImage(img, 0, 0, 128, 128); tex.needsUpdate = true; };
+  img.src = iconDataUrl(iconName, 128, 'white');
   return sprite;
 }
 
-function _showProp(emoji) {
+function _showProp(iconName) {
   if (propSprite) { scene.remove(propSprite); propSprite = null; }
-  propSprite = _makeEmojiSprite(emoji);
+  propSprite = _makeIconSprite(iconName);
   propSprite.position.set(0, 1.18, 0.30);
   scene.add(propSprite);
 }
 
 // ──────── ITEM IN MAND ────────
-function _stackItemInBasket(emoji) {
+function _stackItemInBasket(iconName) {
   if (!basketGroup) return;
-  const sprite = _makeEmojiSprite(emoji);
+  const sprite = _makeIconSprite(iconName);
   sprite.scale.setScalar(0.35);
 
   // Startpositie: boven de mand
@@ -1089,20 +1090,20 @@ function _easeIn(t) { return t * t; }
 
 // ──────── CHAOS DEELTJES ────────
 function _spawnChaosParticles(effect) {
-  const emojiMap = {
-    ducks:     '🦆',
-    confetti:  '🎉',
-    flamingo:  '🦩',
-    disco:     '✨',
-    magic:     '⭐',
-    elephant:  '🐘',
-    megaphone: '📢',
+  const iconMap = {
+    ducks:     'rubber-duck',
+    confetti:  'party-popper',
+    flamingo:  'flamingo',
+    disco:     'disco-ball',
+    magic:     'sparkles',
+    elephant:  'elephant',
+    megaphone: 'megaphone',
   };
-  const emoji = emojiMap[effect] || '✨';
+  const iconName = iconMap[effect] || 'sparkles';
   const count = effect === 'elephant' ? 1 : 6;
 
   for (let i = 0; i < count; i++) {
-    const sprite = _makeEmojiSprite(emoji);
+    const sprite = _makeIconSprite(iconName);
     sprite.position.set(
       (Math.random() - 0.5) * 2.5,
       0.8 + Math.random() * 2.0,
