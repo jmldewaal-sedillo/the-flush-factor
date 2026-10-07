@@ -33,6 +33,21 @@
 - [x] **3. Teller "spoelbeurten zonder verstopping"** — streakteller en record onder de score; reset bij verstopping; bewaard in localStorage.
 - [x] **4. Ruimte voor camera / notch** — safe-area-inset-* voor header en inventarisbalk zodat het op elke telefoon goed valt.
 - [x] **5. Volledig scherm op laptop** — breed scherm toont spel als staande kolom in het midden; zichtbare terugknop; re-enableknop voor telefoonpreview.
+- [ ] **6. Level-systeem voor ontstoppingsgereedschap**
+  - Gereedschap kent een logische opbouw per level: je begint met lompe, simpele spullen (o.a. een oldschool rubberen ontstopper) en hoe hoger je level, hoe luxer en gekker het gereedschap wordt (bv. elektrische ontstopper, hogedrukspuit, robotarm, gouden ontstopper).
+  - Level stijgt op basis van aantal spoelbeurten / verdiende punten. Nieuwe gereedschappen worden pas zichtbaar of koopbaar in de winkel vanaf het juiste level.
+  - Elk level bevat een mix van werkende en chaos-gereedschappen, zodat het ontdekken blijft.
+  - Verstoppingen worden per level iets heftiger, zodat betere spullen ook echt nodig zijn.
+  - Alle level-data in `items.js` / een configbestand, zodat het makkelijk uit te breiden is.
+- [ ] **7. Prullenbak naast het toilet**
+  - Naast het toilet staat een prullenbak die zich zichtbaar vult met de troep die uit een verstopping wordt gehaald (cartoonesk: propjes wc-papier, rubberen eendje, sok, speelgoedautootje, telefoon, enz.).
+  - Als hij vol is moet hij geleegd worden (tikken), anders gebeurt er iets grappigs (bv. omvallen, troep op de vloer, puntaftrek).
+  - Eventueel later een cosmetisch item/upgrade in de winkel (grotere bak, pedaalemmer, luxe designbak).
+- [ ] **8. Duidelijk zichtbare verstopping**
+  - Als het toilet verstopt raakt moet dat direct onmiskenbaar zijn: zichtbare prop/obstakel in de afvoer, water dat troebel wordt en stijgt, een waarschuwing (rood knipperend, schudden, tekstballon zoals "VERSTOPT!") en een geluid-/tekstcue.
+- [ ] **9. Duidelijk zichtbare ontstopping**
+  - Bij succesvol ontstoppen een groot, bevredigend moment: het gereedschap trekt het voorwerp er zichtbaar uit (dat vliegt richting de prullenbak, zie punt 7), het water spoelt in één keer weg met een kolk, en een grote "ONTSTOPT!"-melding met bonuspunten.
+  - Werkt een gereedschap niet (chaos-item), dan blijft de prop zichtbaar zitten, zodat het verschil met een echte ontstopping meteen duidelijk is.
 
 ---
 
