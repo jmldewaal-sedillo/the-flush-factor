@@ -303,7 +303,15 @@ Met `npm run assets` worden de spelversies opnieuw uit deze originelen gemaakt.
 | `assets/` dat het spel kan laden | 34 MB | ± 4,5 MB |
 | Grootste bronbestand | `renderer3d.js`, 1.278 regels | onder de 300 regels per module |
 | Service worker op GitHub Pages | installeerde nooit (404's) | relatieve paden; getest onder een submap, inclusief offline |
-| Tests | 19 tests, wankel, CI rood | zie README; draaien onder een submap, zonder vaste wachttijden |
+| Tests | 19 tests, wankel (elke run andere fouten), CI rood | 41 tests op 4 formaten = 139 uitgevoerd; drie volledige runs achter elkaar zonder fout (± 9 min per run); draaien onder een submap, zonder vaste wachttijden |
+
+## Zelf nagekeken op screenshots
+
+Telefoon staand en liggend, tablet staand en liggend (`tests/screenshots/`), plus de desktop-preview "Groot 430×932"
+met notch en met punch-hole: start, verstopping, plas na overlopen, winkel dicht en open, alle zes camerastanden in
+een aangeklede ruimte, emmerweergave. De live site (`main`) is in een schoon profiel gecontroleerd: daar staan alle
+zeven winkelcategorieën en ze klappen uit. Dat je er maar één zag, komt dus vrijwel zeker door een oude versie in de
+cache van je browser, niet door de code op de site.
 
 ## Nog open / eerlijk gezegd
 
