@@ -4,7 +4,7 @@
 // reserve); modellen, textures en iconen cache-eerst. De pagina wordt nooit vanuit hier herladen.
 
 // PRECACHE:START (gegenereerd door tools/build-sw.mjs)
-const VERSION = '63fa71595c';
+const VERSION = '5f8510dd65';
 const PRECACHE = [
   './',
   'assets/hdri/bathroom_512.hdr',

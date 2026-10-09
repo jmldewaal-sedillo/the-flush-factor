@@ -103,10 +103,14 @@ test('3D-scène vult het hele scherm tot achter de notch, zonder losse strook bo
 
 test('draaien en formaat wisselen: scène en knoppen passen zich aan', async ({ page }) => {
   await openGame(page);
-  for (const size of [{ width: 844, height: 390 }, { width: 390, height: 844 }, { width: 1024, height: 768 }, { width: 360, height: 740 }]) {
+  for (const size of [{ width: 844, height: 390 }, { width: 390, height: 844 }, { width: 1024, height: 768 }, { width: 360, height: 740 }, { width: 320, height: 640 }]) {
     await page.setViewportSize(size);
     await until(page, s => { const c = document.getElementById('scene-canvas-3d').getBoundingClientRect(); return c.width === s.width && c.height === s.height; }, size);
     const b = await boxes(page, [...CONTROLS, '.tool-btn']);
+    // Ook met een breder systeemlettertype en een groot getal mag niets overlappen.
+    await page.evaluate(() => { document.body.style.fontFamily = 'Verdana, DejaVu Sans, sans-serif'; document.getElementById('score-value').textContent = '99,9k'; });
+    expectNoOverlap(await boxes(page, CONTROLS), `${size.width}x${size.height} breed lettertype`);
+    await page.evaluate(() => { document.body.style.fontFamily = ''; });
     expectInside(b, size, [0, 0, 0, 0], `${size.width}x${size.height}`);
     expectNoOverlap(b, `${size.width}x${size.height}`);
     expect(await page.evaluate(() => window.__game.three.topCovered())).toBe(true);

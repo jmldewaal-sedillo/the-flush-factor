@@ -104,17 +104,19 @@ body[data-screen] #game-screen { visibility: hidden; }
 #hud-topright {
   top: calc(var(--sat) + var(--gap)); right: calc(var(--sar) + var(--gap));
   display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+  /* Nooit breder dan de ruimte rechts van de menuknop, welk lettertype het toestel ook gebruikt. */
+  max-width: calc(50vw - var(--btn) / 2 - var(--gap) - var(--sar) - 8px);
 }
 #score-bubble {
   background: var(--c-glass); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 26px;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
-  padding: 8px 14px 9px; min-width: 124px; text-align: center;
+  padding: 8px 14px 9px; min-width: min(124px, 100%); text-align: center;
   display: flex; flex-direction: column; align-items: center;
 }
 #score-value { font-size: 1.7rem; font-weight: 900; line-height: 1.05; }
 #high-score { font-size: 0.66rem; opacity: 0.9; }
-.streak-row { display: flex; gap: 4px; margin-top: 4px; }
+.streak-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 4px; }
 .streak-row > span {
   display: inline-flex; align-items: center; gap: 3px;
   font-size: 0.62rem; font-weight: 800; line-height: 1;
@@ -350,7 +352,8 @@ body[data-view="bucket"] #btn-back { display: inline-flex; }
 /* Heel smal (kleine telefoon) */
 @media (max-width: 370px) {
   :root { --tool: 50px; }
-  #score-bubble { min-width: 112px; }
+  #score-bubble { min-width: 0; padding-inline: 10px; }
+  .pill-btn { padding: 0 12px; }
 }
 
 /* Knop om de desktop-preview weer aan te zetten */
