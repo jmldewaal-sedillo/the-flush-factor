@@ -1,6 +1,6 @@
-# The Flush Factor — ROADMAP 🗺️
+# The Flush Factor — ROADMAP
 
-## ✅ Versie 0.1 — Werkende basisversie (huidig)
+## Versie 0.1 — Werkende basisversie (huidig)
 
 ### Gebouwd
 - **Spelscherm**: Badkamerscène met cartoonesk toilet (SVG), waterstandbalk, statusberichten.
@@ -26,7 +26,7 @@
 
 ---
 
-## 🔧 Volgende stappen (huidige sprint)
+## Volgende stappen (huidige sprint)
 
 - [x] **1. Realistischer toilet** — SVG met juiste verhoudingen, zachte schaduwen, glans op porselein, subtiele kleurverlopen; cosmetische modellen blijven werken.
 - [x] **2. Water dat echt wegspoelt** — kolk draait, water zakt bij spoelen, stijgt bij verstopping; vloeiend op telefoon via transform/opacity.
@@ -68,7 +68,7 @@
 
 ---
 
-## 🔧 Sprint 2 (punten 11–20)
+## Sprint 2 (punten 11–20)
 
 - [x] **11. Echt toilet-GLB** — CC0 GLB-model (opengameart.org, Toilet/toilet.glb, 94KB); GLTFLoader + DRACOLoader; fallback naar procedureel bij laad-fout; cosmetica-skin toegepast op geladen materialen.
 - [x] **12. Camera OrbitControls** — Vrij draaien/zoomen met limieten; auto-zoom bij verstopping (inzoomen op kom) en bij ontstopping (terugvliegen); resetCamera() via menu-knop.
@@ -83,7 +83,7 @@
 
 ---
 
-## 🔧 Sprint 3 (punten 21–25)
+## Sprint 3 (punten 21–25)
 
 - [x] **21. Oorzaak 3D-fallback vinden en oplossen** — Root-cause: ontbrekende `js/utils/BufferGeometryUtils.js` (relatieve import in GLTFLoader.js); toegevoegd aan `js/utils/`; zichtbare foutbanner bij onverwachte fallback; SW v7 stuurt `SW_UPDATED` → game.js herlaadt pagina automatisch.
 - [x] **22. Realistisch toiletmodel** — CC0 "Toilets" pack (loafbrr_1, opengameart.org) gedownload; `Toilet_Round_A` gebruikt (aparte seat_cover/seat/flusher nodes); PBR-materialen per onderdeel; CREDITS.md bijgewerkt.
@@ -93,7 +93,7 @@
 
 ---
 
-## 🔧 Sprint 4 (punten 26–32)
+## Sprint 4 (punten 26–32)
 
 - [x] **26. Water zit niet in de pot (fout)** — Wateroppervlak zweeft boven het toilet; fix positie/grootte/vorm op basis van GLB bounding box van de kom; Playwright-screenshot van bovenaf.
 - [x] **27. Smallere ruimte, echt een wc-hokje** — Ca. 0,9–1,0 m breed, 1,5–1,8 m diep, 2,4 m hoog; toilet tegen achterwand; camera vanuit deuropening; OrbitControls-limieten aanpassen.
@@ -105,40 +105,42 @@
 
 ---
 
-## 🔧 Sprint 5 (punten 33–39)
+## Sprint 5 (punten 33–39)
 
-- [ ] **33. Beter toiletmodel (Sketchfab HippoStance)** — CC-BY model met nodes Toilet, ToiletSeatCover, ToiletSeat, ToiletSeatMount, ToiletFlushHandle; bestand `assets/models/toilet-2k.glb`; vereist handmatig downloaden van Sketchfab (authenticatie vereist — niet automatisch te doen). Naamsvermelding in CREDITS.md.
+> Nagekeken in de rebuild (zie AUDIT.md): 33–37 kloppen; 38 en 39 waren maar half af en zijn in Sprint 7 (punten 52, 54, 56) opnieuw gebouwd.
 
-- [ ] **34. Controle toiletmodel (eerst doen)**
+- [x] **33. Beter toiletmodel (Sketchfab HippoStance)** — CC-BY model met nodes Toilet, ToiletSeatCover, ToiletSeat, ToiletSeatMount, ToiletFlushHandle; bestand `assets/models/toilet-2k.glb`; vereist handmatig downloaden van Sketchfab (authenticatie vereist — niet automatisch te doen). Naamsvermelding in CREDITS.md.
+
+- [x] **34. Controle toiletmodel (eerst doen)**
   - Controleer of het Sketchfab-model van HippoStance (`assets/models/toilet-2k.glb`, nodes Toilet, ToiletSeatCover, ToiletSeat, ToiletSeatMount, ToiletFlushHandle) echt in gebruik is. De samenvatting noemde "Toilet_Round_A_Seat", wat niet uit dit model komt. Is punt 33 niet (volledig) uitgevoerd, doe dat dan eerst.
   - Het deksel (ToiletSeatCover) staat nu dicht, waardoor je het water niet ziet. Standaard moet het deksel OPEN staan (rechtop tegen de stortbak), zodat je in de pot en het water kijkt.
 
-- [ ] **35. Startbeeld verder uitgezoomd**
+- [x] **35. Startbeeld verder uitgezoomd**
   - Zoom het startbeeld verder uit, zodat er duidelijk vrije wandruimte is BOVEN het toilet en AAN BEIDE ZIJKANTEN. Daar komen later kastjes, planken, spiegel, schilderijtjes en andere decoratie uit de winkel.
   - Maak hiervoor ankerpunten aan: wand boven het toilet, linkerwand, rechterwand, en vloer links/rechts. Leg ze vast in een config, zodat decoratie later op een vaste plek kan worden gezet.
   - Het hokje mag daarvoor iets breder worden als dat nodig is, maar moet wel als wc-ruimte blijven voelen.
   - Het toilet en de mand blijven goed zichtbaar en niet bedekt door de knoppen.
 
-- [ ] **36. 3D-scène vult het hele scherm**
+- [x] **36. 3D-scène vult het hele scherm**
   - De 3D-scène moet doorlopen tot helemaal bovenin (achter de notch) en helemaal onderin. Nu zit er bovenin een grijze strook en onderin een lichtblauwe balk.
   - Verwijder die balken/achtergronden; ALLE knoppen (spoelknop, terug, mand, gereedschappen, score, winkel, menu) zweven over de scène heen, met safe-area-insets zodat ze niet achter de notch of de home-balk vallen.
   - Controleer in alle formaten (telefoon klein/standaard/groot, tablet mini/groot, staand en liggend).
 
-- [ ] **37. Spoelknop met icoon**
+- [x] **37. Spoelknop met icoon**
   - Haal de tekst "SPOELEN" uit de spoelknop. Gebruik alleen een duidelijk icoon van een spoelhendel / flush-symbool (SVG, zie punt 43 voor de icon-set). Geef de knop wel een aria-label "Spoelen" voor toegankelijkheid.
 
-- [ ] **38. Inzoomen op de mand**
+- [x] **38. Inzoomen op de mand**
   - Bij het inzoomen op de mand zit het hengsel in de weg. Verberg het hengsel (of draai het plat weg) zolang de camera ingezoomd is, en laat het weer zien bij teruggaan.
   - De knop "Terug" overlapt nu met de spoelknop. Verplaats "Terug" naar een plek zonder overlap (bv. linksboven onder de menuknop) en verberg de spoelknop zolang je in de mand kijkt.
 
-- [ ] **39. Mand legen werkt niet (fout)**
+- [x] **39. Mand legen werkt niet (fout)**
   - Het legen van de mand werkt niet; de teller (bv. 3,5 / 20 L) blijft staan en de voorwerpen blijven liggen. Zoek de oorzaak en los het op.
   - Duidelijke manier om te legen: een knop "Mand legen" die verschijnt bij de mandknop en in de ingezoomde mandweergave. Bij legen: korte animatie (mand kantelt / voorwerpen verdwijnen), teller terug naar 0 L, opgeslagen in localStorage.
   - Voeg een Playwright-test toe die de mand vult, leegt en controleert dat teller en 3D-inhoud echt leeg zijn, ook na herladen van de pagina.
 
 ---
 
-## 🔜 Versie 0.2 — Verbeteringen & uitbreiding
+## Versie 0.2 — Verbeteringen & uitbreiding
 
 ### Prioriteit hoog
 - [ ] **Geluidseffecten** via Web Audio API: plons bij spoelen, blorp bij verstopping, feest bij oplossen.
@@ -160,7 +162,7 @@
 
 ---
 
-## 🚀 Versie 1.0 — Play Store release
+## Versie 1.0 — Play Store release
 
 - [ ] **TWA-integratie**: Digital Asset Links (`/.well-known/assetlinks.json`), Bubblewrap-configuratie.
 - [ ] **Privacybeleid** (vereist voor Play Store).
@@ -171,7 +173,7 @@
 
 ---
 
-## 💡 Toekomstige ideeën
+## Toekomstige ideeën
 
 - Multiplayer: wie haalt de meeste punten in 60 seconden?
 - Seizoensgebonden events: "Kerst Chaos" met kersttegels.
@@ -181,7 +183,7 @@
 
 ---
 
-## 🔮 Toekomstplan (nog niet bouwen)
+## Toekomstplan (nog niet bouwen)
 
 - [ ] **40. Profiel**
   - Onder de scorebubbel een profielknop.
@@ -195,10 +197,10 @@
   - Aankopen moeten server-side gecontroleerd worden en aan het account (punt 40) gekoppeld zijn.
   - Duidelijke prijzen, geen misleidende aankopen; nadenken over leeftijdsclassificatie en ouderlijk toezicht.
 
-- [x] **42. Winkel met uitklapmenu's** *(uitgevoerd in Sprint 6 — zie punt 45)*
+- [x] **42. Winkel met uitklapmenu's** *(Sprint 6, hersteld in punt 51)*
   - De winkel wordt één overzicht met alle categorieën als kopjes (bv. Gereedschap, Toiletten, Tegels, Vloeren, Decoratie, Manden). Elke categorie klapt uit (accordion/dropdown) als je erop tikt, zodat je in één oogopslag alle categorieën ziet.
 
-- [x] **43. Eigen icon-set in plaats van emoji's** *(uitgevoerd in Sprint 6 — zie punt 47)*
+- [x] **43. Eigen icon-set in plaats van emoji's** *(Sprint 6 was onvolledig en met onjuiste credits; opnieuw gedaan in punt 50)*
   - Alle emoji's in het spel vervangen door één consistente set SVG-iconen met een vrije licentie. Gekozen voor:
     - **Lucide** (MIT) voor UI-iconen
     - **game-icons.net** (CC BY 3.0, Delapouite/Lorc) voor spel-iconen
@@ -211,7 +213,7 @@
 
 ---
 
-## 🔧 Sprint 6 (punten 45–49)
+## Sprint 6 (punten 45–49)
 
 - [x] **45. Winkel accordion** — Winkel herschreven als accordion met categorieën (Punten kopen, Gereedschap, Toiletmodellen, Tegelpatronen, Vloeren, Decoratie, Manden). Data-driven via `CATEGORIES`-array in `shop.js`. Meerdere categorieën tegelijk open. Staat opgeslagen in `localStorage` (`flushfactor_shop_open`). CSS-accordion via `grid-template-rows: 0fr → 1fr`.
 
@@ -225,4 +227,32 @@
 
 ---
 
-*Bijgewerkt: Sprint 6 — punten 45–49 uitgevoerd; punten 42/43 uit toekomstplan gemarkeerd als voltooid.*
+## Sprint 7 — rebuild (punten 50–57)
+
+Branch `rebuild`. Het hele project is nagekeken (zie `AUDIT.md`) en waar nodig opnieuw gebouwd.
+
+- [x] **50. Emoji's volledig vervangen** — Alle gereedschappen, badges (werkt/chaos), scorebubbel, winkelitems, meldingen en banners gebruiken iconen uit één lokale sprite (`assets/icons/sprite.svg`): Lucide (ISC) voor de interface en de echte game-icons.net-iconen (CC BY 3.0) voor spelvoorwerpen, met naamsvermelding per maker. De emoji-test scant de broncode (html, css, js, manifest, preview) én de interface in alle toestanden. Spoelknop: draaikolk-icoon.
+- [x] **51. Winkel** — Zeven categorieën zichtbaar en uitklapbaar (Punten kopen, Gereedschap, Toiletmodellen, Tegelpatronen, Vloeren, Decoratie, Emmers). Open/dicht-stand wordt bewaard; ingeklapt lekt er niets meer door; melding bij elke tik. Live-controle in een schoon profiel: `tests/live.spec.js`.
+- [x] **52. Emmer** — Echte modellen; `wooden_bucket.glb` is de emmer van level 1 (20 L). Het hengsel (touw/beugel) wordt verborgen in de emmerweergave. Vijf emmers met capaciteit in liters in `js/data/buckets.js`.
+- [x] **53. Camerastanden** — Overzicht, Toilet, Muur boven toilet, Linkermuur, Rechtermuur, Emmer, met soepele overgang. Cameraknop linksboven plus swipen tussen de muren. In muurstanden en het overzicht tonen de vrije ankerpunten een subtiele "+".
+- [x] **54. Meer actie bij verstoppen** — Voorwerp valt zichtbaar in de pot, borrelend water met belletjes, klotsen en spetters, camerashake en trillend toilet, water wordt troebel en stijgt in fases (geel/oranje/rood), plas op de vloer bij overlopen die langzaam verdwijnt. Troep is echte kleine 3D-objecten, ook in de emmer. Effecten in `js/three/effects.js`, intensiteit per kwaliteitsniveau in `js/data/config.js`.
+- [x] **55. Notch** — De scène loopt door tot achter de notch; de camera houdt de bovenrand van het beeld op de wand (geen losse strook). Alle knoppen staan onder de uitsparing via safe-area plus marge. De preview heeft een notch- en een punch-hole-profiel die de safe-area echt doorgeven.
+- [x] **56. Emmerweergave** — Gereedschapsbalk, spoelknop en cameraknop verborgen; "Terug" linksboven zonder overlap.
+- [x] **57. Tests voor 50 t/m 56** — Nieuwe Playwright-suite per onderwerp (`tests/*.spec.js`), draait onder een submap zoals GitHub Pages, zonder vaste wachttijden.
+
+Ook in deze sprint (uit de audit): code opgesplitst in data (`js/data/`), logica en weergave (`js/three/`, `js/ui/`); 2D-noodmodus vervangen door een melding "WebGL niet beschikbaar"; service worker opnieuw (relatieve paden, geen geforceerde herlaad); assets gecomprimeerd (eerste laadbeurt van ±14,6 MB naar ±2,5 MB); hokje op echte maat; decoratie verschijnt in 3D op de ankerpunten; echte app-iconen.
+
+---
+
+## Toekomst (alleen vastgelegd, nog niet bouwen)
+
+- [ ] **58. Geluiden** — Spoelen, gorgelen, plop bij ontstoppen, chaos-geluiden, kassa, level-up (CC0-bronnen); volume en aan/uit in het menu.
+- [ ] **59. Profiel** — Via een tik op de scorebubbel: naam, avatar, statistieken. Eerst lokaal als gast, later koppelen met Google/Facebook/e-mail om te synchroniseren; gastvoortgang overzetten; account verwijderen mogelijk. *(Vervangt punt 40.)*
+- [ ] **60. Echte betaling voor punten** — Google Play Billing (Digital Goods API + Payment Request API in de TWA), via `purchaseService.buy()` in `js/purchases.js`, server-side gecontroleerd. *(Vervangt punt 41.)*
+- [ ] **61. Logische puntenbalans** — Eén doordacht systeem voor punten per spoelbeurt/combo/ontstopping/level en prijzen, met een overzicht "hoeveel minuten spelen voor item X"; straffen in verhouding. Alle getallen staan al bij elkaar in `js/data/`.
+- [ ] **62. Meerdere talen** — Alle teksten naar taalbestanden (nl, en), taalkeuze in het menu, standaard de toesteltaal. Voorbereid: teksten uit JavaScript staan in `js/data/texts.js`.
+- [ ] **63. Aankleden** — Toilet en hokje aankleden (wc-hoes, matjes, handdoeken, spiegels, kastjes, planten, posters, verlichting) op de ankerpunten; thema-sets; items plaatsen, verschuiven en weghalen. Basis ligt er: ankerpunten in `js/data/room.js`, decoratie in `js/data/cosmetics.js`.
+
+---
+
+*Bijgewerkt: Sprint 7 (rebuild) — punten 50–57 uitgevoerd; 58–63 vastgelegd voor later.*

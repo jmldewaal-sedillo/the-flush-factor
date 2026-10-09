@@ -1,7 +1,6 @@
 node_modules/
 test-results/
 playwright-report/
-*.jpg
-*.jpeg
-*.png
-!assets/**
+tests/screenshots/
+# Referentiemateriaal van de maker: blijft lokaal, hoort niet in de app of op de site
+assets/reference/

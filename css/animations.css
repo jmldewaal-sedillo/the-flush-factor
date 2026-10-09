@@ -1,222 +1,65 @@
-/* ============================================================
-   THE FLUSH FACTOR — animations.css
-   Alle keyframe-animaties.
-   ============================================================ */
+/* THE FLUSH FACTOR — animations.css: alle keyframes van de interface. */
 
-/* ──────── SPOELEN ──────── */
-@keyframes flushPulse {
-  0%   { transform: scale(1); }
-  20%  { transform: scale(0.94) rotate(-1deg); }
-  50%  { transform: scale(1.04) rotate(1deg); }
-  80%  { transform: scale(0.97) rotate(-0.5deg); }
-  100% { transform: scale(1); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes screenEnter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes menuSlide { from { opacity: 0; transform: translateY(-8px) scale(0.96); } to { opacity: 1; transform: none; } }
 
-/* Water draait en zakt weg; fase 88-100 vult het water weer -->*/
-@keyframes waterSwirl {
-  0%   { transform: scale(1)    rotate(0deg);   opacity: 1;    }
-  28%  { transform: scale(0.82) rotate(150deg); opacity: 0.82; }
-  55%  { transform: scale(0.48) rotate(295deg); opacity: 0.38; }
-  74%  { transform: scale(0.16) rotate(415deg); opacity: 0.04; }
-  82%  { transform: scale(0.05) rotate(440deg); opacity: 0;    }
-  88%  { transform: scale(0.05) rotate(440deg); opacity: 0;    }
-  100% { transform: scale(1)    rotate(0deg);   opacity: 1;    }
-}
-
-/* Water probeert weg te spoelen bij verstopping, maar slaagt er niet in */
-@keyframes waterClogSwirl {
-  0%   { transform: scale(1)    rotate(0deg);   opacity: 1;    }
-  35%  { transform: scale(0.88) rotate(75deg);  opacity: 0.88; }
-  65%  { transform: scale(0.94) rotate(120deg); opacity: 0.94; }
-  100% { transform: scale(1)    rotate(0deg);   opacity: 1;    }
-}
-
-/* Zorgt dat transform-origin het midden van de waterellips is */
-#bowl-water {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-#toilet-wrapper.flushing     { animation: flushPulse 0.7s ease; }
-#bowl-water.flushing-water   { animation: waterSwirl 0.75s ease forwards; }
-#bowl-water.clog-water       { animation: waterClogSwirl 0.8s ease; }
-
-/* ──────── SCHUDDEN ──────── */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-5px) rotate(-1deg); }
-  40%       { transform: translateX(5px) rotate(1deg); }
-  60%       { transform: translateX(-4px); }
-  80%       { transform: translateX(4px); }
-}
-#toilet-wrapper.toilet-shake { animation: shake 0.4s ease; }
-
-@keyframes overflowShake {
-  0%, 100% { transform: translateX(0) translateY(0); }
-  25%       { transform: translateX(-3px) translateY(2px); }
-  75%       { transform: translateX(3px) translateY(-2px); }
-}
-.overflow-shake { animation: overflowShake 0.1s infinite !important; }
-
-/* ──────── WIGGLE (chaos) ──────── */
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  20%       { transform: rotate(-8deg) scale(1.05); }
-  40%       { transform: rotate(8deg) scale(1.05); }
-  60%       { transform: rotate(-5deg); }
-  80%       { transform: rotate(5deg); }
-}
-#toilet-wrapper.toilet-wiggle { animation: wiggle 0.4s ease infinite; }
-
-/* ──────── DISCO ──────── */
-@keyframes discoFlash {
-  0%   { background: rgba(255,0,128,0.15); }
-  16%  { background: rgba(0,200,255,0.15); }
-  33%  { background: rgba(255,200,0,0.15); }
-  50%  { background: rgba(0,255,100,0.15); }
-  66%  { background: rgba(200,0,255,0.15); }
-  83%  { background: rgba(255,100,0,0.15); }
-  100% { background: rgba(255,0,128,0.15); }
-}
-@keyframes toiletDisco {
-  0%, 100% { filter: drop-shadow(0 6px 16px rgba(0,0,0,0.18)); }
-  25%  { filter: drop-shadow(0 0 20px rgba(255,0,128,0.8)); }
-  50%  { filter: drop-shadow(0 0 20px rgba(0,200,255,0.8)); }
-  75%  { filter: drop-shadow(0 0 20px rgba(255,200,0,0.8)); }
-}
-#toilet-wrapper.toilet-disco #toilet-svg { animation: toiletDisco 0.4s linear infinite; }
-
-/* ──────── FLAMINGO BOUNCE ──────── */
-@keyframes flamingoBounce {
-  from { transform: translateX(-50%) translateY(0) rotate(-5deg); }
-  to   { transform: translateX(-50%) translateY(-20px) rotate(5deg); }
-}
-
-/* ──────── CHAOS FLOAT ──────── */
-@keyframes chaosFloat {
-  from { transform: translateY(0) rotate(-10deg); }
-  to   { transform: translateY(-18px) rotate(10deg); }
-}
-
-/* ──────── CONFETTI VALLEN ──────── */
-@keyframes confettiFall {
-  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-
-/* ──────── LAVA GLOEi ──────── */
-@keyframes lavaGlow {
-  from { background: linear-gradient(180deg,#ff4500,#ff8c00,#ff4500); }
-  to   { background: linear-gradient(180deg,#ff6600,#ff4500,#ff2200); }
-}
-
-/* ──────── GEVAAR PULSEREN ──────── */
-@keyframes dangerPulse {
-  from { opacity: 0.8; }
-  to   { opacity: 1; box-shadow: inset 0 0 8px rgba(255,0,0,0.5); }
-}
-
-/* ──────── STATUSBERICHT ──────── */
 @keyframes msgFade {
-  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
-  70%  { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  0%   { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  10%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75%  { opacity: 1; transform: translateX(-50%) translateY(-3px); }
   100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
 }
-
-/* ──────── PUNTEN POPUP ──────── */
 @keyframes floatUp {
   0%   { opacity: 1; transform: translateY(0) scale(1); }
   60%  { opacity: 1; transform: translateY(-40px) scale(1.2); }
   100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
 }
+@keyframes comboPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+.combo-pop { animation: comboPop 0.4s ease; }
 
-/* ──────── COMBO POP ──────── */
-@keyframes comboPop {
-  0%   { transform: translateX(-50%) scale(1); }
-  50%  { transform: translateX(-50%) scale(1.4); }
-  100% { transform: translateX(-50%) scale(1); }
+@keyframes usablePulse { from { box-shadow: 0 0 6px rgba(125, 255, 207, 0.4); } to { box-shadow: 0 0 16px rgba(125, 255, 207, 0.95); } }
+@keyframes dangerPulse { from { opacity: 0.75; } to { opacity: 1; } }
+@keyframes bucketFull { from { transform: scale(1) rotate(-4deg); } to { transform: scale(1.07) rotate(4deg); } }
+@keyframes clogWarningPulse { from { opacity: 0.8; transform: translateX(-50%) scale(0.97); } to { opacity: 1; transform: translateX(-50%) scale(1.04); } }
+
+@keyframes overflowShake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-5px, 3px); }
+  40% { transform: translate(5px, -3px); }
+  60% { transform: translate(-4px, -2px); }
+  80% { transform: translate(4px, 2px); }
 }
+.overflow-shake { animation: overflowShake 0.12s 5; }
 
-/* ──────── USABLE PULSEREN ──────── */
-@keyframes usablePulse {
-  from { box-shadow: 0 0 6px rgba(42,157,143,0.4); }
-  to   { box-shadow: 0 0 14px rgba(42,157,143,0.8); }
-}
-
-/* ──────── SCHERM INTREDE ──────── */
-@keyframes screenEnter {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.screen-enter { animation: screenEnter 0.3s ease; }
-
-/* ──────── MENU UITKLAP ──────── */
-@keyframes menuSlide {
-  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ──────── WATER-STIJG PULSEREN (verstopping) ──────── */
-@keyframes waterRise {
-  from { transform: scaleY(1); }
-  to   { transform: scaleY(1.04); }
-}
-.clogged-state #bowl-water { animation: waterRise 0.8s ease-in-out infinite alternate; }
-
-/* ──────── CLOG PROP ──────── */
-/* Prop valt de kom in */
-@keyframes clogPropDrop {
-  0%   { transform: translate(-50%, calc(-50% - 55px)); opacity: 0; }
-  65%  { transform: translate(-50%, calc(-50% + 7px));  opacity: 1; }
-  82%  { transform: translate(-50%, calc(-50% - 4px));  opacity: 1; }
-  100% { transform: translate(-50%, -50%);              opacity: 1; }
-}
-#clog-prop.dropping { animation: clogPropDrop 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
-
-/* Prop dobbert terwijl het toilet verstopt is */
-@keyframes clogPropBob {
-  from { transform: translate(-50%, calc(-50% - 3px)) rotate(-7deg) scale(1);    }
-  to   { transform: translate(-50%, calc(-50% + 3px)) rotate(7deg)  scale(1.07); }
-}
-#clog-prop.bobbing { animation: clogPropBob 0.9s ease-in-out infinite alternate; }
-
-/* Prop reageert op chaos-gereedschap (schuddt maar gaat niet weg) */
-@keyframes clogPropChaos {
-  0%,100% { transform: translate(-50%, -50%) rotate(0deg)   scale(1);   }
-  20%     { transform: translate(-50%, -50%) rotate(-16deg) scale(1.12); }
-  40%     { transform: translate(-50%, -50%) rotate(16deg)  scale(1.12); }
-  60%     { transform: translate(-50%, -50%) rotate(-9deg)  scale(0.92); }
-  80%     { transform: translate(-50%, -50%) rotate(9deg)   scale(0.92); }
-}
-#clog-prop.chaos-shake { animation: clogPropChaos 0.5s ease; }
-
-/* ──────── CLOG WARNING PULSEREN ──────── */
-@keyframes clogWarningPulse {
-  from { opacity: 0.8; transform: translateX(-50%) scale(0.97); }
-  to   { opacity: 1;   transform: translateX(-50%) scale(1.03); }
-}
-
-/* ──────── MAND ──────── */
-@keyframes basketFull {
-  from { transform: scale(1) rotate(-3deg); }
-  to   { transform: scale(1.06) rotate(3deg); }
-}
-.basket-btn.basket-full { animation: basketFull 0.45s ease-in-out infinite alternate; }
-
-/* ──────── ONTSTOPPINGS-BANNER ──────── */
 @keyframes unclogBanner {
   0%   { opacity: 0; transform: translateX(-50%) scale(0.4) rotate(-6deg); }
-  18%  { opacity: 1; transform: translateX(-50%) scale(1.2) rotate(2deg);  }
-  32%  { opacity: 1; transform: translateX(-50%) scale(1.0) rotate(0deg);  }
-  72%  { opacity: 1; transform: translateX(-50%) scale(1.0) translateY(0); }
+  18%  { opacity: 1; transform: translateX(-50%) scale(1.15) rotate(2deg); }
+  32%  { opacity: 1; transform: translateX(-50%) scale(1); }
+  72%  { opacity: 1; transform: translateX(-50%) scale(1); }
   100% { opacity: 0; transform: translateX(-50%) scale(0.85) translateY(-28px); }
 }
-
-/* ──────── LEVEL-UP BANNER ──────── */
 @keyframes levelUpBanner {
-  0%   { opacity: 0; transform: translateX(-50%) scale(0.3) rotate(-8deg);  }
-  18%  { opacity: 1; transform: translateX(-50%) scale(1.25) rotate(2deg);  }
-  32%  { opacity: 1; transform: translateX(-50%) scale(1.0)  rotate(0deg);  }
-  75%  { opacity: 1; transform: translateX(-50%) scale(1.0)  translateY(0); }
-  100% { opacity: 0; transform: translateX(-50%) scale(0.9)  translateY(-36px); }
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.3) rotate(-8deg); }
+  18%  { opacity: 1; transform: translateX(-50%) scale(1.2) rotate(2deg); }
+  32%  { opacity: 1; transform: translateX(-50%) scale(1); }
+  75%  { opacity: 1; transform: translateX(-50%) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) scale(0.9) translateY(-36px); }
+}
+
+/* Chaos-effecten */
+@keyframes chaosFloat { from { transform: translateY(0) rotate(-10deg); } to { transform: translateY(-18px) rotate(10deg); } }
+@keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(105vh) rotate(720deg); opacity: 0; } }
+@keyframes flamingoBounce { from { transform: translateX(-50%) translateY(0) rotate(-5deg); } to { transform: translateX(-50%) translateY(-20px) rotate(5deg); } }
+@keyframes discoFlash {
+  0%   { background: rgba(255, 0, 128, 0.18); }
+  25%  { background: rgba(0, 200, 255, 0.18); }
+  50%  { background: rgba(255, 200, 0, 0.18); }
+  75%  { background: rgba(0, 255, 100, 0.18); }
+  100% { background: rgba(200, 0, 255, 0.18); }
+}
+
+/* Minder beweging als het toestel daarom vraagt */
+@media (prefers-reduced-motion: reduce) {
+  .chaos-disco, .overflow-shake, .tool-btn.usable, .bucket-btn.full { animation: none; }
 }

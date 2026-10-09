@@ -1,50 +1,21 @@
-// ============================================================
-// THE FLUSH FACTOR — clog.js
-// Verstoppingssysteem: kans, waterstand, overloop.
-// Pas CLOG_CONFIG aan om het spel moeilijker/makkelijker te maken.
-// ============================================================
-
-export const CLOG_CONFIG = {
-  // Kans per seconde dat een verstopping optreedt (basis)
-  baseChancePerSecond: 0.008,
-  // Extra kans per minuut speeltijd (oploopend gevaar)
-  extraChancePerMinute: 0.004,
-  // Maximum totale kans per seconde
-  maxChancePerSecond: 0.05,
-  // Minimale tijd (ms) tussen twee verstoppingen
-  minTimeBetweenClogs: 15000,
-  // Water stijgt X% per seconde als verstopt
-  waterRiseRate: 6,
-  // Water daalt X% per seconde als niet verstopt
-  waterDrainRate: 8,
-  // Overloop treedt op bij X%
-  overflowThreshold: 100,
-  // Seconden dat overloopstraf actief is
-  overflowDuration: 2.5,
-  // Startwaarde waterstand bij nieuwe verstopping
-  clogStartWaterLevel: 15,
-};
+// Verstoppingssysteem: kans, waterstand, overloop. Geen DOM, geen 3D.
+import { CLOG_CONFIG } from './data/config.js';
 
 export class ClogSystem {
   constructor(config = CLOG_CONFIG) {
-    this.cfg = config;
+    this.cfg = { ...config };
     this.isClogged = false;
     this.waterLevel = 0;          // 0–100
     this.isOverflowing = false;
     this.overflowTimer = 0;
     this.timeSinceLastClog = 0;   // ms
     this.totalPlaytime = 0;       // ms
+    this.paused = false;          // testen: geen willekeurige verstoppingen
     this._listeners = {};
   }
 
-  on(event, fn) {
-    if (!this._listeners[event]) this._listeners[event] = [];
-    this._listeners[event].push(fn);
-  }
-
-  _emit(event, data) {
-    (this._listeners[event] || []).forEach(fn => fn(data));
-  }
+  on(event, fn) { (this._listeners[event] ||= []).push(fn); }
+  _emit(event) { (this._listeners[event] || []).forEach(fn => fn()); }
 
   update(dt) {
     this.totalPlaytime += dt;
@@ -53,37 +24,29 @@ export class ClogSystem {
     if (this.isOverflowing) {
       this.overflowTimer -= dt;
       if (this.overflowTimer <= 0) {
+        // De verstopping blijft, maar de speler krijgt een nieuwe kans.
         this.isOverflowing = false;
         this.waterLevel = 60;
-        // Verstopping blijft, maar we geven de speler een kans
       }
       return;
     }
 
     if (this.isClogged) {
       this.waterLevel = Math.min(100, this.waterLevel + this.cfg.waterRiseRate * dtSec);
-      if (this.waterLevel >= this.cfg.overflowThreshold) {
-        this._triggerOverflow();
-      }
-    } else {
-      this.waterLevel = Math.max(0, this.waterLevel - this.cfg.waterDrainRate * dtSec);
-      this.timeSinceLastClog += dt;
+      if (this.waterLevel >= this.cfg.overflowThreshold) this._triggerOverflow();
+      return;
+    }
 
-      if (this.timeSinceLastClog >= this.cfg.minTimeBetweenClogs) {
-        const chance = this._calcChance(dtSec);
-        if (Math.random() < chance) {
-          this._triggerClog();
-        }
-      }
+    this.waterLevel = Math.max(0, this.waterLevel - this.cfg.waterDrainRate * dtSec);
+    this.timeSinceLastClog += dt;
+    if (!this.paused && this.timeSinceLastClog >= this.cfg.minTimeBetweenClogs && Math.random() < this._chance(dtSec)) {
+      this._triggerClog();
     }
   }
 
-  _calcChance(dtSec) {
+  _chance(dtSec) {
     const minutes = this.totalPlaytime / 60000;
-    const extra = Math.min(
-      this.cfg.maxChancePerSecond - this.cfg.baseChancePerSecond,
-      minutes * this.cfg.extraChancePerMinute
-    );
+    const extra = Math.min(this.cfg.maxChancePerSecond - this.cfg.baseChancePerSecond, minutes * this.cfg.extraChancePerMinute);
     return (this.cfg.baseChancePerSecond + extra) * dtSec;
   }
 
@@ -91,38 +54,32 @@ export class ClogSystem {
     this.isClogged = true;
     this.timeSinceLastClog = 0;
     this.waterLevel = this.cfg.clogStartWaterLevel;
-    this._emit('clog', null);
+    this._emit('clog');
   }
 
   _triggerOverflow() {
     this.isOverflowing = true;
     this.overflowTimer = this.cfg.overflowDuration * 1000;
     this.waterLevel = 100;
-    this._emit('overflow', null);
+    this._emit('overflow');
   }
 
-  // Weg met de verstopping (gebruikt door gereedschap)
-  resolve(waterReduction = 100) {
-    this.waterLevel = Math.max(0, this.waterLevel - waterReduction);
-    if (this.waterLevel <= 0) {
-      this.isClogged = false;
-      this.waterLevel = 0;
-      this._emit('resolved', null);
-      return true; // volledig opgelost
-    }
-    return false; // deels opgelost
+  // Gereedschap haalt `power` procent water weg; bij 0 is de verstopping opgelost.
+  resolve(power = 100) {
+    this.waterLevel = Math.max(0, this.waterLevel - power);
+    if (this.waterLevel > 0) return false;
+    this.isClogged = false;
+    this.isOverflowing = false;
+    this._emit('resolved');
+    return true;
   }
 
-  // Pas moeilijkheid aan op basis van level
-  setLevel(level, cfg) {
-    if (!cfg) return;
-    this.cfg.waterRiseRate        = cfg.waterRiseRate;
-    this.cfg.maxChancePerSecond   = cfg.maxChance;
-    this.cfg.minTimeBetweenClogs  = cfg.minTimeBetweenClogs;
+  setLevel(levelCfg) {
+    if (!levelCfg) return;
+    this.cfg.waterRiseRate = levelCfg.waterRiseRate;
+    this.cfg.maxChancePerSecond = levelCfg.maxChance;
+    this.cfg.minTimeBetweenClogs = levelCfg.minTimeBetweenClogs;
   }
 
-  // Forceer een verstopping (voor testen/debug)
-  forceClog() {
-    this._triggerClog();
-  }
+  forceClog() { if (!this.isClogged) this._triggerClog(); }
 }

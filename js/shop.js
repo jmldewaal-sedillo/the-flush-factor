@@ -1,292 +1,184 @@
-// ============================================================
-// THE FLUSH FACTOR — shop.js
-// Winkellogica: accordion-layout, kopen, cosmetica toepassen.
-// ============================================================
-
-import { COSMETICS, PREMIUM_TOOLS, BASKET_CONFIG } from './items.js';
-import { icon } from './icons.js';
-import { PACKAGES, purchaseService } from './purchases.js';
-
-// ──────── CATEGORIE-DEFINITIES ────────
-const CATEGORIES = [
-  { id: 'buy',        label: 'Punten kopen',   icon: 'coins',         type: 'buy' },
-  { id: 'tools',      label: 'Gereedschap',    icon: 'wrench',        type: 'tools' },
-  { id: 'toilets',    label: 'Toiletmodellen', icon: 'toilet',        type: 'cosmetics', cat: 'toilet' },
-  { id: 'tiles',      label: 'Tegelpatronen',  icon: 'grid-2x2',      type: 'cosmetics', cat: 'tiles' },
-  { id: 'floors',     label: 'Vloeren',        icon: 'layers',        type: 'cosmetics', cat: 'floor' },
-  { id: 'decoration', label: 'Decoratie',      icon: 'sparkles',      type: 'cosmetics', cat: 'decoration' },
-  { id: 'baskets',    label: 'Manden',         icon: 'wicker-basket', type: 'baskets' },
-];
+// Winkel: één overzicht met uitklapbare categorieën (data/shop.js). Kopen, activeren, plaatsen.
+import { SHOP_CATEGORIES } from './data/shop.js';
+import { SHOP_TOOLS } from './data/tools.js';
+import { BUCKETS } from './data/buckets.js';
+import { COSMETIC_LISTS, DECORATIONS } from './data/cosmetics.js';
+import { PACKAGES } from './data/packages.js';
+import { T } from './data/texts.js';
+import { icon } from './ui/icons.js';
+import { purchaseService } from './purchases.js';
 
 const OPEN_KEY = 'flushfactor_shop_open';
+const fmt = n => n.toLocaleString('nl-NL');
 
-export class ShopSystem {
-  constructor(gameState, inventorySystem) {
-    this.state = gameState;
-    this.inv = inventorySystem;
-    this._onPurchase = null;   // callback(item, type)
+export class Shop {
+  // actions: { activateCosmetic(slot, id), toggleDecor(def), setBucket(id), addTool(id), changed() }
+  constructor(state, actions) {
+    this.state = state;
+    this.actions = actions;
+    this.screen = document.getElementById('shop-screen');
+    this.list = document.getElementById('shop-items');
+    this.msg = document.getElementById('shop-message');
+    this.open_ = this._loadOpen();
   }
 
-  onPurchase(fn) { this._onPurchase = fn; }
+  _loadOpen() {
+    try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY) || '[]')); } catch { return new Set(); }
+  }
+  _saveOpen() {
+    try { localStorage.setItem(OPEN_KEY, JSON.stringify([...this.open_])); } catch { /* geen opslag */ }
+  }
 
   open() {
-    const screen = document.getElementById('shop-screen');
-    const game   = document.getElementById('game-screen');
-    if (!screen || !game) return;
     this.render();
-    game.hidden = true;
-    screen.hidden = false;
-    screen.classList.add('screen-enter');
-    setTimeout(() => screen.classList.remove('screen-enter'), 300);
+    this.screen.hidden = false;
+    document.body.dataset.screen = 'shop';
+  }
+  close() {
+    this.screen.hidden = true;
+    delete document.body.dataset.screen;
   }
 
-  close() {
-    const screen = document.getElementById('shop-screen');
-    const game   = document.getElementById('game-screen');
-    if (!screen || !game) return;
-    screen.hidden = true;
-    game.hidden = false;
+  // Per bron: de lijst en hoe een item zich gedraagt.
+  _source(cat) {
+    const s = this.state;
+    const owned = item => item.price === 0 || s.purchased.has(item.id);
+    switch (cat.source) {
+      case 'tools': return {
+        items: SHOP_TOOLS,
+        owned: i => s.ownedTools.includes(i.id),
+        locked: i => (i.minLevel || 1) > s.level,
+        onBuy: i => { this.actions.addTool(i.id); return T.shop.toolAdded(i.name); },
+      };
+      case 'cosmetic': return {
+        items: COSMETIC_LISTS[cat.slot], owned,
+        active: i => s.cosmetics[cat.slot] === i.id,
+        onUse: i => this.actions.activateCosmetic(cat.slot, i.id),
+      };
+      case 'decoration': return {
+        items: DECORATIONS, owned,
+        active: i => s.decor[i.anchor] === i.id, activeLabel: T.shop.placed,
+        onUse: i => { const placed = this.actions.toggleDecor(i); return placed ? T.shop.decoPlaced(i.name) : T.shop.decoRemoved(i.name); },
+        toggles: true,
+      };
+      case 'buckets': return {
+        items: BUCKETS, owned,
+        active: i => s.bucketId === i.id,
+        onUse: i => this.actions.setBucket(i.id),
+        detail: i => `${i.liters} liter`,
+      };
+      default: return { items: [] };
+    }
   }
 
   render() {
-    const container = document.getElementById('shop-items');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const accordion = document.createElement('div');
-    accordion.className = 'shop-accordion';
-
-    // Laad persistente open-staat
-    let openIds;
-    try { openIds = new Set(JSON.parse(localStorage.getItem(OPEN_KEY) || '[]')); }
-    catch { openIds = new Set(); }
-
-    CATEGORIES.forEach(cat => {
-      const section = this._buildCategory(cat, openIds.has(cat.id));
-      accordion.appendChild(section);
-    });
-
-    container.appendChild(accordion);
-
-    // Luister naar purchase:pending voor 'binnenkort beschikbaar'-melding
-    document.addEventListener('purchase:pending', this._handlePurchasePending.bind(this), { once: true });
+    this.list.textContent = '';
+    for (const cat of SHOP_CATEGORIES) this.list.appendChild(this._category(cat));
   }
 
-  _handlePurchasePending() {
-    this._showShopMsg('Binnenkort beschikbaar');
-  }
+  _category(cat) {
+    const isOpen = this.open_.has(cat.id);
+    const src = this._source(cat);
+    const wrap = document.createElement('section');
+    wrap.className = 'shop-category';
+    wrap.dataset.cat = cat.id;
 
-  _buildCategory(cat, startOpen) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'shop-category';
-
-    // Teller berekenen
-    const { owned, total } = this._countCategory(cat);
-    const countLabel = total > 0 ? `<span class="shop-category-count">${owned}/${total}</span>` : '';
-
-    const btn = document.createElement('button');
-    btn.className = 'shop-category-header';
-    btn.setAttribute('aria-expanded', startOpen ? 'true' : 'false');
-    btn.innerHTML = `
-      <span class="icon-wrap">${icon(cat.icon, 22)}</span>
-      <span class="shop-category-label">${cat.label}</span>
-      ${countLabel}
-      <span class="shop-category-arrow icon-wrap">${icon('chevron-down', 18)}</span>
-    `;
+    const count = cat.source === 'packages' ? '' : `<span class="shop-category-count">${src.items.filter(src.owned).length}/${src.items.length}</span>`;
+    const head = document.createElement('button');
+    head.className = 'shop-category-header';
+    head.setAttribute('aria-expanded', String(isOpen));
+    head.innerHTML = `${icon(cat.icon, 22)}<span class="shop-category-label">${cat.label}</span>${count}${icon('chevron-down', 18, 'shop-category-arrow')}`;
 
     const body = document.createElement('div');
-    body.className = 'shop-category-body' + (startOpen ? ' open' : '');
-
-    const inner = document.createElement('div');
-    inner.className = 'shop-category-body-inner';
-
-    if (cat.type === 'buy') {
-      inner.appendChild(this._buildBuySection());
-    } else if (cat.type === 'tools') {
-      inner.appendChild(this._buildGrid(PREMIUM_TOOLS, 'tool'));
-    } else if (cat.type === 'baskets') {
-      inner.appendChild(this._buildGrid(BASKET_CONFIG, 'basket'));
-    } else if (cat.type === 'cosmetics') {
-      const items = COSMETICS.filter(c => c.category === cat.cat);
-      inner.appendChild(this._buildGrid(items, 'cosmetic'));
-    }
-
-    body.appendChild(inner);
-    wrapper.appendChild(btn);
-    wrapper.appendChild(body);
-
-    btn.addEventListener('click', () => {
-      const isOpen = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-      body.classList.toggle('open', !isOpen);
-      this._persistOpenState();
-    });
-
-    return wrapper;
-  }
-
-  _countCategory(cat) {
-    let items = [];
-    if (cat.type === 'tools')      items = PREMIUM_TOOLS;
-    else if (cat.type === 'baskets')  items = BASKET_CONFIG;
-    else if (cat.type === 'cosmetics') items = COSMETICS.filter(c => c.category === cat.cat);
-    else return { owned: 0, total: 0 };
-
-    const total = items.length;
-    const owned = items.filter(item => {
-      if (item.price === 0) return true;
-      if (item.capacity !== undefined) return item.id === (this.state.activeBasket || 'basket-s');
-      return this.state.purchasedItems.has(item.id);
-    }).length;
-    return { owned, total };
-  }
-
-  _persistOpenState() {
-    const openIds = [...document.querySelectorAll('.shop-category-header[aria-expanded="true"]')]
-      .map(btn => btn.closest('.shop-category')?.dataset.catId)
-      .filter(Boolean);
-    try { localStorage.setItem(OPEN_KEY, JSON.stringify(openIds)); } catch {}
-  }
-
-  _buildBuySection() {
+    body.className = 'shop-category-body';
+    body.classList.toggle('open', isOpen);
     const grid = document.createElement('div');
     grid.className = 'shop-grid';
+    if (cat.source === 'packages') PACKAGES.forEach(p => grid.appendChild(this._packageCard(p)));
+    else src.items.forEach(item => grid.appendChild(this._card(item, src)));
+    body.appendChild(grid);
 
-    PACKAGES.forEach(pkg => {
-      const card = document.createElement('div');
-      card.className = 'shop-card buy-card';
-
-      const badgeHtml = pkg.badge
-        ? `<span class="badge badge-popular">${pkg.badge}</span>`
-        : '';
-
-      card.innerHTML = `
-        <div class="shop-card-icon">${icon('coins', 32)}</div>
-        <div class="shop-card-name">${pkg.label}</div>
-        <div class="shop-card-price">
-          <span class="price-tag buy-price">${pkg.price}</span>
-          ${badgeHtml}
-        </div>
-      `;
-      card.addEventListener('click', () => purchaseService.buy(pkg.id));
-      grid.appendChild(card);
+    head.addEventListener('click', () => {
+      const open = !this.open_.has(cat.id);
+      open ? this.open_.add(cat.id) : this.open_.delete(cat.id);
+      head.setAttribute('aria-expanded', String(open));
+      body.classList.toggle('open', open);
+      this._saveOpen();
     });
 
-    return grid;
+    wrap.append(head, body);
+    return wrap;
   }
 
-  _buildGrid(items, type) {
-    const grid = document.createElement('div');
-    grid.className = 'shop-grid';
-
-    items.forEach(item => {
-      const minLevel = item.minLevel || 1;
-      const locked   = type === 'tool' && minLevel > this.state.level;
-      const owned    = !locked && (this.state.purchasedItems.has(item.id) || item.price === 0 ||
-                       (type === 'basket' && item.id === 'basket-s'));
-      const active   = !locked && this._isActive(item);
-      const canBuy   = !locked && !owned && this.state.score >= item.price;
-
-      const card = document.createElement('div');
-      card.className = [
-        'shop-card',
-        locked                        ? 'locked'    : '',
-        owned                         ? 'owned'     : '',
-        active                        ? 'active'    : '',
-        !locked && !owned && !canBuy  ? 'expensive' : '',
-      ].filter(Boolean).join(' ');
-
-      if (locked) {
-        card.innerHTML = `
-          <div class="shop-card-icon" style="opacity:.4">${icon(item.icon, 32)}</div>
-          <div class="shop-card-name">${item.name}</div>
-          <div class="shop-card-desc">${item.description}</div>
-          <div class="shop-card-price"><span class="badge badge-locked">${icon('lock', 12)} Lv.${minLevel}</span></div>
-        `;
-      } else {
-        card.innerHTML = `
-          <div class="shop-card-icon">${icon(item.icon, 32)}</div>
-          <div class="shop-card-name">${item.name}</div>
-          <div class="shop-card-desc">${item.description || ''}</div>
-          <div class="shop-card-price">
-            ${active
-              ? '<span class="badge badge-active">Actief</span>'
-              : owned
-              ? '<span class="badge badge-owned">In bezit</span>'
-              : `<span class="price-tag">${icon('coins', 12)} ${item.price}</span>`}
-          </div>
-        `;
-        card.addEventListener('click', () => this._handleCardClick(item, type, owned, active));
-      }
-
-      grid.appendChild(card);
+  _packageCard(pkg) {
+    const card = document.createElement('button');
+    card.className = 'shop-card buy-card';
+    card.dataset.id = pkg.id;
+    card.innerHTML = `
+      <span class="shop-card-icon">${icon('coins', 34)}</span>
+      <span class="shop-card-name">${pkg.label}</span>
+      <span class="shop-card-price"><span class="price-tag buy-price">${pkg.price}</span>${pkg.badge ? `<span class="badge badge-popular">${pkg.badge}</span>` : ''}</span>`;
+    card.addEventListener('click', async () => {
+      await purchaseService.buy(pkg.id);
+      this.say(T.shop.purchaseSoon);
     });
-
-    return grid;
+    return card;
   }
 
-  _handleCardClick(item, type, owned, active) {
-    if (active) return;
+  _card(item, src) {
+    const s = this.state;
+    const locked = src.locked?.(item) || false;
+    const owned = !locked && src.owned(item);
+    const active = owned && (src.active?.(item) || false);
+    const affordable = s.score >= item.price;
 
-    if (owned || item.price === 0) {
-      if (type === 'cosmetic') {
-        this._activateCosmetic(item);
-        this._onPurchase?.(item, 'activate');
-      } else if (type === 'basket') {
-        this._activateBasket(item);
-        this._onPurchase?.(item, 'activate');
-      }
-      return;
-    }
+    const card = document.createElement('button');
+    card.className = ['shop-card', locked && 'locked', owned && 'owned', active && 'active', !locked && !owned && !affordable && 'expensive'].filter(Boolean).join(' ');
+    card.dataset.id = item.id;
+    card.disabled = locked;
 
-    if (this.state.score < item.price) {
-      this._showShopMsg(`Niet genoeg punten! (${item.price} nodig)`);
-      return;
-    }
+    let status;
+    if (locked) status = `<span class="badge badge-locked">${icon('lock', 12)} ${T.shop.lockedLevel(item.minLevel)}</span>`;
+    else if (active) status = `<span class="badge badge-active">${src.activeLabel || T.shop.active}</span>`;
+    else if (owned) status = `<span class="badge badge-owned">${T.shop.owned}</span>`;
+    else status = `<span class="price-tag">${icon('coins', 13)} ${fmt(item.price)}</span>`;
 
-    this.state.score -= item.price;
-    this.state.purchasedItems.add(item.id);
+    card.innerHTML = `
+      <span class="shop-card-icon">${icon(item.icon, 34)}</span>
+      <span class="shop-card-name">${item.name}</span>
+      ${src.detail ? `<span class="shop-card-detail">${src.detail(item)}</span>` : ''}
+      <span class="shop-card-desc">${item.description || ''}</span>
+      <span class="shop-card-price">${status}</span>`;
 
-    if (type === 'tool') {
-      this.inv.addTool(item.id);
-      this._showShopMsg(`${item.name} toegevoegd aan inventaris!`);
-    } else if (type === 'basket') {
-      this._activateBasket(item);
-      this._showShopMsg(`${item.name} gekocht!`);
+    if (!locked) card.addEventListener('click', () => this._click(item, src, owned, active));
+    return card;
+  }
+
+  _click(item, src, owned, active) {
+    const s = this.state;
+    let message = null;
+    if (owned) {
+      if (active && !src.toggles) return;
+      if (!src.onUse) return;
+      message = src.onUse(item);
     } else {
-      this._activateCosmetic(item);
-      this._showShopMsg(`${item.name} gekocht!`);
+      if (s.score < item.price) return this.say(T.shop.notEnough(fmt(item.price)));
+      s.score -= item.price;
+      s.purchased.add(item.id);
+      message = src.onBuy ? src.onBuy(item) : (src.onUse?.(item), T.shop.bought(item.name));
+      if (typeof message !== 'string') message = T.shop.bought(item.name);
     }
-
-    this._onPurchase?.(item, 'buy');
+    this.actions.changed();
     this.render();
+    if (typeof message === 'string') this.say(message);
   }
 
-  _activateBasket(item) {
-    this.state.basketCapacity = item.capacity;
-    this.state.activeBasket = item.id;
-    document.dispatchEvent(new CustomEvent('basket:upgraded', { detail: item }));
-  }
-
-  _activateCosmetic(item) {
-    this.state.activeCosmetics[item.category] = item.id;
-    document.dispatchEvent(new CustomEvent('cosmetic:changed', { detail: item }));
-  }
-
-  _isActive(item) {
-    if (item.capacity !== undefined) {
-      return this.state.activeBasket === item.id ||
-             (item.id === 'basket-s' && !this.state.activeBasket);
-    }
-    return this.state.activeCosmetics[item.category] === item.id;
-  }
-
-  _showShopMsg(msg) {
-    const el = document.getElementById('shop-message');
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.add('visible');
+  say(text) {
+    this.msg.textContent = text;
+    this.msg.classList.remove('visible');
+    void this.msg.offsetWidth;          // herstart de animatie, ook bij dezelfde tekst
+    this.msg.classList.add('visible');
     clearTimeout(this._msgTimer);
-    this._msgTimer = setTimeout(() => el.classList.remove('visible'), 2500);
+    this._msgTimer = setTimeout(() => this.msg.classList.remove('visible'), 2400);
   }
 }

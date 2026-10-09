@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>model-viewer (ontwikkelhulp)</title>
+<style>html,body{margin:0;background:#8899aa}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../js/vendor/three.module.min.js"}}</script>
+<script type="module">
+// Ontwikkelhulp: toont één GLB. ?model=pad&view=front|top|side|q
+import * as THREE from 'three';
+import { GLTFLoader } from '../js/vendor/GLTFLoader.js';
+const q = new URLSearchParams(location.search);
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+r.outputColorSpace = THREE.SRGBColorSpace;
+const s = new THREE.Scene(); s.add(new THREE.HemisphereLight(0xffffff, 0x666666, 2.2));
+const d = new THREE.DirectionalLight(0xffffff, 2); d.position.set(2, 4, 3); s.add(d);
+const c = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.01, 100000);
+new GLTFLoader().load(q.get('model'), g => {
+  const o = g.scene; s.add(o);
+  const b = new THREE.Box3().setFromObject(o), z = b.getSize(new THREE.Vector3()), m = b.getCenter(new THREE.Vector3());
+  const R = Math.max(z.x, z.y, z.z) * 2.2;
+  const v = { front: [0, 0.15, 1], top: [0, 1, 0.001], side: [1, 0.15, 0], q: [0.6, 0.55, 0.8], back: [0, 0.15, -1] }[q.get('view') || 'q'];
+  c.position.set(m.x + v[0] * R, m.y + v[1] * R, m.z + v[2] * R); c.lookAt(m);
+  s.add(new THREE.AxesHelper(Math.max(z.x, z.y, z.z)));
+  r.render(s, c);
+  const meshes = []; o.traverse(n => n.isMesh && meshes.push(n.name + ':' + n.geometry.attributes.position.count));
+  window.__info = { size: z.toArray().map(x => +x.toFixed(3)), min: b.min.toArray().map(x => +x.toFixed(3)), max: b.max.toArray().map(x => +x.toFixed(3)), meshes };
+  setTimeout(() => { r.render(s, c); document.title = 'ready'; }, 600);
+});
+</script>

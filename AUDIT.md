@@ -197,7 +197,7 @@ screenshots die ik zelf nakijk, en CI weer groen.
 
 ---
 
-## 9. Plan voor stap 2 (volgorde)
+## 9. Plan voor stap 2 (volgorde) — uitgevoerd, zie Deel 2
 
 1. **Fundament**: data naar `js/data/`, `game.js` en `renderer3d.js` opsplitsen, 2D-resten eruit, test-haak erin.
 2. **Service worker/manifest** opnieuw (relatieve paden, echte iconen) + tests op submap.
@@ -211,10 +211,105 @@ screenshots die ik zelf nakijk, en CI weer groen.
 6. **ROADMAP 50–57** uitvoeren, zodra ik de tekst heb.
 7. **Tests** opnieuw, screenshots nakijken, docs bijwerken, commit + push `rebuild`.
 
-## 10. Open vragen
+## 10. Open vragen — beantwoord, zie Deel 2
 
 1. Wat is de tekst van ROADMAP-punten **50, 51, 53, 54, 56, 57** (en de precieze van 52 en 55)?
 2. Punt 55: op welk toestel/browser breekt het beeld, en geïnstalleerd als app of in de browser? Een screenshot helpt het meest.
 3. Akkoord met het weghalen van de 2D-noodmodus?
 4. Iconen: akkoord met Lucide + echte game-icons.net (vraagt naamsvermelding), of liever één set zonder naamsvermelding?
 5. Wat is `3TrL3C98ts7rgspUppBufk.jpg` in de projectroot?
+
+---
+---
+
+# Deel 2 — Wat er in stap 2 is gedaan
+
+Uitgevoerd op branch `rebuild` na akkoord. De bevindingen hierboven zijn de stand vóór de rebuild en blijven
+staan als naslag; dit deel beschrijft het resultaat.
+
+## Antwoorden en beslissingen
+
+| Onderwerp | Besluit |
+|---|---|
+| ROADMAP 50–63 | Toegevoegd aan `ROADMAP.md`; 50–57 uitgevoerd, 58–63 alleen vastgelegd |
+| 2D-noodmodus | Verwijderd; vervangen door de melding "WebGL niet beschikbaar" |
+| Iconen | Lucide (interface) + echte game-icons.net (spelvoorwerpen), lokaal in `assets/icons/` |
+| Referentiefoto | Verplaatst naar `assets/reference/toilet-referentie.jpg`; staat in `.gitignore`, dus niet in de repo, niet op de site en niet in de service-worker-cache |
+| `kfc_bucket`, Quaternius wc-papier | Uit `credits.txt` gehaald; wc-rol is zelf gemaakt |
+| Old Rusted Bucket | Maker volgens het bestand: **GameDev Nick**. **Te bevestigen** (in de eerste notitie stond Coozy) |
+
+## Per 3D-object: gedownload of zelf gemaakt
+
+| Object | Keuze | Bron / bestand | Waarom |
+|---|---|---|---|
+| Toilet | **Gedownload** | HippoStance, `assets/models/toilet.glb` | Organische vorm; gebruikt nu de eigen textures van het model, met alleen glanslaag en omgevingsreflectie erbij. Het deksel staat in het model al open (de oude code verborg het) |
+| Houten emmer (level 1, 20 L) | **Gedownload** | romullus, `wooden_bucket.glb` | Duigen, touw en knopen zijn als model veel geloofwaardiger dan een cilinder |
+| Roestige emmer (30 L) | **Gedownload** | GameDev Nick, `rusted_bucket.glb` | Roest en deuken |
+| Plastic emmer (50 L) | **Gedownload** | MaX3Dd, `plastic_bucket.glb` | Beugel en vervorming |
+| Zinken emmer (75 L) | **Gedownload** | Kozlov Maksim, `metal_bucket.glb` | Ribbels en houten greep |
+| Dweilemmer XL (100 L) | **Gedownload** | Sousinho, `mop_bucket.glb` | Alleen de grote (gele) emmer uit "Pair of buckets" wordt getoond |
+| Wanden, vloer, plinten | Zelf | `js/three/room.js` | Vlakken met CC0-textures |
+| Wc-rolhouder + rol | Zelf | `js/three/room.js` | Cilinders en een plaatje; hangt nu echt aan de wand |
+| Spiegel, schilderij, poster | Zelf | `js/three/decor.js` | Lijst van balkjes + vlak; afbeelding getekend op canvas |
+| Plank met rollen, wandkastje | Zelf | `js/three/decor.js` | Dozen en cilinders |
+| Plant | Zelf | `js/three/decor.js` | Pot + platte bladeren; oogt goed genoeg, dus geen model nodig |
+| Tegel- en vloerpatronen (schaakbord, sterren, zigzag, marmer, regenboog, lava) | Zelf | `js/three/patterns.js` | Getekend op canvas; waren eerst alleen een kleurtint |
+| Voorwerpen in de verstopping (10 stuks) | Zelf | `js/three/props.js` | Kleine objecten uit bollen, dozen en cilinders; goedkoop en herkenbaar |
+| Water, belletjes, spetters, plas | Zelf | `js/three/water.js`, `effects.js` | Shader en eenvoudige deeltjes |
+
+Geen van de gebruikte modellen heeft een merklogo (nagekeken op renders van elk model; op de dweilemmer staat
+alleen een algemeen "natte vloer"-pictogram).
+
+## Verplaatst naar `assets/_unused/` (niets verwijderd)
+
+| Bestand | Reden |
+|---|---|
+| `_unused/models/toilet.glb` (loafbrr_1, CC0) | Reserve-toilet dat nooit geladen werd |
+| `_unused/originals/models/toilet-2k.glb` | Origineel van het toilet (6,4 MB); het spel laadt de verkleinde versie |
+| `_unused/originals/models/buckets/*.glb` (5 bestanden) | Originelen van de emmers |
+| `_unused/originals/textures/*.jpg` (6 bestanden) | Originele JPG-textures |
+| `_unused/originals/hdri/bathroom.hdr` | Origineel omgevingslicht |
+
+Met `npm run assets` worden de spelversies opnieuw uit deze originelen gemaakt.
+
+## Uit de code verwijderd
+
+- 2D/SVG-noodmodus (SVG-toilet, `#clog-prop`, `#decoration-slot`, bijbehorende CSS en code).
+- Procedureel reserve-toilet, `DRACOLoader.js` (met verwijzing naar een extern CDN) en `OrbitControls.js`.
+- `js/items.js` en `js/icons.js` (inhoud verhuisd naar `js/data/` en de iconen-sprite).
+- De 25 zelfgemaakte "game-icons" met onjuiste naamsvermelding.
+- `unclogChance` bij gereedschap (stond in de data maar werd nergens gebruikt).
+
+## Bewuste afwijkingen (graag even naar kijken)
+
+1. **Vrij draaien is vervangen door camerastanden.** De oude OrbitControls botsten met "swipen tussen de muren".
+   Nu: zes standen, vegen wisselt van muur, rustig slepen is rondkijken (beperkt), knijpen/scrollen is zoomen.
+2. **Categorie "Manden" heet nu "Emmers"**, omdat er alleen nog emmers in staan. Eén woord in `js/data/shop.js`.
+3. **Decoratie is aan/uit per plek** in plaats van "één decoratie tegelijk"; het item "Geen decoratie" is daardoor
+   vervallen (weghalen = nog eens tikken). Er zijn twee items bijgekomen: Plank en Wandkastje.
+4. **Het hokje is 1,3 × 2,2 × 2,5 m** (ROADMAP 27 noemde 0,9–1,0 m breed; punt 35 stond iets breder toe voor decoratie).
+   De voorkant is open; van buiten kijk je door de wanden heen.
+5. **`orientation: portrait` is uit het manifest gehaald**, omdat liggend nu goed werkt.
+6. **Namen van voorwerpen**: "legoblokje" heet "bouwblokje" (geen merknaam).
+7. **Iconen die game-icons.net niet heeft** (toilet, discobal): toilet komt uit Lucide; voor de discobal is het
+   bestaande icoon "mesh-ball" van Lorc gebruikt. De voorwerpen uit de verstopping hebben geen icoon meer nodig,
+   want het zijn nu 3D-objecten.
+
+## Resultaat in cijfers
+
+| | Voor | Na |
+|---|---|---|
+| Eerste laadbeurt | ± 14,6 MB | ± 2,5 MB (test bewaakt < 4 MB); extra emmers laden pas bij gebruik |
+| `assets/` dat het spel kan laden | 34 MB | ± 4,5 MB |
+| Grootste bronbestand | `renderer3d.js`, 1.278 regels | onder de 300 regels per module |
+| Service worker op GitHub Pages | installeerde nooit (404's) | relatieve paden; getest onder een submap, inclusief offline |
+| Tests | 19 tests, wankel, CI rood | zie README; draaien onder een submap, zonder vaste wachttijden |
+
+## Nog open / eerlijk gezegd
+
+- **Echte telefoon**: alles is getest in een headless browser (zonder GPU) met gesimuleerde safe-area.
+  De framesnelheid op een echt toestel en het gedrag bij een echte notch zijn daarmee niet gemeten.
+- **Live-controle van punt 51**: `tests/live.spec.js` controleert de live site in een schoon profiel, maar de live
+  site toont `main`. De rebuild staat pas live na het mergen.
+- **Maker van Old Rusted Bucket**: te bevestigen (zie boven).
+- **Level hangt nog aan het uitgeefbare saldo** en de straffen zijn niet herzien: dat is punt 61.

@@ -1,134 +1,139 @@
-# The Flush Factor 🚽
+# The Flush Factor
 
-Het meest absurde spoelspel ooit gemaakt.
+Het meest absurde spoelspel ooit gemaakt. Mobile-first PWA in vanilla JavaScript met een 3D-wc-hokje (three.js).
 
-## Lokaal starten
+- Live (branch `main`): https://jmldewaal-sedillo.github.io/the-flush-factor/
+- Planning: [ROADMAP.md](ROADMAP.md) · Controle van de rebuild: [AUDIT.md](AUDIT.md) · Bronnen: [CREDITS.md](CREDITS.md)
+
+## Starten en testen
 
 ```bash
-# Optie 1 – Python (altijd beschikbaar)
-cd /home/maggiesedd/Documents/Projecten/Apps/the-flush-factor
-python3 -m http.server 8080
-# Open: http://localhost:8080
-
-# Optie 2 – Node / npx (geen installatie nodig)
-npx serve .
+npm install          # eenmalig (alleen Playwright)
+npm run serve        # http://localhost:5000/the-flush-factor/
 ```
 
-> **Let op:** het spel gebruikt ES modules (`type="module"`), dus het **werkt niet** via `file://`. Gebruik altijd een lokale server.
+De testserver (`tools/serve.mjs`) zet het spel bewust in de submap `/the-flush-factor/`, net als GitHub Pages.
+Een pad dat met `/` begint geeft dan meteen een 404 in plaats van pas op de live site.
 
-## Testen op telefoon
+Het spel gebruikt ES-modules en werkt dus niet via `file://`.
 
-1. Start de server op je computer (zie boven).
-2. Zorg dat je telefoon op hetzelfde Wi-Fi-netwerk zit.
-3. Zoek het lokale IP-adres van je computer:
-   - Linux/Mac: `ip addr` of `hostname -I`
-   - Windows: `ipconfig`
-4. Open op je telefoon: `http://<jouw-ip>:8080`
-5. In Chrome: tik op "Toevoegen aan beginscherm" voor de PWA-ervaring.
+### Op een laptop
+
+Op een breed scherm zonder touch opent het spel in een **preview**: een telefoon- of tabletframe met knoppen voor
+formaat, draaien en de schermuitsparing (Notch / Punch-hole / Geen). De preview geeft de bijbehorende safe-area
+echt door aan het spel, zodat je ziet wat er op een telefoon gebeurt.
+
+| URL-parameter | Gedrag |
+|---|---|
+| `?preview=phone` / `?preview=off` | Preview aan of uit forceren |
+| `?safe=47,0,34,0` | Safe-area simuleren: boven, rechts, onder, links (pixels) |
+| `?quality=low\|medium\|high` | Kwaliteitsniveau forceren (anders automatisch) |
+| `?clogs=off` | Geen willekeurige verstoppingen (handig bij uitproberen) |
+| `?sw=off` | Service worker niet registreren |
+
+### Op een telefoon
+
+Via GitHub Pages (branch `main`). Een andere branch testen: zie "Een branch testen" onderaan.
 
 ## Projectstructuur
 
 ```
-the-flush-factor/
-├── index.html          – Hoofd-HTML (spel + winkel, fullscreen HUD)
-├── manifest.json       – PWA-manifest
-├── sw.js               – Service Worker (offline, v10)
-├── css/
-│   ├── style.css       – Opmaak & layout (floating HUD, safe-area)
-│   └── animations.css  – Alle animaties
-├── js/
-│   ├── items.js        – Alle speldata (gereedschappen, cosmetica, mandconfiguratie)
-│   ├── clog.js         – Verstoppingssysteem
-│   ├── inventory.js    – Gereedschapsbeheer
-│   ├── shop.js         – Winkelsysteem (incl. mandupgrades)
-│   ├── game.js         – Hoofdspellogica & coördinatie
-│   ├── phone-preview.js – Telefoon/tablet-preview op desktop
-│   ├── renderer3d.js   – Three.js 3D-scène (toilet GLB, water, kamer, mand)
-│   └── vendor/
-│       ├── three.module.min.js  – Three.js 0.170.0 (MIT, lokaal voor PWA)
-│       ├── RGBELoader.js        – HDRI-loader (MIT)
-│       ├── OrbitControls.js     – Kamera-bediening (MIT)
-│       ├── GLTFLoader.js        – GLB/GLTF-loader (MIT)
-│       └── DRACOLoader.js       – Draco-decompressie (MIT)
-├── assets/
-│   ├── models/
-│   │   ├── toilet-2k.glb        – Toilet 3D-model (CC BY 4.0, HippoStance/Sketchfab) — primair
-│   │   └── toilet.glb           – Toilet 3D-model (CC0, loafbrr_1/OpenGameArt) — fallback
-│   ├── hdri/
-│   │   └── bathroom.hdr         – Omgevingskaart (CC0, Poly Haven)
-│   ├── textures/
-│   │   ├── Tiles101_1K-JPG_*    – Wandtegels PBR (CC0, ambientCG)
-│   │   └── WoodFloor041_1K-JPG_* – Houten vloer PBR (CC0, ambientCG)
-│   └── CREDITS.md               – Bronvermelding alle assets
-├── tests/
-│   ├── smoke.spec.js            – Playwright smoke-tests (56 tests, 4 formaten)
-│   └── screenshots/             – Automatische schermafbeeldingen
-├── playwright.config.js
-├── README.md
-└── ROADMAP.md
+index.html            Pagina: 3D-scène, zwevende knoppen, winkel, credits
+manifest.json, sw.js  PWA: installeerbaar en offline speelbaar
+css/                  style.css (layout, safe-area), animations.css
+js/
+  game.js             Coördinator: spelregels, game-loop, koppeling logica ↔ weergave
+  state.js            Spelstand, opslaan/laden, migratie van oude opslag
+  clog.js             Verstoppingen: kans, waterstand, overloop          (geen DOM, geen 3D)
+  inventory.js        Gereedschap: bezit, cooldown, gebruik              (geen DOM, geen 3D)
+  shop.js             Winkel met uitklapbare categorieën
+  purchases.js        Koppelpunt voor echte aankopen (nu een stub)
+  events.js           Eventbus tussen logica en weergave
+  renderer3d.js       Bouwt de 3D-scène en luistert naar de eventbus
+  boot.js             Gesimuleerde safe-area (?safe=…)
+  phone-preview.js    Preview op laptop/desktop
+  data/               ALLE inhoud en instellingen (zie hieronder)
+  three/              3D-modules: context, room, toilet, water, bucket, props, decor, camera, effects, patterns
+  ui/                 hud.js (knoppen, meldingen), chaos.js (chaos-effecten), icons.js
+  vendor/, utils/     three.js r170 (MIT)
+assets/
+  models/             toilet.glb + buckets/*.glb (gecomprimeerd)
+  textures/, hdri/    tegels, vloer, omgevingslicht
+  icons/              lucide/, game-icons/ (bron-SVG's), sprite.svg (gegenereerd), app/ (app-iconen)
+  _unused/            originelen en niet-gebruikte modellen (worden niet geladen)
+tools/                serve, build-icons, build-sw, optimize-assets, model-viewer
+tests/                Playwright-tests per onderwerp
 ```
 
-## 3D Renderer
+De weergave weet niets van de spelregels: `game.js` stuurt events (`flush`, `clog`, `unclog`, `water`, …) over de
+eventbus en `renderer3d.js` tekent. `clog.js` en `inventory.js` raken de DOM en three.js niet aan.
 
-Het spel gebruikt **Three.js 0.170.0** voor een realistische 3D-badkamerschène:
+## Iets toevoegen zonder code te herschrijven
 
-- **GLB toilet-model** — "Toilet" door HippoStance (CC BY 4.0, Sketchfab), deksel standaard open; valt automatisch terug op CC0 OpenGameArt-model bij laadfouten; SVG als laatste fallback
-- **OrbitControls** — speler kan de camera roteren/zoomen (beperkt tot WC-hokje-hoek); auto-zoom bij verstopping/ontstopping
-- **Aangepaste water-shader** — golfjes, draaikolk bij spoelen, kleurovergang helder→troebel bij verstopping
-- **PBR-texturen** — CC0-tegels en houten vloer van ambientCG (albedo, normal, roughness)
-- **HDRI-omgeving** — CC0 badkamerfoto van Poly Haven voor realistische reflecties
-- **Mand (3D)** — wicker basket naast toilet; items vallen er in bij verstoppingoplossing; kantelanimatie bij legen
-- **ACESFilmic tone mapping** + sRGB-output voor fotografische belichting
-- **Kwaliteitsniveaus** — laag/midden/hoog automatisch gedetecteerd; schaduwen en pixelRatio afgestemd
-- **WebGL-fallback** — als WebGL niet beschikbaar is, blijft de SVG-weergave actief
+Alles staat in `js/data/`:
 
-De 3D-renderer (`renderer3d.js`) luistert uitsluitend via DOM-events (`game:flush`, `game:clog`, `game:unclog`, `game:chaos`, `cosmetic:changed`, `basket:add`, `basket:empty`) en raakt de spellogica niet aan. Alle Three.js-bestanden zijn lokaal opgeslagen zodat de PWA offline werkt.
+| Wat | Bestand | Toevoegen = |
+|---|---|---|
+| Gereedschap | `tools.js` | een regel (effect `working` met `power`, of `chaos`) |
+| Levels | `levels.js` | een regel met drempel en moeilijkheid |
+| Emmers (capaciteit in liters) | `buckets.js` | een regel + GLB in `assets/models/buckets/` |
+| Voorwerpen in de verstopping | `clog-props.js` | een regel + bouwfunctie in `three/props.js` |
+| Toiletten, tegels, vloeren, decoratie | `cosmetics.js` | een regel (decoratie: + bouwfunctie in `three/decor.js`) |
+| Decoratie-ankerpunten, camerastanden, maten van het hokje | `room.js` | een regel |
+| Puntenpakketten | `packages.js` | een regel |
+| Winkelcategorieën | `shop.js` | een regel |
+| Teksten | `texts.js` | — |
+| Punten, straffen, waterfases, effect-intensiteit | `config.js` | — |
+| Iconen | `tools/icons.config.json` | naam toevoegen en `npm run icons` |
 
-## Playwright-tests
+## Bouwen
+
+Er is geen bundler; de browser laadt de bronbestanden direct. Twee dingen worden gegenereerd:
 
 ```bash
-npx playwright test              # alle 56 tests (4 formaten)
-npx playwright test --reporter=list
-npx playwright show-report
+npm run build    # iconen-sprite + bestandslijst en versie in sw.js
+npm run icons    # ontbrekende bron-iconen downloaden (Lucide, game-icons.net) en sprite bouwen
+npm run assets   # modellen/textures opnieuw comprimeren uit assets/_unused/originals/
 ```
 
-Tests draaien op 4 viewports: `phone-portrait` (393×851), `phone-landscape` (851×393), `tablet-portrait` (768×1024) en `tablet-landscape` (1024×768).
+Draai `npm run build` na elke wijziging in `js/`, `css/` of `assets/`; de test `sw.spec.js` faalt als je het vergeet.
 
-## Telefoonpreview op desktop
+## Tests
 
-Op een brede (niet-touch) desktop of laptop wordt het spel automatisch gecentreerd
-in een telefoonframe met neutrale achtergrond. Op een echte telefoon of tablet
-verandert er niets: het spel draait gewoon fullscreen.
+```bash
+npx playwright install chromium   # eenmalig
+npm test                          # alles, op 4 formaten (telefoon/tablet, staand/liggend)
+npx playwright test shop          # één onderwerp
+```
 
-### Testknoppen (boven het frame)
+| Bestand | Controleert |
+|---|---|
+| `boot.spec.js` | geen console-fouten, 404's of externe verzoeken; eerste laadbeurt < 4 MB; melding zonder WebGL |
+| `emoji.spec.js` | geen emoji in broncode, manifest, preview en interface (alle toestanden); elk icoon bestaat |
+| `shop.spec.js` | zeven categorieën, uitklappen, bewaren, kopen, activeren, effect in 3D |
+| `bucket.spec.js` | vullen, legen, herladen; volle emmer; emmerweergave; alle vijf emmers en hun hengsel |
+| `camera.spec.js` | zes camerastanden, swipen, "+"-plekken |
+| `clog.spec.js` | verstopping, waterfases, chaos, ontstoppen, overlopen met plas |
+| `layout.spec.js` | alle knoppen in beeld en zonder overlap, met notch- en punch-hole-profiel; scène tot achter de notch |
+| `sw.spec.js` | service worker in een submap, volledige cache, offline, geen herlaad; manifest |
+| `screenshots.spec.js` | screenshots van alle toestanden in `tests/screenshots/<formaat>/` om na te kijken |
+| `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |
 
-| Knop | Werking |
-|------|---------|
-| **Klein / Standaard / Groot** | Schermformaat 360×740 · 390×844 · 430×932 |
-| **↻ Draaien** | Wissel tussen portret- en liggende stand |
-| **✕ Volledig scherm** | Zet de preview uit (onthouden in localStorage) |
+De tests wachten op het spel zelf (`window.__game`), niet op vaste tijden. `window.__game` is ook handig in de
+console: `__game.forceClog('duck')`, `__game.setScore(5000)`, `__game.snapshot()`.
 
-### URL-parameters
+## Een branch testen
 
-| Parameter | Gedrag |
-|-----------|--------|
-| `?preview=phone` | Forceert telefoonframe, ook op tablet/laptop-touchscreen |
-| `?preview=off` | Forceert fullscreen, ook op desktop |
+GitHub Pages toont alleen `main`. Een andere branch (bijvoorbeeld `rebuild`) probeer je lokaal:
 
-Om de preview na het uitschakelen via de knop opnieuw in te schakelen,
-open de URL met `?preview=phone`.
+```bash
+git fetch && git checkout rebuild
+npm install
+npm run serve        # open http://localhost:5000/the-flush-factor/
+npm test
+```
 
-### Cache verversen na update
+## Play Store (later)
 
-Het spel heeft een service worker. Als je een nieuwe versie wil forceren,
-doe dan een **harde herlaad** in de browser (`Ctrl + Shift + R` / `Cmd + Shift + R`).
-De service worker-versie is automatisch gebumpt naar `flushfactor-v10` en ruimt de
-oude cache op zodra de SW actief wordt.
-
-## TWA (Google Play Store)
-
-De app is voorbereid voor TWA (Trusted Web Activity):
-- `manifest.json` bevat `display: standalone` en `orientation: portrait`
-- `theme_color` en `background_color` zijn ingesteld
-- Offline werking via service worker
-- Volgende stap: Digital Asset Links instellen (zie ROADMAP.md)
+Voorbereid voor een TWA: `manifest.json` met `display: standalone`, echte iconen en een service worker.
+Volgende stappen staan in ROADMAP.md (punten 58–63 en "Versie 1.0").

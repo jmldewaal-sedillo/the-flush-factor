@@ -1,963 +1,357 @@
 /* ============================================================
    THE FLUSH FACTOR — style.css
-   Fullscreen immersive layout, mobile-first.
+   De 3D-scène vult het hele scherm; alle knoppen zweven erover
+   en blijven binnen de safe-area (notch, punch-hole, home-balk).
    ============================================================ */
 
 :root {
-  --color-bg:       #e8f4f8;
-  --color-header:   #2c7da0;
-  --color-accent:   #f4a261;
-  --color-danger:   #e63946;
-  --color-success:  #2a9d8f;
-  --color-text:     #1d3557;
-  --color-white:    #ffffff;
-  --color-muted:    #6c757d;
-  --radius:         14px;
-  --shadow:         0 4px 16px rgba(0,0,0,0.15);
-  --font:           'Segoe UI', system-ui, sans-serif;
+  /* Safe-area. js/boot.js kan deze overschrijven met ?safe=… (preview en tests). */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --gap: 12px;            /* marge tussen safe-area en knoppen */
+  --btn: 52px;            /* ronde knop */
+  --tool: 54px;           /* gereedschapsknop */
+  --flush: 84px;
+  --msg-top: 160px;       /* meldingen: onder scorebubbel en winkelknop */
+
+  --c-bg: #1f2a33;
+  --c-glass: rgba(34, 104, 136, 0.86);
+  --c-glass-dark: rgba(16, 44, 60, 0.94);
+  --c-accent: #f4a261;
+  --c-danger: #e63946;
+  --c-success: #2a9d8f;
+  --c-text: #1d3557;
+  --c-muted: #66727f;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ──────── ICON-WRAP ──────── */
-.icon-wrap { display:inline-flex; align-items:center; vertical-align:middle; }
-.icon-wrap svg { pointer-events:none; }
+[hidden] { display: none !important; }
 
 html, body {
-  /* Punt 36: 100dvh vult volledig scherm op mobiel met dynamische werkbalk */
   height: 100%;
-  min-height: 100dvh;
   font-family: var(--font);
-  /* Achtergrond matcht Three.js scene.background → canvas-rand onzichtbaar */
-  background: #c8dde8;
-  color: var(--color-text);
+  background: var(--c-bg);
+  color: #fff;
   overflow: hidden;
   user-select: none;
+  -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
 }
+button { font: inherit; color: inherit; border: none; background: none; cursor: pointer; touch-action: manipulation; }
+.ic { display: inline-block; flex-shrink: 0; vertical-align: middle; pointer-events: none; }
+.ic.flip { transform: scaleX(-1); }
 
-/* ──────── SCHERMEN ──────── */
-.screen {
-  position: fixed;
-  inset: 0;
-}
-.screen[hidden] { display: none !important; }
+/* ──────── SCÈNE ──────── */
+#game-screen, #scene, #fx-layer, #hud { position: fixed; inset: 0; }
+#scene-canvas-3d { display: block; width: 100%; height: 100%; touch-action: none; }
+#fx-layer { pointer-events: none; overflow: hidden; z-index: 5; }
+#hud { pointer-events: none; z-index: 10; }
+#hud > * { position: absolute; pointer-events: auto; }
+body[data-screen] #game-screen { visibility: hidden; }
 
-/* ──────── BADKAMER-SCÈNE (fullscreen) ──────── */
-#bathroom-scene {
-  position: fixed;
-  inset: 0;
-  display: block;
-  overflow: hidden;
-  transition: background-color 0.4s;
-  /* Punt 36: transparent — body-achtergrond vult eventuele canvas-randen in */
-  background-color: transparent;
-}
-
-/* 3D canvas (toegevoegd door renderer3d.js) — pointer-events aan voor OrbitControls */
-#scene-canvas-3d {
-  position: absolute;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  z-index: 2;
-  pointer-events: all;
-  display: block;
-}
-
-/* Verberg SVG-toilet wanneer 3D actief is */
-#bathroom-scene.has-3d #toilet-wrapper { visibility: hidden; }
-#bathroom-scene.has-3d::before,
-#bathroom-scene.has-3d::after { display: none; }
-
-/* Tegelwand achtergrond (2D fallback) */
-#bathroom-scene::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-}
-
-/* Tegelpatronen */
-#bathroom-scene[data-tiles="tiles-checkerboard"]::before {
-  background-image: repeating-conic-gradient(#c8d8e8 0% 25%, #a8c4dc 25% 50%) 0 0 / 40px 40px;
-}
-#bathroom-scene[data-tiles="tiles-stars"]::before {
-  background-color: #1a1a3e;
-  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-#bathroom-scene[data-tiles="tiles-zigzag"]::before {
-  background: repeating-linear-gradient(
-    45deg, #f4a261 0px, #f4a261 8px, #e9c46a 8px, #e9c46a 16px
-  );
-  opacity: 0.6;
-}
-
-/* Vloerstrook (2D fallback) */
-#bathroom-scene::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 28%;
-  background: #c4a882;
-  border-top: 3px solid #a8886a;
-}
-#bathroom-scene[data-floor="floor-marble"]::after  { background: linear-gradient(135deg, #e8e0d0 0%, #d0c8b8 50%, #e0d8c8 100%); }
-#bathroom-scene[data-floor="floor-rainbow"]::after { background: linear-gradient(90deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#c77dff); }
-#bathroom-scene[data-floor="floor-lava"]::after    { background: linear-gradient(180deg,#ff4500,#ff8c00,#ff4500); animation: lavaGlow 1s infinite alternate; }
-
-/* Status: verstopt */
-#bathroom-scene.clogged-state { background-color: #c8d4a0; }
-#bathroom-scene.overflow-state { animation: overflowShake 0.1s infinite; }
-
-/* ──────── TOILET (2D fallback) ──────── */
-#toilet-wrapper {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -52%);
-  width: min(220px, 58vw);
-  height: min(300px, 60vh);
-  z-index: 5;
-  transition: transform 0.15s;
-  flex-shrink: 0;
-}
-
-#toilet-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.18));
-}
-
-/* Toilet modellen via data-model */
-#toilet-svg[data-model="toilet-golden"] .toilet-porcelain  { fill: #FFD700; }
-#toilet-svg[data-model="toilet-golden"] .toilet-seat       { fill: #FFC200; }
-#toilet-svg[data-model="toilet-golden"] .toilet-tank       { fill: #FFD700; }
-#toilet-svg[data-model="toilet-golden"] .toilet-tank-lid   { fill: #FFC200; }
-#toilet-svg[data-model="toilet-space"]  .toilet-porcelain  { fill: #2d3a4a; }
-#toilet-svg[data-model="toilet-space"]  .toilet-seat       { fill: #1a2535; }
-#toilet-svg[data-model="toilet-space"]  .toilet-tank       { fill: #2d3a4a; }
-#toilet-svg[data-model="toilet-space"]  .toilet-tank-lid   { fill: #1f2d3d; }
-#toilet-svg[data-model="toilet-medieval"] .toilet-porcelain{ fill: #5c3d1e; }
-#toilet-svg[data-model="toilet-medieval"] .toilet-seat     { fill: #3d2510; }
-#toilet-svg[data-model="toilet-medieval"] .toilet-tank     { fill: #5c3d1e; }
-#toilet-svg[data-model="toilet-medieval"] .toilet-tank-lid { fill: #4a2f18; }
-
-/* Decoratie-slot */
-#decoration-slot {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  font-size: 2rem;
-  z-index: 10;
-  pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-
-/* ──────── HUD POSITIES ──────── */
-
-/* Midden boven: menu-knop (punt 29) */
-#hud-topcenter {
-  position: absolute;
-  top: max(env(safe-area-inset-top, 0px) + 12px, 12px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 25;
-  pointer-events: all;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Rechtsboven: score + winkel */
-#hud-topright {
-  position: absolute;
-  top: max(env(safe-area-inset-top, 0px) + 12px, 12px);
-  right: max(env(safe-area-inset-right, 0px) + 12px, 12px);
-  z-index: 20;
-  pointer-events: all;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-/* Links: waterbalk + gereedschappen (punt 30: altijd op scherm) */
-#hud-left {
-  position: absolute;
-  /* Verankerd tussen topright-hoogte en flush-knop */
-  top: max(env(safe-area-inset-top, 0px) + 76px, 76px);
-  bottom: max(env(safe-area-inset-bottom, 0px) + 110px, 110px);
-  left: max(env(safe-area-inset-left, 0px) + 8px, 8px);
-  z-index: 20;
-  pointer-events: all;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Onderin midden: spoelknop */
-#hud-bottom {
-  position: absolute;
-  bottom: max(env(safe-area-inset-bottom, 0px) + 20px, 20px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  pointer-events: all;
-}
-
-/* Terugknop vanuit mandzoom (punt 38: linksboven onder menuknop, geen overlap) */
-.basket-back-btn {
-  position: absolute;
-  top: max(env(safe-area-inset-top, 0px) + 76px, 76px);
-  left: max(env(safe-area-inset-left, 0px) + 12px, 12px);
-  transform: none;
-  z-index: 25;
-  width: auto;
-  min-width: 100px;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 22px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.basket-back-btn[hidden] { display: none; }
-
-/* Mand-legen-knop (punt 39) */
-.basket-empty-btn {
-  border: none;
-  border-radius: 14px;
-  background: rgba(230, 57, 70, 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 5px 10px;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  transition: transform 0.1s, opacity 0.1s;
-}
-.basket-empty-btn:active { transform: scale(0.92); opacity: 0.85; }
-.basket-empty-btn[hidden] { display: none; }
-
-/* ──────── BUBBLE-KNOP (menu) ──────── */
-.bubble-btn {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(44, 125, 160, 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  font-size: 1.4rem;
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.1s, opacity 0.1s;
-  line-height: 1;
-}
-.bubble-btn:active { transform: scale(0.92); opacity: 0.85; }
-
-/* Menu-uitklap (punt 29: gecentreerd onder de knop) */
-#main-menu {
-  position: absolute;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(20, 60, 80, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 14px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 190px;
-  z-index: 30;
-  animation: menuSlide 0.18s ease;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-#main-menu[hidden] { display: none; }
-
-.menu-item {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: white;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s;
-}
-.menu-item:hover, .menu-item:active { background: rgba(255,255,255,0.22); }
-
-/* ──────── SCORE-BUBBEL ──────── */
-#score-bubble {
-  background: rgba(44, 125, 160, 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 50px;
-  padding: 10px 18px;
-  color: white;
-  text-align: center;
-  min-width: 120px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  border: 1.5px solid rgba(255,255,255,0.2);
-}
-#score-value {
-  font-size: 1.8rem;
-  font-weight: 900;
-  line-height: 1;
-  display: block;
-}
-.score-meta { font-size: 0.62rem; opacity: 0.9; }
-#high-score { display: block; margin-top: 1px; }
-
-.streak-row {
-  display: flex;
-  gap: 5px;
-  justify-content: center;
-  margin-top: 3px;
-}
-#streak-count, #streak-best {
-  font-size: 0.58rem;
-  font-weight: 700;
-  background: rgba(255,255,255,0.18);
-  border-radius: 8px;
-  padding: 1px 5px;
-  white-space: nowrap;
-}
-#level-display {
-  font-size: 0.58rem;
-  font-weight: 800;
-  background: rgba(255,255,255,0.25);
-  border-radius: 8px;
-  padding: 1px 5px;
-  color: #fff;
-  white-space: nowrap;
-}
-
-/* ──────── WINKELKNOP (zwevend) ──────── */
-.btn-shop-floating {
-  width: 100%;
-  min-width: 120px;
-  border-radius: 50px;
-  border: none;
-  background: rgba(244, 162, 97, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: white;
-  font-size: 0.9rem;
-  font-weight: 800;
-  padding: 10px 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(244,162,97,0.5);
-  border: 1.5px solid rgba(255,255,255,0.2);
-  transition: transform 0.1s, opacity 0.1s;
-}
-.btn-shop-floating:active { transform: scale(0.94); opacity: 0.85; }
-
-/* ──────── WATERSTANDBALK ──────── */
-.water-bar {
-  position: relative;  /* needed for absolute fill child */
-  width: 14px;
-  height: 120px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 8px;
-  border: 1.5px solid rgba(255,255,255,0.3);
-  overflow: hidden;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  flex-shrink: 0;
-}
-.water-bar-fill {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  transition: height 0.3s ease, background-color 0.3s;
-  border-radius: 6px 6px 0 0;
-}
-.water-ok      { background: linear-gradient(180deg, #5BC8F5, #3aade0); }
-.water-warning { background: linear-gradient(180deg, #ffd93d, #f4a261); }
-.water-danger  { background: linear-gradient(180deg, #ff4d4d, #e63946); animation: dangerPulse 0.5s infinite alternate; }
-
-/* ──────── INVENTARIS (verticaal, punt 30: altijd op scherm) ──────── */
-#inventory-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  /* Scroll wanneer er meer items zijn dan schermruimte */
-  overflow-y: auto;
-  overflow-x: visible;
-  max-height: 100%;
-  /* Fade aan boven- en onderkant */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 10%,
-    black 90%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 10%,
-    black 90%,
-    transparent 100%
-  );
-  padding: 6px 0;
-  /* Verberg scrollbar */
-  scrollbar-width: none;
-}
-#inventory-bar::-webkit-scrollbar { display: none; }
-
-/* Tool-knop met circulaire cooldown */
-.tool-btn {
-  position: relative;
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: rgba(44, 125, 160, 0.82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 2px solid rgba(255,255,255,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0;
-  cursor: pointer;
-  flex-shrink: 0;
-  overflow: visible;
-  transition: border-color 0.2s, transform 0.1s, box-shadow 0.2s;
-}
-.tool-btn:active { transform: scale(0.94); }
-.tool-btn.usable {
-  border-color: var(--color-success);
-  box-shadow: 0 0 12px rgba(42,157,143,0.55);
-  animation: usablePulse 1s infinite alternate;
-}
-.tool-btn.on-cooldown { opacity: 0.65; }
-
-.tool-icon { line-height: 1; pointer-events: none; display:inline-flex; align-items:center; justify-content:center; }
-.tool-name, .tool-name-short { display: none; }
-
-/* SVG cooldown-ring */
-.cd-ring {
-  position: absolute;
-  inset: -3px;
-  width: calc(100% + 6px);
-  height: calc(100% + 6px);
-  transform: rotate(-90deg);
-  pointer-events: none;
-  overflow: visible;
-}
-.cd-track {
-  fill: none;
-  stroke: rgba(255,255,255,0.12);
-  stroke-width: 3.5;
-}
-.cd-fill {
-  fill: none;
-  stroke: rgba(255,255,255,0.8);
-  stroke-width: 3.5;
-  stroke-dasharray: 151;
-  stroke-dashoffset: 151;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.12s linear;
-}
-.cd-secs {
-  position: absolute;
-  bottom: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.48rem;
-  font-weight: 800;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-  pointer-events: none;
-  white-space: nowrap;
-  background: rgba(0,0,0,0.55);
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-
-.tool-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  font-size: 0.65rem;
-  line-height: 1;
-  pointer-events: none;
-}
-
-/* ──────── SPOELKNOP (zwevend, onderin) ──────── */
-#flush-btn {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: none;
-  background: radial-gradient(circle at 35% 35%, #43b8ff, #0077cc);
-  color: var(--color-white);
-  font-size: 2rem;
-  cursor: pointer;
-  box-shadow: 0 6px 24px rgba(0,119,204,0.55), inset 0 2px 4px rgba(255,255,255,0.3);
-  transition: transform 0.1s, box-shadow 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 1;
-  gap: 1px;
-  position: relative;
-  overflow: hidden;
-}
-#flush-btn:active {
-  transform: scale(0.92);
-  box-shadow: 0 2px 10px rgba(0,119,204,0.4);
-}
-/* Punt 37: tekst verwijderd uit de knop; class blijft voor backwards-compat */
-#flush-btn .flush-label { display: none; }
-#flush-btn.clogged {
-  background: radial-gradient(circle at 35% 35%, #ff6b6b, #cc2200) !important;
-  box-shadow: 0 6px 24px rgba(204,34,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2) !important;
-}
-
-/* ──────── MAND INFO ──────── */
-#basket-info {
-  position: absolute;
-  bottom: max(env(safe-area-inset-bottom, 0px) + 110px, 110px);
-  right: max(env(safe-area-inset-right, 0px) + 12px, 12px);
-  z-index: 20;
-  pointer-events: all;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-#basket-vol {
-  font-size: 0.55rem;
-  font-weight: 700;
-  color: white;
-  background: rgba(0,0,0,0.55);
-  padding: 2px 6px;
-  border-radius: 8px;
-  white-space: nowrap;
-}
-.basket-btn {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.25);
-  background: rgba(200,137,42,0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  font-size: 1.4rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+/* ──────── KNOPPEN ──────── */
+.round-btn {
+  width: var(--btn); height: var(--btn); border-radius: 50%;
+  background: var(--c-glass); border: 2px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+  display: inline-flex; align-items: center; justify-content: center;
   transition: transform 0.1s;
 }
-.basket-btn:active { transform: scale(0.92); }
-.basket-btn.basket-full { animation: basketFull 0.5s ease-in-out infinite alternate; }
-
-/* ──────── STATUS BERICHTEN ──────── */
-#status-msg {
-  position: absolute;
-  top: max(env(safe-area-inset-top, 0px) + 72px, 72px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.75);
-  color: #fff;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  white-space: nowrap;
-  z-index: 30;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s;
+.pill-btn {
+  height: 44px; padding: 0 16px; border-radius: 22px;
+  background: var(--c-glass); border: 2px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-weight: 800; font-size: 0.92rem; white-space: nowrap;
+  transition: transform 0.1s;
 }
-#status-msg.visible { opacity: 1; animation: msgFade 1.8s forwards; }
+.round-btn:active, .pill-btn:active { transform: scale(0.93); }
+.pill-btn.shop-btn { background: rgba(244, 162, 97, 0.95); }
+.pill-btn.danger { background: rgba(230, 57, 70, 0.92); height: 38px; font-size: 0.82rem; padding: 0 14px; }
 
-#combo-display {
-  position: absolute;
-  bottom: max(env(safe-area-inset-bottom, 0px) + 110px, 110px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--color-accent);
-  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  z-index: 8;
-  white-space: nowrap;
+.popover {
+  position: absolute; top: calc(var(--btn) + 8px);
+  background: var(--c-glass-dark); border-radius: 14px; padding: 8px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: flex; flex-direction: column; gap: 4px; min-width: 210px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  animation: menuSlide 0.18s ease;
+  z-index: 5;
+}
+.menu-item {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255, 255, 255, 0.1); border-radius: 10px;
+  padding: 11px 14px; font-size: 0.92rem; font-weight: 600; text-align: left;
+}
+.menu-item:hover, .menu-item:active { background: rgba(255, 255, 255, 0.22); }
+.menu-item[aria-checked="true"] { background: rgba(244, 162, 97, 0.85); }
+
+/* ──────── HUD-ZONES ──────── */
+#hud-topleft { top: calc(var(--sat) + var(--gap)); left: calc(var(--sal) + var(--gap)); z-index: 3; }
+#hud-topleft .popover { left: 0; }
+#btn-back { display: none; }
+
+#hud-topcenter { top: calc(var(--sat) + var(--gap)); left: 50%; transform: translateX(-50%); z-index: 3; }
+#hud-topcenter .popover { left: 50%; margin-left: -105px; }
+
+#hud-topright {
+  top: calc(var(--sat) + var(--gap)); right: calc(var(--sar) + var(--gap));
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+}
+#score-bubble {
+  background: var(--c-glass); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 26px;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+  padding: 8px 14px 9px; min-width: 124px; text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+#score-value { font-size: 1.7rem; font-weight: 900; line-height: 1.05; }
+#high-score { font-size: 0.66rem; opacity: 0.9; }
+.streak-row { display: flex; gap: 4px; margin-top: 4px; }
+.streak-row > span {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.62rem; font-weight: 800; line-height: 1;
+  background: rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 3px 6px; white-space: nowrap;
+}
+
+/* Links: waterbalk + gereedschap. De knoppen vullen kolommen; past het niet, dan komt er een kolom bij. */
+#hud-left {
+  top: calc(var(--sat) + var(--gap) + var(--btn) + 14px);
+  bottom: calc(var(--sab) + 16px);
+  left: calc(var(--sal) + 8px);
+  display: flex; align-items: flex-start; gap: 8px;
   pointer-events: none;
 }
-#combo-display.combo-pop { animation: comboPop 0.4s ease; }
-
-/* ──────── PUNTENPOPUP ──────── */
-.point-popup {
-  position: absolute;
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: var(--color-accent);
-  text-shadow: 0 2px 6px rgba(0,0,0,0.35);
-  pointer-events: none;
-  z-index: 25;
-  animation: floatUp 0.9s ease-out forwards;
+#hud-left > * { pointer-events: auto; }
+.water-bar {
+  position: relative; width: 12px; height: 124px; flex-shrink: 0; margin-top: 4px;
+  background: rgba(255, 255, 255, 0.28); border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px; overflow: hidden;
 }
-
-/* ──────── CLOG PROP (2D fallback) ──────── */
-#clog-prop {
-  position: absolute;
-  left: 50%;
-  top: 75%;
-  transform: translate(-50%, -50%);
-  font-size: 2rem;
-  z-index: 7;
-  display: none;
-  pointer-events: none;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45));
+#water-bar-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: #3aade0; transition: height 0.25s linear, background-color 0.3s; }
+#water-bar-fill[data-phase="red"] { animation: dangerPulse 0.5s infinite alternate; }
+#inventory-bar {
+  height: 100%;
+  display: grid; grid-auto-flow: column;
+  grid-template-rows: repeat(auto-fill, var(--tool)); grid-auto-columns: var(--tool);
+  gap: 10px 8px; align-content: start; padding: 4px;
 }
-#clog-prop.visible { display: block; }
+.tool-btn {
+  position: relative; width: var(--tool); height: var(--tool); border-radius: 50%;
+  background: var(--c-glass); border: 2px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s, border-color 0.2s, opacity 0.2s;
+}
+.tool-btn:active { transform: scale(0.93); }
+.tool-btn.usable { border-color: #7dffcf; animation: usablePulse 1s infinite alternate; }
+.tool-btn.on-cooldown { opacity: 0.6; }
+.cd-ring { position: absolute; inset: -3px; width: calc(100% + 6px); height: calc(100% + 6px); transform: rotate(-90deg); pointer-events: none; }
+.cd-track { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 3.5; }
+.cd-fill { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 150.8; stroke-dashoffset: 150.8; }
+.cd-secs {
+  position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+  font-size: 0.6rem; font-weight: 800; background: rgba(0, 0, 0, 0.65); padding: 1px 5px; border-radius: 6px; pointer-events: none;
+}
+.cd-secs:empty { display: none; }
+.tool-badge {
+  position: absolute; top: -3px; right: -3px; width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; border: 1.5px solid #fff; pointer-events: none;
+}
+.tool-badge[data-kind="working"] { background: var(--c-success); }
+.tool-badge[data-kind="chaos"] { background: var(--c-danger); }
 
-/* ──────── VERSTOPPINGS-WAARSCHUWING ──────── */
+/* Onder: spoelknop */
+#hud-bottom {
+  bottom: calc(var(--sab) + 18px); left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  pointer-events: none;
+}
+#flush-btn {
+  pointer-events: auto;
+  width: var(--flush); height: var(--flush); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #4fc0ff, #0a74c7);
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 6px 24px rgba(0, 119, 204, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.35);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s;
+}
+#flush-btn:active { transform: scale(0.92); }
+#flush-btn:active .ic { transform: rotate(-120deg); transition: transform 0.25s; }
+body.is-clogged #flush-btn { background: radial-gradient(circle at 35% 30%, #ff7b7b, #c22a12); box-shadow: 0 6px 24px rgba(204, 34, 0, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.25); }
+#combo-display { display: flex; align-items: center; gap: 4px; min-height: 20px; font-size: 0.9rem; font-weight: 900; color: var(--c-accent); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); white-space: nowrap; }
+
+/* Rechtsonder: emmer */
+#hud-bottomright {
+  bottom: calc(var(--sab) + 18px); right: calc(var(--sar) + var(--gap));
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+#bucket-liters { font-size: 0.7rem; font-weight: 800; background: rgba(0, 0, 0, 0.6); padding: 3px 8px; border-radius: 9px; white-space: nowrap; }
+.bucket-btn { background: rgba(176, 116, 38, 0.92); }
+.bucket-btn.full { animation: bucketFull 0.45s ease-in-out infinite alternate; border-color: var(--c-danger); }
+
+/* ──────── EMMERWEERGAVE (punt 56) ──────── */
+body[data-view="bucket"] #hud-left,
+body[data-view="bucket"] #flush-btn,
+body[data-view="bucket"] #combo-display,
+body[data-view="bucket"] #btn-camera,
+body[data-view="bucket"] #camera-menu,
+body[data-view="bucket"] #btn-bucket { display: none; }
+body[data-view="bucket"] #btn-back { display: inline-flex; }
+
+/* ──────── MELDINGEN ──────── */
+#status-msg, #clog-warning {
+  left: 50%; transform: translateX(-50%);
+  max-width: calc(100vw - 32px); padding: 7px 16px; border-radius: 20px;
+  font-size: 0.9rem; font-weight: 800; text-align: center;
+  pointer-events: none !important; opacity: 0;
+}
+#status-msg { top: calc(var(--sat) + var(--msg-top)); background: rgba(0, 0, 0, 0.78); z-index: 2; }
+#status-msg.visible { animation: msgFade 1.9s forwards; }
 #clog-warning {
-  position: absolute;
-  top: max(env(safe-area-inset-top, 0px) + 72px, 72px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(220,30,30,0.9);
-  color: #fff;
-  padding: 5px 18px;
-  border-radius: 20px;
-  font-size: 0.95rem;
-  font-weight: 900;
-  letter-spacing: 1px;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 22;
-  display: none;
-  box-shadow: 0 2px 12px rgba(220,30,30,0.5);
+  top: calc(var(--sat) + var(--msg-top) + 44px); background: rgba(220, 30, 30, 0.92);
+  display: none; align-items: center; gap: 8px; letter-spacing: 1px; white-space: nowrap; opacity: 1;
+  box-shadow: 0 2px 12px rgba(220, 30, 30, 0.5);
 }
-#clog-warning.visible {
-  display: block;
-  animation: clogWarningPulse 0.7s ease-in-out infinite alternate;
+#clog-warning.visible { display: inline-flex; animation: clogWarningPulse 0.7s ease-in-out infinite alternate; }
+#unclog-banner, #levelup-banner {
+  left: 50%; transform: translateX(-50%);
+  display: none; align-items: center; gap: 10px; white-space: nowrap;
+  padding: 10px 22px; border-radius: 26px; font-weight: 900; letter-spacing: 1px;
+  pointer-events: none !important; z-index: 4;
 }
+#unclog-banner { top: 32%; font-size: 1.7rem; background: linear-gradient(135deg, #2a9d8f, #57cc99); box-shadow: 0 4px 20px rgba(42, 157, 143, 0.6); }
+#levelup-banner { top: 22%; font-size: 1.15rem; background: linear-gradient(135deg, #f4a261, #e76f51); box-shadow: 0 4px 20px rgba(244, 162, 97, 0.6); }
+#unclog-banner.visible { display: inline-flex; animation: unclogBanner 1.8s ease forwards; }
+#levelup-banner.visible { display: inline-flex; animation: levelUpBanner 2.5s ease forwards; }
 
-/* ──────── ENTSTOPPINGS-BANNER ──────── */
-#unclog-banner {
-  position: absolute;
-  top: 28%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: #fff;
-  background: linear-gradient(135deg, #2a9d8f, #57cc99);
-  padding: 8px 24px;
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(42,157,143,0.6);
-  letter-spacing: 2px;
-  pointer-events: none;
-  z-index: 30;
-  display: none;
-  white-space: nowrap;
-}
-#unclog-banner.visible {
-  display: block;
-  animation: unclogBanner 1.8s ease forwards;
-}
+.point-popup { position: absolute; font-size: 1.5rem; font-weight: 900; color: var(--c-accent); text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6); animation: floatUp 0.9s ease-out forwards; }
+.chaos-icon { position: absolute; display: inline-flex; animation: chaosFloat 1s ease-in-out infinite alternate; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4)); }
+.confetti { position: absolute; top: -12px; animation: confettiFall 1.5s ease-in forwards; }
+.chaos-flamingo { position: absolute; left: 50%; bottom: 22%; color: hotpink; animation: flamingoBounce 0.5s ease-in-out infinite alternate; filter: drop-shadow(0 4px 10px rgba(255, 20, 147, 0.6)); }
+.chaos-disco { position: absolute; inset: 0; animation: discoFlash 0.25s linear infinite; }
 
-/* ──────── LEVEL-UP BANNER ──────── */
-#levelup-banner {
-  position: absolute;
-  top: 22%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: #fff;
-  background: linear-gradient(135deg, #f4a261, #e76f51);
-  padding: 8px 20px;
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(244,162,97,0.6);
-  letter-spacing: 1px;
-  pointer-events: none;
-  z-index: 35;
-  display: none;
-  white-space: nowrap;
-  text-align: center;
+/* ──────── LADEN / FOUTMELDING ──────── */
+#loading { position: fixed; inset: 0; z-index: 20; background: var(--c-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; font-weight: 700; }
+.spinner { width: 44px; height: 44px; border-radius: 50%; border: 4px solid rgba(255, 255, 255, 0.2); border-top-color: var(--c-accent); animation: spin 0.9s linear infinite; }
+#fatal {
+  position: fixed; inset: 0; z-index: 200; background: var(--c-bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding: calc(var(--sat) + 24px) 28px calc(var(--sab) + 24px); text-align: center; color: var(--c-accent);
 }
-#levelup-banner.visible {
-  display: block;
-  animation: levelUpBanner 2.5s ease forwards;
-}
+#fatal h2 { color: #fff; font-size: 1.3rem; }
+#fatal p { color: rgba(255, 255, 255, 0.8); font-size: 0.95rem; line-height: 1.5; max-width: 420px; }
 
-/* ──────── CREDITS MODAL ──────── */
+/* ──────── CREDITS ──────── */
 #credits-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.75);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  position: fixed; inset: 0; z-index: 100; background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--sat) + 16px) calc(var(--sar) + 16px) calc(var(--sab) + 16px) calc(var(--sal) + 16px);
 }
-#credits-modal[hidden] { display: none; }
 #credits-content {
-  background: rgba(20,50,70,0.95);
-  border-radius: 20px;
-  padding: 24px 28px;
-  max-width: 340px;
-  width: 90%;
-  color: white;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  position: relative;
+  position: relative; width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto;
+  background: rgba(18, 46, 64, 0.97); border-radius: 20px; padding: 22px 22px 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); user-select: text; -webkit-user-select: text;
 }
-#credits-content h2 { font-size: 1.4rem; margin-bottom: 16px; }
-#credits-content p { font-size: 0.82rem; line-height: 1.5; margin-bottom: 10px; opacity: 0.9; }
-#btn-credits-close {
-  margin-top: 12px;
-  font-size: 1rem;
-  background: rgba(255,255,255,0.15);
-}
+#credits-content h2 { font-size: 1.3rem; margin-bottom: 6px; padding-right: 48px; }
+#credits-content h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--c-accent); margin: 14px 0 6px; }
+#credits-content ul { list-style: none; }
+#credits-content li { font-size: 0.82rem; line-height: 1.45; margin-bottom: 6px; }
+#credits-content a { color: #9fd8f2; word-break: break-all; }
+.credits-note { font-size: 0.74rem; opacity: 0.75; line-height: 1.4; }
+#btn-credits-close { position: absolute; top: 12px; right: 12px; --btn: 40px; background: rgba(255, 255, 255, 0.15); }
 
-/* ──────── WINKELSCHERM ──────── */
-.shop-screen {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  background: #f0f4f8;
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-}
-.shop-screen[hidden] { display: none !important; }
-
+/* ──────── WINKEL ──────── */
+#shop-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: #eef3f7; color: var(--c-text); animation: screenEnter 0.25s ease; }
 .shop-header {
-  background: var(--color-header);
-  color: #fff;
-  padding-top: max(env(safe-area-inset-top, 0px) + 16px, 20px);
-  padding-bottom: 12px;
-  padding-left: calc(16px + env(safe-area-inset-left, 0px));
-  padding-right: calc(16px + env(safe-area-inset-right, 0px));
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  flex-shrink: 0; display: flex; align-items: center; gap: 12px;
+  background: #2c7da0; color: #fff;
+  padding: calc(var(--sat) + 12px) calc(var(--sar) + 16px) 12px calc(var(--sal) + 16px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .shop-header h2 { flex: 1; font-size: 1.2rem; font-weight: 900; }
-#shop-score { font-size: 1rem; font-weight: 800; color: var(--color-accent); }
+.shop-header .pill-btn { height: 40px; box-shadow: none; }
+#shop-score { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; color: #ffd7a8; }
+#shop-items { flex: 1; overflow-y: auto; padding: 4px calc(var(--sar) + 8px) calc(var(--sab) + 80px) calc(var(--sal) + 8px); overscroll-behavior: contain; }
+#shop-items > * { max-width: 760px; margin-inline: auto; }
 
-.btn-header {
-  background: var(--color-accent);
-  color: var(--color-white);
-  border: none;
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.1s, opacity 0.1s;
-}
-.btn-header:active { transform: scale(0.93); opacity: 0.85; }
-
-/* ── Accordion ── */
-.shop-accordion { display:flex; flex-direction:column; }
-.shop-category { border-bottom:1px solid rgba(0,0,0,0.08); }
-.shop-category-header {
-  display:flex; align-items:center; gap:10px;
-  padding:14px 16px; cursor:pointer;
-  background:none; border:none; width:100%; text-align:left;
-  font-size:0.95rem; font-weight:700; color:var(--color-text);
-}
-.shop-category-header:active { opacity:0.75; }
-.shop-category-label { flex:1; }
-.shop-category-arrow { transition:transform 0.25s; margin-left:auto; }
-.shop-category-header[aria-expanded="true"] .shop-category-arrow { transform:rotate(180deg); }
-.shop-category-body { display:grid; grid-template-rows:0fr; transition:grid-template-rows 0.3s ease; }
-.shop-category-body.open { grid-template-rows:1fr; }
-.shop-category-body-inner { overflow:hidden; padding:0 12px 12px; }
-.shop-category-count { font-size:0.72rem; color:var(--color-muted); margin-left:4px; }
-
-/* ── Punten-kopen kaarten ── */
-.shop-card.buy-card .buy-price { background:#2a9d5c; color:#fff; border-radius:6px; padding:3px 8px; font-size:0.8rem; font-weight:800; }
-.shop-card.buy-card .badge-popular { background:#f4a261; color:#fff; }
-
-#shop-items {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-
-.shop-section { margin-bottom: 20px; }
-.shop-section-title {
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--color-muted);
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
-
-.shop-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-}
+.shop-category { border-bottom: 1px solid rgba(0, 0, 0, 0.09); }
+.shop-category-header { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 12px; font-size: 1rem; font-weight: 800; color: var(--c-text); text-align: left; }
+.shop-category-label { flex: 1; }
+.shop-category-count { font-size: 0.75rem; font-weight: 700; color: var(--c-muted); }
+.shop-category-arrow { transition: transform 0.25s; }
+.shop-category-header[aria-expanded="true"] .shop-category-arrow { transform: rotate(180deg); }
+/* Uitklappen: rij van 0fr naar 1fr. Ingeklapt is de inhoud echt weg (geen randje, niet aan te tikken). */
+.shop-category-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.28s ease, padding 0.28s ease; }
+.shop-category-body.open { grid-template-rows: 1fr; padding-bottom: 14px; }
+.shop-grid { min-height: 0; overflow: hidden; display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; padding: 0 10px; visibility: hidden; transition: visibility 0s 0.28s; }
+.shop-category-body.open .shop-grid { visibility: visible; transition-delay: 0s; }
 
 .shop-card {
-  background: #fff;
-  border: 2px solid #e0e4e8;
-  border-radius: var(--radius);
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.15s, border-color 0.15s;
-  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  background: #fff; border: 2px solid #dde3e9; border-radius: 14px; padding: 14px 10px 12px; color: var(--c-text);
+  transition: transform 0.1s, border-color 0.15s;
 }
-.shop-card:active { transform: scale(0.96); }
-.shop-card.owned   { border-color: #aac8e0; background: #f0f8ff; }
-.shop-card.active  { border-color: var(--color-success); background: #eafaf8; box-shadow: 0 0 10px rgba(42,157,143,0.25); }
-.shop-card.expensive { opacity: 0.55; }
-.shop-card.locked  { opacity: 0.5; cursor: default; }
-
-.shop-card-icon { display:inline-flex; align-items:center; justify-content:center; color:var(--color-header); }
-.shop-card-name  { font-size: 0.8rem; font-weight: 800; color: var(--color-text); }
-.shop-card-desc  { font-size: 0.68rem; color: var(--color-muted); line-height: 1.3; }
-.shop-card-price { margin-top: 4px; }
-
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-.badge-active  { background: var(--color-success); color: #fff; }
-.badge-owned   { background: #aac8e0; color: var(--color-text); }
-.badge-locked  { background: #888; color: #eee; }
-.badge-working { color: #2a9d8f; }
-.badge-chaos   { color: #e63946; }
-.price-tag     { font-size: 0.8rem; font-weight: 800; color: var(--color-accent); }
+.shop-card:active { transform: scale(0.97); }
+.shop-card.owned { border-color: #aac8e0; background: #f1f8fd; }
+.shop-card.active { border-color: var(--c-success); background: #e9faf6; }
+.shop-card.expensive > :not(.shop-card-price) { opacity: 0.55; }
+.shop-card.locked { opacity: 0.5; cursor: default; }
+.shop-card-icon { color: #2c7da0; display: inline-flex; margin-bottom: 2px; }
+.shop-card-name { font-size: 0.86rem; font-weight: 800; }
+.shop-card-detail { font-size: 0.72rem; font-weight: 800; color: #2c7da0; }
+.shop-card-desc { font-size: 0.72rem; color: var(--c-muted); line-height: 1.3; }
+.shop-card-price { margin-top: auto; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; align-items: center; }
+.badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 20px; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; }
+.badge-active { background: var(--c-success); color: #fff; }
+.badge-owned { background: #aac8e0; }
+.badge-locked { background: #7c858e; color: #fff; }
+.badge-popular { background: var(--c-accent); color: #fff; }
+.price-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 0.86rem; font-weight: 800; color: #c96a1b; }
+.buy-price { background: #2a9d5c; color: #fff; border-radius: 8px; padding: 3px 9px; }
 
 #shop-message {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.8);
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 24px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  white-space: nowrap;
-  z-index: 100;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s;
+  position: fixed; left: 50%; bottom: calc(var(--sab) + 22px); transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85); color: #fff; padding: 10px 20px; border-radius: 24px;
+  font-size: 0.9rem; font-weight: 700; max-width: calc(100vw - 32px); text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 60;
 }
 #shop-message.visible { opacity: 1; }
 
-/* ──────── BREED SCHERM ──────── */
-@media (min-width: 600px) and (hover: hover) {
-  html { background: #1a1a2e; }
-  body { background: #1a1a2e; }
-  .shop-screen {
-    max-width: 430px;
-    left: 50%;
-    transform: translateX(-50%);
-    right: auto;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
-  }
+/* ──────── FORMATEN ──────── */
+/* Breed scherm (tablet, telefoon liggend): midden boven is vrij, dus meldingen kunnen hoger. */
+@media (min-width: 640px) { :root { --msg-top: 76px; } }
+
+/* Laag scherm (telefoon liggend): alles een maat kleiner. */
+@media (max-height: 520px) {
+  :root { --btn: 44px; --tool: 44px; --flush: 64px; --msg-top: 64px; --gap: 8px; }
+  #hud-left { bottom: calc(var(--sab) + 8px); top: calc(var(--sat) + var(--gap) + var(--btn) + 10px); }
+  .water-bar { height: 90px; }
+  #inventory-bar { gap: 8px 6px; }
+  .tool-btn .tool-icon { width: 22px; height: 22px; }
+  #flush-btn .ic { width: 34px; height: 34px; }
+  #hud-bottomright { bottom: calc(var(--sab) + 10px); }
+  /* Spoelknop naast de emmerknop, zodat hij niet voor het toilet staat. */
+  #hud-bottom { bottom: calc(var(--sab) + 10px); left: auto; transform: none; right: calc(var(--sar) + var(--gap) + 116px); }
+  #score-bubble { padding: 5px 12px 6px; }
+  #score-value { font-size: 1.3rem; }
+  .pill-btn { height: 38px; }
+  #unclog-banner { font-size: 1.3rem; }
 }
 
-/* ── Re-enable preview knop ── */
-#pv-reopen {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  z-index: 8000;
-  width: auto;
-  min-width: 64px;
-  height: auto;
-  padding: 6px 10px;
-  border-radius: 20px;
-  border: none;
-  background: rgba(44,125,160,0.9);
-  color: #fff;
-  font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  transition: background 0.15s, transform 0.1s;
+/* Heel smal (kleine telefoon) */
+@media (max-width: 370px) {
+  :root { --tool: 50px; }
+  #score-bubble { min-width: 112px; }
 }
-#pv-reopen:hover  { background: rgba(44,125,160,1); }
-#pv-reopen:active { transform: scale(0.92); }
 
-/* ──────── LANDSCAPE (punt 30): kleinere tool-knoppen ──────── */
-@media (max-height: 500px) and (orientation: landscape) {
-  /* Tool-knoppen kleiner zodat er meer passen */
-  .tool-btn {
-    width: 40px;
-    height: 40px;
-  }
-  .tool-icon svg { width: 18px; height: 18px; }
-
-  /* Waterbalk iets smaller */
-  .water-bar { width: 10px; }
-
-  /* HUD-bottom iets omhoog */
-  #hud-bottom {
-    bottom: max(env(safe-area-inset-bottom, 0px) + 10px, 10px);
-  }
-  #flush-btn {
-    width: 62px;
-    height: 62px;
-    font-size: 1.4rem;
-  }
-  .flush-label { font-size: 0.42em; }
-
-  /* Mand-info dichter bij de onderkant */
-  #basket-info {
-    bottom: max(env(safe-area-inset-bottom, 0px) + 74px, 74px);
-  }
-  /* Terugknop in landschapsmodus iets minder hoog */
-  .basket-back-btn {
-    top: max(env(safe-area-inset-top, 0px) + 58px, 58px);
-  }
-}
+/* Knop om de desktop-preview weer aan te zetten */
+#pv-reopen { position: fixed; right: 16px; bottom: 16px; z-index: 300; }

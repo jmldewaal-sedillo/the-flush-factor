@@ -1,14 +1,16 @@
 {
   "name": "the-flush-factor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
+    "serve": "node tools/serve.mjs 5000",
+    "build": "node tools/build-icons.mjs && node tools/build-sw.mjs",
+    "icons": "node tools/build-icons.mjs --download",
+    "assets": "bash tools/optimize-assets.sh",
     "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "serve": "npx serve . -p 5000 --no-clipboard"
+    "test:headed": "playwright test --headed"
   },
   "devDependencies": {
-    "@playwright/test": "^1.47.0",
-    "serve": "^14.2.3"
+    "@playwright/test": "^1.47.0"
   }
 }
