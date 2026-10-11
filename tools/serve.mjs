@@ -18,7 +18,7 @@ const MAX_TRIES = 20;   // zoveel poorten na de gevraagde proberen
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
+  '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.svg': 'image/svg+xml',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
   '.glb': 'model/gltf-binary', '.hdr': 'application/octet-stream', '.md': 'text/markdown; charset=utf-8',
 };
@@ -30,7 +30,9 @@ const server = http.createServer(async (req, res) => {
   if (!path.startsWith(BASE)) { res.writeHead(404); return res.end('404 (buiten basispad)'); }
   path = normalize(path.slice(BASE.length) || 'index.html');
   if (path.endsWith('/')) path += 'index.html';
-  const file = join(ROOT, path);
+  let file = join(ROOT, path);
+  // GitHub Pages serveert /privacy als privacy.html: hier ook, zodat die adressen lokaal te testen zijn
+  if (!extname(path) && await stat(file + '.html').then(() => true, () => false)) file += '.html';
   if (!file.startsWith(ROOT) || /(^|\/)(node_modules|\.git)(\/|$)/.test(path)) { res.writeHead(403); return res.end(); }
   try {
     const s = await stat(file);

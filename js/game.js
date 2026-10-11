@@ -3,12 +3,13 @@ import { SCORING, WATER_PHASES } from './data/config.js';
 import { LEVELS } from './data/levels.js';
 import { CLOG_PROPS } from './data/clog-props.js';
 import { ANCHORS, DEFAULT_VIEW } from './data/room.js';
-import { MESSAGES, T } from './data/texts.js';
+import { t, pick, num, itemName, setLanguage, missingKeys, getLanguage } from './i18n/index.js';
 import { bus } from './events.js';
 import { createState, loadState, saveState, bucketDef, bucketLiters } from './state.js';
+import { storage, migrateLegacy } from './storage.js';
 import { ClogSystem } from './clog.js';
 import { CareSystem } from './care.js';
-import { CLEANERS, DEFECTS, SURFACE_LABELS } from './data/care.js';
+import { CLEANERS, DEFECTS } from './data/care.js';
 import { unlockedAt } from './data/catalog.js';
 import { InventorySystem } from './inventory.js';
 import { Shop } from './shop.js';
@@ -16,19 +17,25 @@ import { init3D } from './renderer3d.js';
 import { hud } from './ui/hud.js';
 import { playChaos } from './ui/chaos.js';
 import { ProfileScreen } from './ui/profile.js';
+import { bindDataControls, dataDialogOpen, closeDataDialogs } from './ui/data.js';
 
 const $ = id => document.getElementById(id);
 const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
 const params = new URLSearchParams(location.search);
 
+migrateLegacy();               // sleutels van vóór de prefix flushfactor. overzetten (eenmalig)
 const state = loadState(createState());
+setLanguage(state.language);
 const clog = new ClogSystem();
 const inv = new InventorySystem(state, clog);
 const care = new CareSystem(state);
 clog.chanceFactor = care.clogFactor();
 let cleaner = null;            // gekozen schoonmaakmiddel (schoonmaakstand), of null
 let shop, profileScreen, three = null;
-const save = () => saveState(state);
+let pickView = () => {};      // camerastand kiezen via het menu (sluit het menu)
+// Na verwijderen of terugzetten van gegevens schrijft het spel niets meer weg tot het opnieuw start.
+let saving = true;
+const save = () => { if (saving) saveState(state); };
 
 // ──────── SCORE EN LEVEL ────────
 function addScore(pts) {
@@ -43,7 +50,7 @@ function addScore(pts) {
     state.level = cfg.level;
     clog.setLevel(cfg);
     hud.level(state.level);
-    hud.levelUpBanner(cfg.level, cfg.name, fresh.length);
+    hud.levelUpBanner(cfg.level, t(`level.${cfg.level}`), fresh.length);
     hud.shopBadge(state.newItems.length);
   }
   hud.score(state.score, state.highScore);
@@ -57,7 +64,7 @@ function losePoints(pts) {
 // ──────── SPOELEN ────────
 function flush() {
   if (state.isFlushing) return;
-  if (clog.isClogged) return hud.message(rnd(MESSAGES.alreadyClogged));
+  if (clog.isClogged) return hud.message(pick('m.alreadyClogged'));
 
   state.isFlushing = true;
   setTimeout(() => { state.isFlushing = false; }, 700);
@@ -73,7 +80,7 @@ function flush() {
   const pts = Math.max(1, Math.round(SCORING.flushPoints * state.combo * care.pointsFactor()));
   addScore(pts);
   hud.pointPopup(pts);
-  hud.message(rnd(MESSAGES.flushSuccess));
+  hud.message(pick('m.flush'));
   hud.combo(state.combo >= 4 ? state.combo : 0);
 
   state.streak++;
@@ -92,7 +99,7 @@ clog.on('clog', () => {
   state.currentProp = state.forcedProp || rnd(CLOG_PROPS);
   state.forcedProp = null;
   hud.streak(state.streak, state.bestStreak);
-  hud.message(rnd(MESSAGES.clogStart));
+  hud.message(pick('m.clogStart'));
   hud.clogWarning(true);
   bus.emit('clog', { propId: state.currentProp.id });
   save();
@@ -103,7 +110,7 @@ clog.on('resolved', () => {
   state.currentProp = null;
   care.onResolved();
   hud.clogWarning(false);
-  hud.unclogBanner(rnd(MESSAGES.unclogSuccess));
+  hud.unclogBanner(pick('m.unclog'));
   state.stats.totalUnclogs++;
 
   const bonus = SCORING.unclogBonusPerLevel * state.level;
@@ -118,7 +125,7 @@ clog.on('resolved', () => {
     state.stats.totalLiters += prop.liters;
   } else if (prop) {
     losePoints(SCORING.bucketFullPenalty);
-    hud.message(T.bucketFull(SCORING.bucketFullPenalty));
+    hud.message(t('bucketFull', { pts: SCORING.bucketFullPenalty }));
   }
   bus.emit('unclog', { propId: prop?.id, intoBucket: fits });
   updateBucket();
@@ -129,7 +136,7 @@ clog.on('overflow', () => {
   state.stats.totalOverflows++;
   const penalty = Math.round(Math.min(state.score * SCORING.overflowPenaltyPct, SCORING.overflowPenaltyMax));
   losePoints(penalty);
-  hud.message(rnd(MESSAGES.overflow) + (penalty ? T.penalty(penalty) : ''));
+  hud.message(pick('m.overflow') + (penalty ? t('penalty', { pts: penalty }) : ''));
   hud.overflowShake();
   hud.combo(0);
   state.combo = 1;
@@ -137,42 +144,52 @@ clog.on('overflow', () => {
   // Herhaald overlopen maakt de boel vies (punt 83).
   const added = care.onOverflow();
   if (added.mess.length || added.puddle) {
-    if (added.mess.length) { hud.message(T.care.mess); bus.emit('mess'); }
+    if (added.mess.length) { hud.message(t('care.mess')); bus.emit('mess'); }
     refreshDirt();
   }
   save();
 });
 
 // ──────── SCHOONMAAK EN REPARATIE ────────
+const showCleaning = () => hud.cleaning(care.ownedCleaners(), cleaner);
+
 function refreshDirt() {
   bus.emit('stains', { list: state.stains.map(s => ({ ...s })) });
   hud.dirt(care.dirtCount(), care.pointsFactor());
-  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
+  showCleaning();
 }
 
+// Kies een schoonmaakmiddel (nog een keer hetzelfde = stoppen). Alleen wat je in voorraad hebt kan.
 function setCleaner(id) {
-  cleaner = id && id !== cleaner ? id : null;
+  const next = id && id !== cleaner && care.usesLeft(id) > 0 ? id : null;
+  if (next && care.dirtCount() === 0) { hud.message(t('care.nothingDirty')); return; }
+  cleaner = next;
   bus.emit('scrubmode', { on: !!cleaner });
-  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
-  if (cleaner) hud.message(T.care.pick(CLEANERS.find(c => c.id === cleaner).name));
+  showCleaning();
+  if (cleaner) hud.message(t('care.pick', { name: itemName({ id: cleaner }) }));
 }
 
 // Er is in de schoonmaakstand over iets geveegd of getikt.
 function scrub(target) {
   if (!cleaner) return;
-  const r = care.scrub(cleaner, target);
-  if (r.result === 'wrong-tool') return hud.message(T.care.wrongTool(SURFACE_LABELS[r.surface]));
+  const used = cleaner;
+  const r = care.scrub(used, target);
+  if (r.result === 'wrong-tool') return hud.message(t(`care.wrong.${r.surface}`));
   if (r.result === 'nothing') return;
   if (r.surface === 'toilet') bus.emit('toilet:condition', { ...toiletCondition(), animate: 'clean' });
   else bus.emit('stain:scrub', { id: r.id, dirt: r.dirt });
   if (r.result === 'cleaned') {
-    hud.message(T.care.cleaned);
+    hud.message(t('care.cleaned'));
     hud.sparkle();
     if (r.surface !== 'toilet') bus.emit('stains', { list: state.stains.map(s => ({ ...s })) });
-    if (care.dirtCount() === 0 && cleaner) setCleaner(null);
   }
+  // Op (punt 92): het middel verdwijnt uit de voorraad en de schoonmaakstand stopt.
+  if (r.left === 0) {
+    setCleaner(null);
+    hud.message(t('care.usedUp', { name: itemName({ id: used }) }));
+  } else if (care.dirtCount() === 0 && cleaner) setCleaner(null);
   hud.dirt(care.dirtCount(), care.pointsFactor());
-  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
+  showCleaning();
   save();
 }
 
@@ -188,11 +205,11 @@ function repair(repairId) {
 
 function useTool(id) {
   const result = inv.use(id);
-  if (result === 'partial') hud.message(T.partial);
-  else if (result === 'cooldown') hud.message(T.cooldown);
-  else if (result === 'not-clogged') hud.message(rnd(MESSAGES.toolNotClogged));
+  if (result === 'partial') hud.message(t('partial'));
+  else if (result === 'cooldown') hud.message(t('cooldown'));
+  else if (result === 'not-clogged') hud.message(pick('m.toolNotClogged'));
   else if (result === 'chaos') {
-    hud.message(rnd(MESSAGES.toolChaos));
+    hud.message(pick('m.toolChaos'));
     playChaos(inv.get(id).chaos);
     bus.emit('chaos', { effect: inv.get(id).chaos });
   }
@@ -207,11 +224,11 @@ function updateBucket() {
 }
 
 function emptyBucket() {
-  if (!state.bucketItems.length) return hud.message(T.bucketEmptyAlready);
+  if (!state.bucketItems.length) return hud.message(t('bucketEmptyAlready'));
   state.bucketItems = [];
   bus.emit('bucket:empty');
   updateBucket();
-  hud.message(T.bucketEmptied);
+  hud.message(t('bucketEmptied'));
   save();
 }
 
@@ -247,7 +264,8 @@ async function init() {
     setBucket(id) { state.bucketId = id; bus.emit('bucket:set', { id }); updateBucket(); },
     addTool(id) { inv.addTool(id); hud.buildInventory(inv.getAll(), useTool); },
     repair,
-    cleanerBought() { hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount()); },
+    cleanerBought(id) { care.restock(id); showCleaning(); },
+    usesLeft: id => care.usesLeft(id),
     toiletReady: () => !care.isBroken() && !care.isToiletDirty(),
     seen(ids) { state.newItems = state.newItems.filter(id => !ids.includes(id)); hud.shopBadge(state.newItems.length); },
     changed() { hud.score(state.score, state.highScore); save(); },
@@ -258,21 +276,22 @@ async function init() {
   profileScreen = new ProfileScreen({
     getProfile: () => state.profile,
     getStats: () => [
-      { label: T.profile.stats.flushes, value: state.stats.totalFlushes.toLocaleString('nl-NL') },
-      { label: T.profile.stats.bestStreak, value: state.bestStreak.toLocaleString('nl-NL') },
-      { label: T.profile.stats.unclogs, value: state.stats.totalUnclogs.toLocaleString('nl-NL') },
-      { label: T.profile.stats.liters, value: T.profile.stats.litersValue(state.stats.totalLiters) },
+      { label: t('stat.flushes'), value: num(state.stats.totalFlushes) },
+      { label: t('stat.bestStreak'), value: num(state.bestStreak) },
+      { label: t('stat.unclogs'), value: num(state.stats.totalUnclogs) },
+      { label: t('stat.liters'), value: t('stat.litersValue', { n: num(state.stats.totalLiters, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }) },
     ],
     onSave(profile) {
       const first = !state.profile;
       state.profile = { ...profile, mode: 'guest', createdAt: state.profile?.createdAt || new Date().toISOString() };
       hud.profile(state.profile);
       save();
-      if (first) clog.paused = clogsPaused; else hud.message(T.profile.saved);
+      if (first) clog.paused = clogsPaused; else hud.message(t('profile.saved'));
     },
   });
   hud.profile(state.profile);
   $('score-bubble').addEventListener('click', () => profileScreen.open());
+  bindDataControls({ beforeChange() { saving = false; clog.paused = true; } });
   if (!state.profile) {
     clog.paused = true;              // geen verstoppingen terwijl het welkomstscherm openstaat
     profileScreen.open({ welcome: true });
@@ -287,14 +306,24 @@ async function init() {
   hud.view(DEFAULT_VIEW);
   hud.shopBadge(state.newItems.length);
   hud.dirt(care.dirtCount(), care.pointsFactor());
-  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
-  hud.bindCleaning(setCleaner);
+  showCleaning();
+  // Lege voorraad: de knop brengt je naar de juiste categorie in de winkel (punt 91).
+  hud.bindCleaning(setCleaner, () => { shop.open({ category: 'care' }); shop.say(t('care.shopHint')); });
   hud.bindTools();
+  hud.bindDismiss();
   updateBucket();
+
+  // Taal (punt 94): keuze in het menu; alles wat in beeld staat wordt meteen opnieuw getekend.
+  hud.buildLanguages(state.language, code => {
+    state.language = setLanguage(code);
+    save();
+    refreshTexts();
+  });
 
   const cameraMenu = hud.bindPopover('btn-camera', 'camera-menu');
   const mainMenu = hud.bindPopover('btn-menu', 'main-menu');
   const setView = id => { cameraMenu.close(); bus.emit('view:set', { id }); };
+  pickView = setView;
   hud.buildCameraMenu(setView);
 
   $('flush-btn').addEventListener('click', flush);
@@ -307,7 +336,8 @@ async function init() {
   $('credits-modal').addEventListener('click', e => { if (e.target === $('credits-modal')) $('credits-modal').hidden = true; });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (profileScreen.isOpen()) profileScreen.close();
+    if (dataDialogOpen()) closeDataDialogs();
+    else if (profileScreen.isOpen()) profileScreen.close();
     else if (!$('credits-modal').hidden) $('credits-modal').hidden = true;
     else if (document.body.hasAttribute('data-zoom')) bus.emit('view:back');
   });
@@ -316,14 +346,14 @@ async function init() {
     const action = e.target.closest('[data-action]')?.dataset.action;
     if (!action) return;
     mainMenu.close();
-    if (action === 'sound') hud.message(T.soundSoon);
+    if (action === 'sound') hud.message(t('soundSoon'));
     else if (action === 'credits') $('credits-modal').hidden = false;
     else if (action === 'fullscreen') document.fullscreenElement ? document.exitFullscreen?.() : document.documentElement.requestFullscreen?.().catch(() => {});
     else if (action === 'camera-reset') setView(DEFAULT_VIEW);
   });
 
   bus.on('view:changed', ({ id }) => hud.view(id));
-  bus.on('anchor:tap', ({ id }) => hud.message(T.anchorFree(ANCHORS[id].label)));
+  bus.on('anchor:tap', ({ id }) => ANCHORS[id] && hud.message(t('anchorFree', { place: t(`anchor.${id}`) })));
   bus.on('scrub', target => scrub(target));
 
   // 3D
@@ -338,10 +368,10 @@ async function init() {
     });
   } catch (err) {
     console.error('[3D] laden mislukt:', err);
-    hud.fatal(T.loadError, String(err?.message || err));
+    hud.fatal(t('loadError'), String(err?.message || err));
     return;
   }
-  if (!three) return hud.fatal(T.noWebGL.title, T.noWebGL.body);
+  if (!three) return hud.fatal(t('noWebGL.title'), t('noWebGL.body'));
 
   hud.loading(true);
   requestAnimationFrame(loop);
@@ -350,6 +380,23 @@ async function init() {
   window.__game.three = three.debug;
   window.__game.ready = true;
   document.documentElement.dataset.ready = 'true';
+}
+
+// Na een taalwissel: alles wat tekst toont opnieuw opbouwen.
+function refreshTexts() {
+  hud.score(state.score, state.highScore);
+  hud.level(state.level);
+  hud.profile(state.profile);
+  hud.buildInventory(inv.getAll(), useTool);
+  hud.buildCameraMenu(pickView);
+  hud.view(three ? three.view() : DEFAULT_VIEW);
+  hud.buildCredits();
+  hud.dirt(care.dirtCount(), care.pointsFactor());
+  hud.toolsLabel?.();
+  showCleaning();
+  updateBucket();
+  profileScreen.refresh();
+  shop.refresh();
 }
 
 // Service worker: niet tijdens geautomatiseerde tests (tenzij ?sw=on), en nooit de pagina herladen.
@@ -371,6 +418,7 @@ window.__game = {
     profile: state.profile ? { ...state.profile } : null, stats: { ...state.stats, bestStreak: state.bestStreak },
     toilet: toiletCondition(), broken: care.isBroken(), stains: state.stains.map(st => ({ ...st })), dirtCount: care.dirtCount(), pointsFactor: care.pointsFactor(),
     overflowStreak: state.overflowStreak, newItems: [...state.newItems], purchased: [...state.purchased], cleaner,
+    supplies: { ...state.supplies }, language: getLanguage(),
     clogged: clog.isClogged, waterLevel: clog.waterLevel, overflowing: clog.isOverflowing, currentProp: state.currentProp?.id ?? null,
   }),
   forceClog(propId) { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(); },
@@ -382,6 +430,9 @@ window.__game = {
   scrub,
   setCleaner,
   defects: () => Object.keys(DEFECTS),
+  // Talen (punt 94): wisselen zoals het menu dat doet, en welke sleutels er ontbraken.
+  setLanguage(code) { state.language = setLanguage(code); save(); refreshTexts(); },
+  missingTexts: () => missingKeys(),
   skipTime(ms) { clog.timeSinceLastClog += ms; clog.totalPlaytime += ms; },
   useTool,
 };

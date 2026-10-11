@@ -12,10 +12,21 @@
   var params = new URLSearchParams(location.search);
   var urlParam = params.get('preview');           // 'phone' | 'off' | null
   var isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  // Voorkeuren van de preview staan bij de instellingen van het toestel: flushfactor.settings → preview
+  // (zie js/storage.js; dit bestand is geen module en draait eerder, daarom leest het de sleutel zelf).
+  var SETTINGS = 'flushfactor.settings';
+  var readSettings = function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS) || '{}'); return s && typeof s === 'object' ? s : {}; } catch (e) { return {}; } };
+  var writePreview = function (change) {
+    try { var s = readSettings(); var p = s.preview && typeof s.preview === 'object' ? s.preview : {}; change(p); s.preview = p; localStorage.setItem(SETTINGS, JSON.stringify(s)); } catch (e) {}
+  };
   var store = {
-    get: function (k) { try { return localStorage.getItem('flushfactor_preview_' + k); } catch (e) { return null; } },
-    set: function (k, v) { try { localStorage.setItem('flushfactor_preview_' + k, v); } catch (e) {} },
-    del: function (k) { try { localStorage.removeItem('flushfactor_preview_' + k); } catch (e) {} }
+    get: function (k) {
+      var p = readSettings().preview;
+      if (p && typeof p === 'object' && k in p) return p[k];
+      try { return localStorage.getItem('flushfactor_preview_' + k); } catch (e) { return null; }      // oude sleutel, tot de migratie hem overzet
+    },
+    set: function (k, v) { writePreview(function (p) { p[k] = v; }); },
+    del: function (k) { writePreview(function (p) { delete p[k]; }); try { localStorage.removeItem('flushfactor_preview_' + k); } catch (e) {} }
   };
   var ic = function (name, size) {
     return '<svg class="ic" width="' + size + '" height="' + size + '" aria-hidden="true"><use href="assets/icons/sprite.svg#' + name + '"/></svg>';

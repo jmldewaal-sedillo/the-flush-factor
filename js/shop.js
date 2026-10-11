@@ -8,17 +8,17 @@ import { COSMETIC_LISTS, DECORATIONS } from './data/cosmetics.js';
 import { REPAIRS, CLEANERS } from './data/care.js';
 import { PACKAGES } from './data/packages.js';
 import { LEVELS } from './data/levels.js';
-import { T } from './data/texts.js';
+import { t, num, money, itemName, itemDesc } from './i18n/index.js';
 import { icon } from './ui/icons.js';
 import { purchaseService } from './purchases.js';
+import { storage } from './storage.js';
 
-const OPEN_KEY = 'flushfactor_shop_open';
-const fmt = n => n.toLocaleString('nl-NL');
+const fmt = n => num(n);
 const $ = id => document.getElementById(id);
 
 export class Shop {
   // actions: activateCosmetic(slot, id), toggleDecor(def), setBucket(id), addTool(id), repair(id),
-  //          cleanerBought(), toiletReady(), seen(ids), changed()
+  //          cleanerBought(id), usesLeft(id), toiletReady(), seen(ids), changed()
   constructor(state, actions) {
     this.state = state;
     this.actions = actions;
@@ -30,17 +30,24 @@ export class Shop {
   }
 
   _loadOpen() {
-    try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY) || '[]')); } catch { return new Set(); }
+    const open = storage.readSetting('shopOpen');
+    return new Set(Array.isArray(open) ? open : []);
   }
   _saveOpen() {
-    try { localStorage.setItem(OPEN_KEY, JSON.stringify([...this.open_])); } catch { /* geen opslag */ }
+    storage.writeSetting('shopOpen', [...this.open_]);
   }
 
-  open() {
+  // category: open meteen deze categorie en breng hem in beeld (bv. vanaf de lege schoonmaakknop).
+  open({ category = null } = {}) {
+    if (category) { this.open_.add(category); this._saveOpen(); }
     this.render();
     this.screen.hidden = false;
     document.body.dataset.screen = 'shop';
+    if (category) this.list.querySelector(`.shop-category[data-cat="${category}"]`)?.scrollIntoView({ block: 'start' });
   }
+  isOpen() { return !this.screen.hidden; }
+  // Na een taalwissel.
+  refresh() { if (this.isOpen()) this.render(); }
   close() {
     // Wat je in een open categorie hebt gezien is daarna niet meer "nieuw".
     const seen = [];
@@ -60,17 +67,21 @@ export class Shop {
       case 'tools': return {
         items: SHOP_TOOLS,
         owned: i => s.ownedTools.includes(i.id),
-        onBuy: i => { this.actions.addTool(i.id); return T.shop.toolAdded(i.name); },
+        onBuy: i => { this.actions.addTool(i.id); return t('shop.toolAdded', { name: itemName(i) }); },
       };
       case 'care': return {
         items: [...REPAIRS, ...CLEANERS],
-        // een reparatie "heb je" als het gebrek weg is (of er nooit was)
-        owned: i => (i.fixes ? !s.toilet.defects[i.fixes] : s.purchased.has(i.id)),
-        ownedLabel: i => (i.fixes ? (s.purchased.has(i.id) ? T.shop.repaired : T.shop.notNeeded) : T.shop.owned),
+        // een reparatie "heb je" als het gebrek weg is (of er nooit was); een schoonmaakmiddel zolang er
+        // nog iets van over is (punt 92). Is het op, dan staat het weer te koop.
+        owned: i => (i.fixes ? !s.toilet.defects[i.fixes] : this.actions.usesLeft(i.id) > 0),
+        ownedLabel: i => (i.fixes ? (s.purchased.has(i.id) ? t('shop.repaired') : t('shop.notNeeded')) : t('shop.usesLeft', { left: this.actions.usesLeft(i.id), total: i.uses })),
+        detail: i => t('shop.uses', { n: i.uses }),
+        // hoeveel er nog over is, als balkje op de kaart
+        meter: i => (i.fixes ? null : this.actions.usesLeft(i.id) / i.uses),
         onBuy: i => {
-          if (i.fixes) { this.actions.repair(i.id); return T.shop.repairDone(i.name); }
-          this.actions.cleanerBought();
-          return T.shop.cleanerBought(i.name);
+          if (i.fixes) { this.actions.repair(i.id); return t('shop.repairDone', { name: itemName(i) }); }
+          this.actions.cleanerBought(i.id);
+          return t('shop.cleanerBought', { name: itemName(i) });
         },
       };
       case 'cosmetic': return {
@@ -78,19 +89,19 @@ export class Shop {
         active: i => s.cosmetics[cat.slot] === i.id,
         onUse: i => this.actions.activateCosmetic(cat.slot, i.id),
         // een ander toiletmodel kan pas als het toilet heel en schoon is (punt 79)
-        blocked: i => (cat.slot === 'toilet' && i.price > 0 && !this.actions.toiletReady() ? T.shop.toiletFirst : null),
+        blocked: i => (cat.slot === 'toilet' && i.price > 0 && !this.actions.toiletReady() ? t('shop.toiletFirst') : null),
       };
       case 'decoration': return {
         items: DECORATIONS, owned,
-        active: i => s.decor[i.anchor] === i.id, activeLabel: T.shop.placed,
-        onUse: i => { const placed = this.actions.toggleDecor(i); return placed ? T.shop.decoPlaced(i.name) : T.shop.decoRemoved(i.name); },
+        active: i => s.decor[i.anchor] === i.id, activeLabel: t('shop.placed'),
+        onUse: i => { const placed = this.actions.toggleDecor(i); return t(placed ? 'shop.decoPlaced' : 'shop.decoRemoved', { name: itemName(i) }); },
         toggles: true,
       };
       case 'buckets': return {
         items: BUCKETS, owned,
         active: i => s.bucketId === i.id,
         onUse: i => this.actions.setBucket(i.id),
-        detail: i => `${i.liters} liter`,
+        detail: i => t('shop.liters', { n: i.liters }),
       };
       default: return { items: [] };
     }
@@ -124,7 +135,7 @@ export class Shop {
     const next = LEVELS.find(l => l.level === s.level + 1);
     const cur = LEVELS.find(l => l.level === s.level);
     const levelPct = next ? Math.min(100, Math.max(0, (s.score - cur.minScore) / (next.minScore - cur.minScore) * 100)) : 100;
-    const levelText = next ? T.shop.levelNext(fmt(Math.max(0, next.minScore - s.score)), next.level) : T.shop.levelMax;
+    const levelText = next ? t('shop.levelNext', { pts: fmt(Math.max(0, next.minScore - s.score)), n: next.level }) : t('shop.levelMax');
 
     let goal = null;
     for (const cat of SHOP_CATEGORIES) {
@@ -143,15 +154,15 @@ export class Shop {
       </div>
       ${goal ? `
       <button class="shop-featured" id="shop-featured" data-id="${goal.item.id}" data-cat="${goal.cat.id}" style="--cat:${goal.cat.color}">
-        <span class="featured-tag">${icon('star', 13)}${T.shop.featured}</span>
+        <span class="featured-tag">${icon('star', 13)}${t('shop.featured')}</span>
         <span class="featured-icon">${icon(goal.item.icon, 40)}</span>
         <span class="featured-text">
-          <span class="featured-name">${goal.item.name}</span>
-          <span class="featured-goal">${s.score >= goal.item.price ? T.shop.goalReady(goal.item.name) : T.shop.goalNext(fmt(goal.item.price - s.score), goal.item.name)}</span>
+          <span class="featured-name">${itemName(goal.item)}</span>
+          <span class="featured-goal">${s.score >= goal.item.price ? t('shop.goalReady', { name: itemName(goal.item) }) : t('shop.goalNext', { pts: fmt(goal.item.price - s.score), name: itemName(goal.item) })}</span>
           <span class="bar"><span class="bar-fill" style="width:${Math.min(100, s.score / goal.item.price * 100).toFixed(0)}%"></span></span>
         </span>
         <span class="price-tag">${icon('coins', 14)}${fmt(goal.item.price)}</span>
-      </button>` : `<div class="shop-progress"><span class="shop-progress-label">${icon('circle-check', 16)}<span>${T.shop.allOwned}</span></span></div>`}`;
+      </button>` : `<div class="shop-progress"><span class="shop-progress-label">${icon('circle-check', 16)}<span>${t('shop.allOwned')}</span></span></div>`}`;
 
     const featured = $('shop-featured');
     if (featured) featured.addEventListener('click', () => {
@@ -175,8 +186,8 @@ export class Shop {
     const total = src.items.length, have = isMoney ? 0 : src.items.filter(src.owned).length;
     const fresh = !isMoney && src.items.some(i => this._status(i, src).isNew);
     const collection = isMoney ? '' : `
-      <span class="shop-collection" title="Verzameld">
-        <span class="shop-category-count">${T.shop.collection(have, total)}</span>
+      <span class="shop-collection" title="${t('shop.collected')}">
+        <span class="shop-category-count">${t('shop.collection', { a: have, b: total })}</span>
         <span class="bar"><span class="bar-fill" style="width:${total ? have / total * 100 : 0}%"></span></span>
       </span>`;
 
@@ -185,8 +196,8 @@ export class Shop {
     head.setAttribute('aria-expanded', String(isOpen));
     head.innerHTML = `
       <span class="shop-category-icon">${icon(cat.icon, 26)}</span>
-      <span class="shop-category-text"><span class="shop-category-label">${cat.label}</span><span class="shop-category-blurb">${cat.blurb}</span></span>
-      ${fresh ? `<span class="tag tag-new">${T.shop.isNew}</span>` : ''}
+      <span class="shop-category-text"><span class="shop-category-label">${t(`cat.${cat.id}.label`)}</span><span class="shop-category-blurb">${t(`cat.${cat.id}.blurb`)}</span></span>
+      ${fresh ? `<span class="tag tag-new">${t('shop.isNew')}</span>` : ''}
       ${collection}
       ${icon('chevron-down', 20, 'shop-category-arrow')}`;
 
@@ -217,13 +228,13 @@ export class Shop {
     card.className = 'shop-card buy-card';
     card.dataset.id = pkg.id;
     card.innerHTML = `
-      <span class="tag tag-money">${icon('euro', 12)}${T.shop.realMoney}</span>
+      <span class="tag tag-money">${icon('euro', 12)}${t('shop.realMoney')}</span>
       <span class="shop-card-icon">${icon('coins', 36)}</span>
-      <span class="shop-card-name">${pkg.label}</span>
-      <span class="shop-card-price"><span class="price-tag buy-price">${pkg.price}</span>${pkg.badge ? `<span class="badge badge-popular">${pkg.badge}</span>` : ''}</span>`;
+      <span class="shop-card-name">${t('shop.pack', { n: fmt(pkg.coins) })}</span>
+      <span class="shop-card-price"><span class="price-tag buy-price">${money(pkg.price)}</span>${pkg.badge ? `<span class="badge badge-popular">${t(`shop.${pkg.badge}`)}</span>` : ''}</span>`;
     card.addEventListener('click', async () => {
       await purchaseService.buy(pkg.id);
-      this.say(T.shop.purchaseSoon);
+      this.say(t('shop.purchaseSoon'));
     });
     return card;
   }
@@ -236,19 +247,21 @@ export class Shop {
     card.disabled = st.levelLocked;
 
     let status;
-    if (st.levelLocked) status = `<span class="badge badge-locked">${icon('lock', 12)} ${T.shop.lockedLevel(item.minLevel)}</span>`;
+    if (st.levelLocked) status = `<span class="badge badge-locked">${icon('lock', 12)} ${t('shop.lockedLevel', { n: item.minLevel })}</span>`;
     else if (st.blocked) status = `<span class="badge badge-locked">${icon('lock', 12)} ${st.blocked}</span>`;
-    else if (st.active) status = `<span class="badge badge-active">${src.activeLabel || T.shop.active}</span>`;
-    else if (st.owned) status = `<span class="badge badge-owned">${icon('check', 12)} ${src.ownedLabel ? src.ownedLabel(item) : T.shop.owned}</span>`;
+    else if (st.active) status = `<span class="badge badge-active">${src.activeLabel || t('shop.active')}</span>`;
+    else if (st.owned) status = `<span class="badge badge-owned">${icon('check', 12)} ${src.ownedLabel ? src.ownedLabel(item) : t('shop.owned')}</span>`;
     else status = `<span class="price-tag">${icon('coins', 14)}${fmt(item.price)}</span>`;
 
-    const tag = st.isNew ? `<span class="tag tag-new">${T.shop.isNew}</span>` : st.almost ? `<span class="tag tag-almost">${T.shop.almost}</span>` : '';
+    const tag = st.isNew ? `<span class="tag tag-new">${t('shop.isNew')}</span>` : st.almost ? `<span class="tag tag-almost">${t('shop.almost')}</span>` : '';
+    const meter = st.owned && src.meter ? src.meter(item) : null;
     card.innerHTML = `
       ${tag}
       <span class="shop-card-icon">${icon(item.icon, 36)}</span>
-      <span class="shop-card-name">${item.name}</span>
+      <span class="shop-card-name">${itemName(item)}</span>
       ${src.detail ? `<span class="shop-card-detail">${src.detail(item)}</span>` : ''}
-      <span class="shop-card-desc">${item.description || ''}</span>
+      <span class="shop-card-desc">${itemDesc(item)}</span>
+      ${meter !== null ? `<span class="bar uses-bar"><span class="bar-fill" style="width:${Math.round(meter * 100)}%"></span></span>` : ''}
       <span class="shop-card-price">${status}</span>`;
 
     if (!st.levelLocked) card.addEventListener('click', () => this._click(item, src, card));
@@ -264,12 +277,12 @@ export class Shop {
       if ((st.active && !src.toggles) || !src.onUse) return;
       message = src.onUse(item);
     } else {
-      if (s.score < item.price) return this.say(T.shop.notEnough(fmt(item.price)));
+      if (s.score < item.price) return this.say(t('shop.notEnough', { price: fmt(item.price) }));
       s.score -= item.price;
       s.purchased.add(item.id);
       this.actions.seen([item.id]);
-      message = src.onBuy ? src.onBuy(item) : (src.onUse?.(item), T.shop.bought(item.name));
-      if (typeof message !== 'string') message = T.shop.bought(item.name);
+      message = src.onBuy ? src.onBuy(item) : (src.onUse?.(item), t('shop.bought', { name: itemName(item) }));
+      if (typeof message !== 'string') message = t('shop.bought', { name: itemName(item) });
       bought = true;
     }
     const rect = card.getBoundingClientRect();

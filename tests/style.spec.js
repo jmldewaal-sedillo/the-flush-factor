@@ -103,7 +103,7 @@ test('winkel is eerlijk: echt geld apart met prijs in euro, geen timers of "laat
   await expect(packs).toHaveCount(4);
   for (const pack of await packs.all()) {
     await expect(pack.locator('.tag-money')).toHaveText('Echt geld');
-    await expect(pack.locator('.buy-price')).toHaveText(/^€ \d+,\d{2}$/);
+    await expect(pack.locator('.buy-price')).toHaveText(/^€\s\d+,\d{2}$/);
     await expect(pack.locator('.price-tag:not(.buy-price)')).toHaveCount(0);          // geen puntenprijs erdoorheen
   }
   // gewone kaarten tonen nooit een europrijs

@@ -49,3 +49,36 @@ export function expandByMesh(box, mesh, indexCount) {
   const n = Math.min(indexCount, index ? index.count : pos.count);
   for (let i = 0; i < n; i++) box.expandByPoint(v.fromBufferAttribute(pos, index ? index.getX(i) : i).applyMatrix4(mesh.matrixWorld));
 }
+
+// Losse onderdelen binnen één mesh (verbonden driehoeken), elk met aantal driehoeken en omvang in
+// wereldcoördinaten. Om uit te zoeken wat een los dingetje in een gedownload model is.
+export function listComponents(mesh) {
+  const pos = mesh.geometry.attributes.position, index = mesh.geometry.index;
+  if (!index) return [];
+  const ids = new Map(), rep = new Uint32Array(pos.count);
+  for (let i = 0; i < pos.count; i++) {
+    const key = `${pos.getX(i).toFixed(4)},${pos.getY(i).toFixed(4)},${pos.getZ(i).toFixed(4)}`;
+    if (!ids.has(key)) ids.set(key, ids.size);
+    rep[i] = ids.get(key);
+  }
+  const parent = Uint32Array.from({ length: ids.size }, (_, i) => i);
+  const find = x => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+  const tris = index.count / 3;
+  for (let t = 0; t < tris; t++) {
+    const a = find(rep[index.getX(t * 3)]), b = find(rep[index.getX(t * 3 + 1)]), c = find(rep[index.getX(t * 3 + 2)]);
+    parent[a] = b; parent[find(b)] = find(c);
+  }
+  const parts = new Map(), v = new THREE.Vector3();
+  mesh.updateWorldMatrix(true, false);
+  for (let t = 0; t < tris; t++) {
+    const root = find(rep[index.getX(t * 3)]);
+    if (!parts.has(root)) parts.set(root, { tris: 0, box: new THREE.Box3(), firstIndex: t * 3 });
+    const part = parts.get(root);
+    part.tris++;
+    for (let k = 0; k < 3; k++) part.box.expandByPoint(v.fromBufferAttribute(pos, index.getX(t * 3 + k)).applyMatrix4(mesh.matrixWorld));
+  }
+  return [...parts.values()].map(p => ({
+    tris: p.tris, firstIndex: p.firstIndex,
+    min: p.box.min.toArray().map(n => +n.toFixed(3)), max: p.box.max.toArray().map(n => +n.toFixed(3)),
+  })).sort((a, b) => b.tris - a.tris);
+}

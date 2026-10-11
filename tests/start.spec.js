@@ -108,7 +108,8 @@ test('bestaande speler op level 4 houdt alles en krijgt de start-staat niet opge
   expect(await three(page, 'surfaces')).toEqual({ tiles: 'tiles-default', floor: 'floor-marble' });
   expect(await three(page, 'toiletSkin')).toBe('toilet-golden');
   await expect(page.locator('#dirt-pill')).toBeHidden();
-  await expect(page.locator('#hud-clean')).toBeHidden();
+  await expect(page.locator('#btn-clean')).toBeVisible();          // altijd in beeld (punt 91); deze speler heeft niets in voorraad
+  await expect(page.locator('#clean-count')).toHaveText('0');
 
   // wat vroeger gratis was (houten emmer, Delfts blauw, houten vloer) is van hen gebleven, ook al kost het nu punten
   await page.locator('#btn-shop').click();

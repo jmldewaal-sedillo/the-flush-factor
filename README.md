@@ -3,7 +3,9 @@
 Het meest absurde spoelspel ooit gemaakt. Mobile-first PWA in vanilla JavaScript met een 3D-wc-hokje (three.js).
 
 - Live (branch `main`): https://jmldewaal-sedillo.github.io/the-flush-factor/
-- Planning: [ROADMAP.md](ROADMAP.md) · Controle van de rebuild: [AUDIT.md](AUDIT.md) · Bronnen: [CREDITS.md](CREDITS.md)
+- Test: https://jmldewaal-sedillo.github.io/the-flush-factor-test/ (noindex; repo `the-flush-factor-test`, zie [docs/testversie.md](docs/testversie.md))
+- Privacy: `privacy.html` · Gegevens verwijderen: `delete.html`
+- Planning: [ROADMAP.md](ROADMAP.md) · Controle van de rebuild: [AUDIT.md](AUDIT.md) · Bronnen: [docs/credits.md](docs/credits.md) · Afspraken: [CLAUDE.md](CLAUDE.md)
 
 ## Starten en testen
 
@@ -48,15 +50,19 @@ Via GitHub Pages (branch `main`). Een andere branch testen: zie "Een branch test
 ## Projectstructuur
 
 ```
-index.html            Pagina: 3D-scène, zwevende knoppen, winkel, credits
-manifest.json, sw.js  PWA: installeerbaar en offline speelbaar
-css/                  tokens.css (HET designbestand: kleuren, letters, randen, schaduwen), style.css, animations.css
+index.html            Pagina: 3D-scène, zwevende knoppen, winkel, profiel, credits
+privacy.html, delete.html, verwijderen.html   Privacyverklaring en "gegevens verwijderen"
+manifest.webmanifest, sw.js   PWA: installeerbaar en offline speelbaar
+css/                  tokens.css (HET designbestand: kleuren, letters, randen, schaduwen), style.css, animations.css, pages.css
 style-preview.html    Stijlvoorbeelden (drie richtingen; gekozen: A · Sticker). Hoort niet bij het spel.
 js/
   game.js             Coördinator: spelregels, game-loop, koppeling logica ↔ weergave
-  state.js            Spelstand, opslaan/laden, migratie van oude opslag
+  state.js            Spelstand, laden en bewaren, migratie van oudere versies
+  storage.js          DE ENIGE plek die iets bewaart (prefix flushfactor.), overzetten, wissen, oude sleutels overzetten
+  i18n/               Talen: index.js + één bestand per taal (nl is de bron); legal/ = privacytekst per taal
+  pages.js            Toont de privacyverklaring en de verwijderpagina
   clog.js             Verstoppingen: kans, waterstand, overloop          (geen DOM, geen 3D)
-  care.js             Schoonmaak en reparatie: toiletstaat, vlekken, straf (geen DOM, geen 3D)
+  care.js             Schoonmaak en reparatie: toiletstaat, vlekken, straf, voorraad (geen DOM, geen 3D)
   inventory.js        Gereedschap: bezit, cooldown, gebruik              (geen DOM, geen 3D)
   shop.js             Winkel met uitklapbare categorieën
   purchases.js        Koppelpunt voor echte aankopen (nu een stub)
@@ -67,7 +73,7 @@ js/
   phone-preview.js    Preview op laptop/desktop
   data/               ALLE inhoud en instellingen (zie hieronder)
   three/              3D-modules: context, room, toilet, water, bucket, props, decor, stains, camera, effects, patterns, geometry
-  ui/                 hud.js (knoppen, meldingen), profile.js (welkom + profiel), chaos.js, icons.js
+  ui/                 hud.js (knoppen, meldingen, menu's), profile.js (welkom + profiel), data.js (overzetten en wissen), chaos.js, icons.js
   vendor/, utils/     three.js r170 (MIT)
 assets/
   models/             toilet.glb + buckets/*.glb (gecomprimeerd)
@@ -75,8 +81,10 @@ assets/
   icons/              lucide/, game-icons/ (bron-SVG's), sprite.svg (gegenereerd), app/ (app-iconen)
   fonts/              Lilita One + Nunito (spel) en vier lettertypen voor de stijlvoorbeelden; elk met OFL.txt
   _unused/            originelen en niet-gebruikte modellen (worden niet geladen)
-tools/                serve, build-icons, build-sw, optimize-assets, model-viewer
+tools/                serve, build-icons, build-sw, bouw-site (testversie voor github.io), optimize-assets, model-viewer
 tests/                Playwright-tests per onderwerp
+docs/                 credits, privacy-audit, testversie, publiceren
+store/                materiaal voor Google Play (begin)
 ```
 
 De weergave weet niets van de spelregels: `game.js` stuurt events (`flush`, `clog`, `unclog`, `water`, …) over de
@@ -89,13 +97,14 @@ Alles staat in `js/data/`:
 | Wat | Bestand | Toevoegen = |
 |---|---|---|
 | Gereedschap | `tools.js` | een regel (effect `working` met `power`, of `chaos`; `starting` of `price` + `minLevel`) |
-| Schoonmaakspullen, reparaties, straf bij vuil | `care.js` | een regel (`targets`, `power`) |
+| Schoonmaakspullen, reparaties, straf bij vuil | `care.js` | een regel (`targets`, `power`, `uses` = hoe vaak te gebruiken) |
 | Levels | `levels.js` | een regel met drempel en moeilijkheid |
 | Emmers (capaciteit in liters, binnenmaat) | `buckets.js` | een regel + GLB in `assets/models/buckets/`; binnenmaat meten met `__game.three.bucketMeasure()` |
 | Voorwerpen in de verstopping | `clog-props.js` | een regel + bouwfunctie in `three/props.js` |
 | Toiletten, tegels, vloeren, decoratie | `cosmetics.js` | een regel (decoratie: + bouwfunctie in `three/decor.js`) |
 | Decoratie-ankerpunten, camerastanden, maten van het hokje | `room.js` | een regel |
 | Puntenpakketten | `packages.js` | een regel |
+| **Namen, omschrijvingen en alle andere tekst** | `js/i18n/<taal>.js` | de sleutel in **alle tien** bestanden (bv. `item.<id>.name`, `item.<id>.desc`); een test faalt als er één ontbreekt |
 | Avatars | `profile.js` | een icoonnaam |
 | Winkelcategorieën (met eigen kleur) | `shop.js` | een regel |
 | Kleuren, lettertypen, randen, schaduwen | `css/tokens.css` | — |
@@ -154,6 +163,11 @@ npx playwright test shop          # één onderwerp
 | `camera.spec.js` | zes camerastanden, swipen, "+"-plekken, muren aantikken, tik tegenover slepen |
 | `start.spec.js` | start-staat van een nieuwe speler, vrijspelen per level, bestaande speler (level 4) houdt alles |
 | `care.spec.js` | repareren, toilet en vlekken schoonmaken, troep na drie keer overlopen, straf bij vuil |
+| `menus.spec.js` | knop schoonmaakspullen altijd in beeld, spullen raken op (ook na herladen), menu's sluiten bij een tik ernaast zonder bijwerking |
+| `water.spec.js` | geen water buiten de kom (acht camerapunten, zes momenten), spetters in de kom, geen losse bouten |
+| `i18n.spec.js` | zelfde talen als Sudoku Kids, elke taal compleet, standaardtaal, taalkeuze, niets buiten zijn knop of vak |
+| `storage.spec.js` | sleutels onder `flushfactor.`, migratie van de oude sleutels, voortgang overzetten, profiel en alles verwijderen |
+| `pages.spec.js` | privacyverklaring en verwijderpagina in elke taal, ook zonder `.html` in het adres, en `verwijderen.html` stuurt door |
 | `tools.spec.js` | gereedschapsmenu: één kolom, scrollen met vervaging, in- en uitklappen, naam bij lang indrukken |
 | `style.spec.js` | designbestand en lettertypen, winkel (uitgelicht, labels, feestje, eerlijkheid), welkomstscherm |
 | `toilet.spec.js` | geen los hendeltje, in de pot kijken, tik in / tik uit, waterstroom bij spoelen |
@@ -169,16 +183,36 @@ console: `__game.forceClog('duck')`, `__game.setScore(5000)`, `__game.snapshot()
 
 ## Een branch testen
 
-GitHub Pages toont alleen `main`. Een andere branch (bijvoorbeeld `rebuild`) probeer je lokaal:
+Het live adres toont alleen `main`. Een andere branch probeer je lokaal:
 
 ```bash
-git fetch && git checkout rebuild
+git fetch && git checkout sprint-9
 npm install
 npm run serve        # open het adres uit de terminal (standaard http://localhost:5000/the-flush-factor/)
 npm test
 ```
 
+Of op je telefoon, via het testadres (zie [docs/testversie.md](docs/testversie.md)):
+
+```bash
+git push test sprint-9:main          # eerst draaien de tests (ongeveer een uur), daarna staat het op
+                                     # https://jmldewaal-sedillo.github.io/the-flush-factor-test/
+```
+
+## Talen
+
+Tien talen, dezelfde als in Sudoku Kids: Nederlands, English, Deutsch, Français, Español, Português,
+Italiano, Polski, Türkçe, Bahasa Indonesia. De eerste keer volgt het spel de taal van het toestel (anders
+Engels); daarna de keuze uit het menu (menuknop → Taal). Teksten staan in `js/i18n/<taal>.js`, met `{naam}` als
+invulplek; vaste teksten in `index.html` hebben `data-i18n`. Nederlands is de bron. De vertalingen zijn
+nog niet nagekeken door moedertaalsprekers (ROADMAP → Voor publicatie).
+
+## Gegevens en privacy
+
+Alles blijft op het toestel, onder de prefix `flushfactor.` (zie `docs/privacy-audit.md`). Via de scorebubbel:
+voortgang overzetten (code of bestand), profiel verwijderen, alle gegevens van de app verwijderen.
+
 ## Play Store (later)
 
-Voorbereid voor een TWA: `manifest.json` met `display: standalone`, echte iconen en een service worker.
-Volgende stappen staan in ROADMAP.md (punten 58–63 en "Versie 1.0").
+De Android-app wordt een Capacitor-app (`Apps/CLAUDE.md`, sectie 11); dit project is daar nog niet naar omgezet.
+Wat er nog moet gebeuren staat in ROADMAP.md ("Volgende" en "Voor publicatie in Google Play") en `docs/publiceren.md`.

@@ -39,7 +39,11 @@
     "target",
     "hammer",
     "euro",
-    "arrow-up"
+    "arrow-up",
+    "globe",
+    "arrow-left-right",
+    "user-x",
+    "shield-check"
   ],
   "gameIcons": {
     "flush": "lorc/vortex",

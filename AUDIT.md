@@ -435,3 +435,165 @@ een beetje scheef, waardoor er onderin weinig ruimte is. De overige emmers zijn 
 - "20+ gereedschappen": er bestaan er nu 16. Het menu is daarmee getest (scrollen, vervaging); meer is alleen data.
 - Echte telefoon: nog steeds niet getest.
 - De ontwikkel-preview (`phone-preview.js`) heeft de nieuwe stijl niet gekregen; die hoort niet bij het spel.
+
+---
+---
+
+# Deel 5 — Sprint 10 (punten 89–95), branch `sprint-9`
+
+## Controle tegen `Apps/CLAUDE.md` (punt 89)
+
+Nagelopen op 11 oktober 2026. **V** = voldaan, **N** = niet voldaan, **–** = niet van toepassing.
+
+**Het bestand is tijdens de sprint drie keer aangevuld.** De laatste aanvulling, sectie 11
+("App-structuur Studio Sedillo"), draait een deel van de eerdere afspraken om: geen app-website op een
+subdomein en geen DNS-records tot "lanceren web", de testversie op github.io (noindex), de Android-app
+met Capacitor in plaats van een TWA, en de privacy-URL's voor de Play Store op de hoofdsite. De tabellen
+hieronder volgen die laatste versie. Wat ik eerder in de sprint voor het oude plan had klaargezet
+(`docs/domein.md` met DNS-records, `docs/twa.md`, `assetlinks.json`, een eigen domein voor de test-repo)
+heb ik weer weggehaald voordat er iets gepusht was; er zijn geen DNS-records aangemaakt of gevraagd.
+
+### §1 Vaste gegevens
+
+| Afspraak | | Toelichting |
+|---|---|---|
+| Merknaam Studio Sedillo | V | In de credits, de privacypagina's, `store/` en de docs. |
+| Contact studio.sedillo@gmail.com | V | Nieuw in het credits-scherm en op de privacypagina's; er staat nergens een ander adres. |
+| Hoofddomein, eigen subdomein | – | Sectie 11: geen subdomein tot "lanceren web". Live blijft op `jmldewaal-sedillo.github.io/the-flush-factor/`. |
+| GitHub-account jmldewaal-sedillo | V | |
+| GitHub Pages met eigen domein en HTTPS | – | Geen eigen domein (sectie 11). Live en test staan op github.io, met HTTPS. |
+| Play Console, AdMob | – | Nog niet gepubliceerd; AdMob wordt niet gebruikt. |
+| "Gemaakt door Studio Sedillo" in de app | V | Nieuw, bovenaan het credits-scherm, in elke taal (dezelfde woorden als Sudoku Kids). |
+| Vermelding verantwoordelijke (AVG) | V | De formulering van de template overgenomen. Niet woord voor woord naast de hoofdsite gelegd. |
+
+### §2 Naamgeving (slug `flushfactor`)
+
+| Afspraak | | Toelichting |
+|---|---|---|
+| Projectmap, live-repo | V | `Apps/the-flush-factor/`, `the-flush-factor`. |
+| Test-repo `the-flush-factor-test` | V | Nieuw aangemaakt (na akkoord), remote `test`. |
+| Live-adres op een subdomein | – | Vervallen tot "lanceren web" (sectie 11). |
+| Testadres | V | `jmldewaal-sedillo.github.io/the-flush-factor-test/`, noindex (sectie 11, punt 4). Zie `docs/testversie.md`. |
+| Package-naam `com.studiosedillo.flushfactor` | V | Vastgelegd in de docs; de Android-app zelf is er nog niet. |
+| Prefix `flushfactor.` voor de opslag | V | Was `flushfactor_v1`, `flushfactor_shop_open`, `flushfactor_tools_open`. Omgezet met een migratie en een test (na akkoord). |
+| Vanaf dag één een eigen subdomein | – | Vervallen (sectie 11). De overzet-functie is er voor een nieuwe telefoon. |
+
+### §3 Checklist nieuwe app
+
+Het script `nieuwe-app.sh` is voor nieuwe apps; deze app bestond al. Per onderdeel wat er nu staat:
+
+| Onderdeel | | Toelichting |
+|---|---|---|
+| `.gitignore`, repo's, remotes `origin` en `test` | V | |
+| `ROADMAP.md` volgens §6 | V | Status, Nu bezig, Volgende, Later, Voor publicatie, Logboek bovenaan; de sprintgeschiedenis eronder. |
+| `README.md` met live- en testadres | V | Bijgewerkt. |
+| `CLAUDE.md` in de app-map | V | Nieuw: doel, doelgroep, toon, techniek, app-specifieke regels. |
+| `KINDER_APP` kiezen | deels | Aanname: geen kinder-app. Jenn beslist (staat onder "Voor publicatie"). |
+| `CNAME` met het live-subdomein | – | Geen `CNAME` (sectie 11); `tools/bouw-site.mjs` weigert er een in de testversie. |
+| `.nojekyll` | V | Nieuw. |
+| GitHub Pages via de workflow | deels | Test-repo ja (na groene tests); live-repo nog "vanaf branch main". |
+| DNS-records | – | Geen (sectie 11, punt 6). |
+| `manifest.webmanifest` met iconen 192/512/maskable, relatieve `start_url` en `scope`, `theme_color` | V | Hernoemd van `manifest.json`. |
+| Service worker met `CACHE_VERSION` | V, anders | De versie wordt door `npm run build` berekend uit de inhoud; een test en de CI falen als hij niet actueel is. Vergeten kan dus niet. |
+| Veilige zones (notch) | V | Sinds Sprint 7, met tests. |
+| Taalkeuze, teksten in taalbestanden | V | Tien talen in `js/i18n/` (punt 94). |
+| Echt icoon in plaats van tijdelijk | V | |
+| `privacy.html`, `delete.html`, `verwijderen.html`, `docs/privacy-audit.md` | V | Nieuw, in tien talen (na akkoord). |
+| "Profiel verwijderen", "Alle gegevens verwijderen", "Voortgang overzetten", credits | V | Nieuw, via de scorebubbel. Getest: daarna geen `flushfactor.`-sleutel en geen cache meer over. |
+| Playwright-tests en screenshots op meerdere formaten | V | Vier formaten. |
+| Tests bij elke push; deploy alleen als ze groen zijn | deels | Tests: nu bij elke push (was alleen `main`). Deploy na groene tests: op de test-repo. De live-repo publiceert nog rechtstreeks vanaf `main`, zonder die voorwaarde. |
+| `store/` met teksten | deels | Begin: titel en beschrijvingen in het Nederlands en Engels (concept). |
+| `/.well-known/assetlinks.json`, `docs/twa.md` | – | Hoorden bij de TWA; vervallen (Capacitor). |
+| `docs/publiceren.md` | V | Kort, bijgewerkt naar sectie 11. |
+| Upload key | – | Maakt Jenn zelf. |
+| App op studiosedillo.com | – | Pas na de lancering (sectie 11, punt 3). |
+| **Sectie 11: één codebase met drie bouwdoelen** (`platform/`, Capacitor, webportals) | N | Nog niet omgezet; staat onder "Volgende" in de roadmap. Dit is een eigen sprint. |
+| Sectie 11: testversie op github.io, noindex | V | Meta-tag in elke pagina en een `robots.txt` die alles weigert. |
+| Sectie 11: advertenties en aankopen standaard uit | V | De knoppen voor punten kopen doen niets; er is geen advertentiecode. |
+| Sectie 11: blocklist met pre-commit hook en CI-controle | deels | De hook staat in deze repo (door een andere sessie geplaatst). De CI-controle (`PRIVATE_BLOCKLIST`) zit nog niet in de workflow van deze repo; hoort bij het omzetten. De lijst zelf heb ik niet geopend. |
+
+### §4 DNS, §5 Privacy
+
+| Afspraak | | Toelichting |
+|---|---|---|
+| DNS-records | – | Geen (sectie 11). Met `dig` gecontroleerd: er bestaan geen records voor deze app. |
+| Geen tracking, analytics, advertenties | V | Een test bewaakt dat er geen verzoeken naar andere servers gaan. |
+| Geen accounts, tenzij expliciet besloten | V | Jenn heeft om de inlogknoppen gevraagd (punt 69); ze zijn niet actief en versturen niets. Vóór ze live gaan: privacyverklaring en Data Safety bijwerken. |
+| Gegevens alleen lokaal, met de prefix | V | Alleen `js/storage.js` raakt de opslag aan (test). |
+| Sleutels veranderen nooit, of met migratie en test | V | `migrateLegacy` in `js/storage.js`, `tests/storage.spec.js`. |
+| `docs/privacy-audit.md` | V | Een test faalt als het spel een sleutel schrijft die er niet in staat. |
+| Privacyverklaring met alle verplichte onderdelen, in alle talen | V | Een test controleert per taal: verantwoordelijke, adres, datum, GitHub, Gmail, het Data Privacy Framework, artikel 6, de Autoriteit Persoonsgegevens. |
+| Controleren of het Data Privacy Framework nog geldt | N | Niet opnieuw nagezocht; de tekst volgt de template. Staat onder "Voor publicatie". |
+| Kinderparagraaf, ouderslot | – | Geen kinder-app (aanname). |
+| Verwijderpagina `/delete` met `/verwijderen` | V | |
+| Wissen getest: geen sleutel en geen cache over | V | |
+
+### §6 Roadmap, §7 GitHub, §8 Inhoud, §9 Werkwijze
+
+| Afspraak | | Toelichting |
+|---|---|---|
+| Roadmap in de vaste opbouw, logboek bijwerken | V | |
+| Begin van de sessie: `git status`, `git pull`, roadmap lezen | deels | `git status` en de roadmap wel; `git pull` niet gedaan (de branch liep op dat moment niet achter). |
+| Kleine commits | N | De commits van Sprint 9 en 10 zijn groot. Voortaan per punt committen. |
+| `main` alleen na akkoord | V | Alles staat op de branch `sprint-9`. |
+| Alle tests groen; sw-versie omhoog | V | |
+| Pushen naar de test-repo | V | Nieuw: `git push test sprint-9:main`. |
+| Nooit force-pushen naar `main`, geen secrets | V | `.gitignore` sluit nu ook `*.keystore` en `*.jks` uit. |
+| Scripts die naar live pushen alleen met `--dry-run` | – | Geen van die scripts gedraaid. |
+| Eigen werk of CC0 heeft de voorkeur; CC-BY met naamsvermelding | V | |
+| Niets zonder duidelijke licentie | V | **Let op:** de houten emmer is CC BY-**SA** 4.0 (gelijk delen). Het bewerkte model blijft daarom onder dezelfde licentie beschikbaar; dat staat in de credits. Wil je dat niet, dan moet er een ander model komen. |
+| Bronnen in `docs/credits.md`, gegevens gecontroleerd | deels | Verplaatst van `CREDITS.md` (dat verwijst er nu naar). De gegevens zijn in Sprint 7 nagelopen, deze sprint niet opnieuw. |
+| Geen emoji als iconen | V | Test op broncode en op het scherm, nu ook op alle taalbestanden. |
+| Store-geschikt | V | Cartoonesk vies, niet realistisch. |
+| Nederlands, structureel oplossen, stappen opschrijven, afwijkingen melden | V | Zie hieronder en `docs/testversie.md`. |
+
+### Niet gedaan, en waarom
+
+- **Omzetten naar de drie bouwdoelen van sectie 11** (dunne laag in `platform/`, Capacitor, webportals,
+  privacypagina's bouwen voor de hoofdsite). Die sectie kwam aan het eind van de sprint; het is een
+  eigen stuk werk met eigen tests en staat bovenaan onder "Volgende".
+- **De live-repo via de workflow laten publiceren.** `main` verandert alleen na akkoord.
+
+### Let op bij de test-repo
+
+De test-repo `the-flush-factor-test` is aangemaakt na akkoord van Jenn in deze sessie, toen het plan nog
+een eigen testdomein was. De `CLAUDE.md` van de app zei daarna dat aanmaken "bij het omzetten hoort".
+De repo bestaat nu dus eerder dan daar bedoeld; hij publiceert naar github.io, zonder eigen domein en
+met noindex, zoals sectie 11 voorschrijft.
+
+## Water buiten de kom (punt 90)
+
+| Wat je zag | Wat het was | Opgelost met |
+|---|---|---|
+| Blauw onder aan de voet tijdens het spoelen | De trechter van de draaikolk: de diepte was een getal zonder maat en kwam uit op ruim 0,5 m | Diepte in meters, hooguit 6 cm en nooit door de bodem van de kom |
+| Blauw plekje achter de voet (gevonden door de nieuwe test) | Onder de kom is het model bij de afvoer niet dicht; het weggezakte water was door die kier te zien | Masker op de opening van de kom (stencil): water wordt alleen getekend waar je door de opening kijkt |
+| Spetters naast de pot | De spetters van het spoelen vlogen vrij weg | Spetters van het spoelen verdwijnen zodra ze de kom zouden verlaten |
+| Zwart streepje links bij de voet | Een van vier zwarte bouten in het model (twee in de voet, twee onder de stortbak), geen rest van de stopkraan | De vier bouten worden niet meer getoond |
+
+De test tekent het beeld met en zonder water vanuit acht camerapunten en zes momenten van de
+spoelbeurt, en telt pixels die verschillen buiten de opening van de kom: dat moet nul zijn. Een
+tweede test zet de beveiligingen uit en controleert dat de test de oude fout dan wél ziet.
+
+## Keuzes die ik zelf heb gemaakt (stel gerust bij)
+
+- **Eén veeg = één keer gebruik** (punt 92). Alleen een veeg die vuil weghaalt telt; het verkeerde
+  middel of naast de vlek kost niets. Aantallen in `js/data/care.js`: spons, wc-borstel en dweil 6×
+  (goed voor twee vlekken), spray 10×, toiletreiniger 5×, schrobmachine 12×, hogedrukreiniger 20×.
+- **De teller op de knop** toont het totaal aantal keer vegen dat je nog in huis hebt; tijdens het
+  schoonmaken wat er over is van het gekozen middel.
+- **Kiezen in de la sluit de la.** Voorheen bleef hij openstaan tijdens het poetsen; nu is de scène vrij.
+- **De taalkeuze staat in het hoofdmenu** (dit spel heeft geen instellingenscherm zoals Sudoku Kids).
+- **Sudoku Kids heeft één bestand met alle talen; hier is het één bestand per taal**, zoals gevraagd.
+  De werking is gelijk: dezelfde lijst, `{naam}` als invulplek, `data-i18n` in de html.
+- **De taal hoort bij het toestel**, niet bij het profiel: "Profiel verwijderen" laat de taal staan.
+- **"Profiel verwijderen" wist ook de voortgang.** Dit spel heeft één profiel; naam, avatar, punten
+  en statistieken horen daarbij.
+
+## Nog open
+
+- Vertalingen (spel en privacytekst) zijn door Claude geschreven en door niemand nagelezen.
+- De ontwikkel-preview (`phone-preview.js`) en `style-preview.html` zijn alleen Nederlands; ze horen
+  niet bij het spel.
+- De naam en omschrijving in `manifest.webmanifest` zijn vast (Nederlands); een manifest kan niet per
+  taal wisselen.
+- Echte telefoon: nog niet getest. Daarvoor is het testadres er nu.

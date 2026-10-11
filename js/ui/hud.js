@@ -1,14 +1,18 @@
 // Alles wat over de 3D-scène zweeft: score, gereedschap, waterbalk, meldingen, menu's.
 // Alleen DOM; krijgt gegevens aangereikt van game.js.
-import { T } from '../data/texts.js';
+import { t, num, itemName, itemShort, LANGUAGES } from '../i18n/index.js';
 import { CAMERA_VIEWS } from '../data/room.js';
-import { CREDITS } from '../data/credits.js';
+import { CREDITS, STUDIO } from '../data/credits.js';
 import { icon } from './icons.js';
+import { storage } from '../storage.js';
 
 const $ = id => document.getElementById(id);
 const RING = 2 * Math.PI * 24;
 
-export const fmtNum = n => (n >= 10000 ? `${(n / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })}k` : n.toLocaleString('nl-NL'));
+export const fmtNum = n => (n >= 10000 ? `${num(n / 1000, { maximumFractionDigits: 1 })}k` : num(n));
+
+// Uitklapmenu's die dichtgaan bij een tik ernaast (punt 93): { isOpen(), close(), contains(target) }
+const menus = [];
 
 function replay(el, cls) {
   el.classList.remove(cls);
@@ -19,17 +23,17 @@ function replay(el, cls) {
 export const hud = {
   score(score, highScore) {
     $('score-value').textContent = fmtNum(score);
-    $('high-score').textContent = T.best(fmtNum(highScore));
+    $('high-score').textContent = t('best', { n: fmtNum(highScore) });
     $('shop-score').innerHTML = `${icon('coins', 16)} ${fmtNum(score)}`;
   },
   streak(streak, best) {
     $('streak-count').innerHTML = `${icon('toilet', 12)} ×${streak}`;
     $('streak-best').innerHTML = `${icon('trophy', 12)} ${best}`;
   },
-  level(n) { $('level-display').textContent = T.level(n); },
+  level(n) { $('level-display').textContent = t('level', { n }); },
   profile(profile) {
     $('profile-avatar').innerHTML = profile ? icon(profile.avatar, 22) : '';
-    $('score-bubble').setAttribute('aria-label', profile ? `Profiel van ${profile.name}` : 'Profiel en statistieken');
+    $('score-bubble').setAttribute('aria-label', profile ? t('a.profileOf', { name: profile.name || t('profile.guest') }) : t('a.profile'));
   },
 
   message(text) {
@@ -38,7 +42,7 @@ export const hud = {
   },
   combo(x) {
     const el = $('combo-display');
-    el.innerHTML = x ? `${icon('flame', 16)} ${T.combo(x.toLocaleString('nl-NL', { minimumFractionDigits: 1 }))}` : '';
+    el.innerHTML = x ? `${icon('flame', 16)} ${t('combo', { x: num(x, { minimumFractionDigits: 1 }) })}` : '';
     if (x) replay(el, 'combo-pop');
   },
   pointPopup(pts) {
@@ -60,40 +64,53 @@ export const hud = {
   },
   unclogBanner(text) { this.banner('unclog-banner', `${icon('circle-check', 26)} ${text}`, 1800); },
   levelUpBanner(level, name, newCount = 0) {
-    const extra = newCount ? `<small>${icon('gift', 14)} ${T.levelUpNew(newCount)}</small>` : '';
-    this.banner('levelup-banner', `<span>${icon('sparkles', 20)} ${T.levelUp(level, name)}</span>${extra}`, 3000);
+    const extra = newCount ? `<small>${icon('gift', 14)} ${t('levelUpNew', { n: newCount })}</small>` : '';
+    this.banner('levelup-banner', `<span>${icon('sparkles', 20)} ${t('levelUp', { n: level, name: name.toLocaleUpperCase() })}</span>${extra}`, 3000);
   },
   shopBadge(n) { $('shop-badge').hidden = n <= 0; $('shop-badge').textContent = n > 0 ? String(n) : ''; },
   // Vies kost punten: toon hoeveel (punt 83).
   dirt(count, factor) {
     const pill = $('dirt-pill');
     pill.hidden = factor >= 1;
-    pill.innerHTML = factor < 1 ? `${icon('stain', 13)}${T.care.penalty(Math.round((1 - factor) * 100))}` : '';
+    pill.innerHTML = factor < 1 ? `${icon('stain', 13)}${t('care.penalty', { pct: Math.round((1 - factor) * 100) })}` : '';
   },
-  // Schoonmaakknop linksonder met een la vol schoonmaakspullen.
-  cleaning(owned, active, dirtCount) {
+  // Knop voor de schoonmaakspullen, linksonder (punten 83, 91 en 92). Altijd in beeld: je ziet er je voorraad
+  // op (hoe vaak je nog kunt vegen). De la toont per middel wat er nog over is.
+  // owned: [{ id, icon, uses, left }], active: gekozen middel of null.
+  cleaning(owned, active) {
     const wrap = $('hud-clean'), tray = $('clean-tray'), btn = $('btn-clean');
-    wrap.hidden = dirtCount <= 0;
-    $('clean-count').textContent = dirtCount > 0 ? String(dirtCount) : '';
+    const total = owned.reduce((sum, c) => sum + c.left, 0);
+    const current = owned.find(c => c.id === active) || null;
     wrap.dataset.owned = String(owned.length);
-    if (active) document.body.dataset.cleaning = active; else delete document.body.dataset.cleaning;
-    btn.setAttribute('aria-pressed', String(!!active));
-    btn.setAttribute('aria-label', active ? T.care.stop : 'Schoonmaken');
-    tray.innerHTML = owned.map(c => `<button class="round-btn clean-option" data-cleaner="${c.id}" aria-label="${c.name}" aria-pressed="${c.id === active}" title="${c.name}">${icon(c.icon, 26)}</button>`).join('');
-    if (dirtCount <= 0 || !owned.length) { tray.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+    wrap.dataset.stock = String(total);
+    if (current) document.body.dataset.cleaning = current.id; else delete document.body.dataset.cleaning;
+    $('clean-icon').innerHTML = icon(current ? current.icon : 'care', 26);
+    $('clean-count').textContent = String(current ? current.left : total);
+    btn.setAttribute('aria-pressed', String(!!current));
+    btn.setAttribute('aria-label', total > 0 ? t('care.stock', { n: total }) : t('care.stockEmpty'));
+    tray.innerHTML = owned.map(c => {
+      const name = itemName(c);
+      return `<button class="round-btn clean-option" data-cleaner="${c.id}" data-left="${c.left}" aria-label="${t('care.option', { name, left: c.left, total: c.uses })}" aria-pressed="${c.id === active}" title="${name}">
+        ${icon(c.icon, 26)}<span class="uses">${t('care.uses', { left: c.left, total: c.uses })}</span></button>`;
+    }).join('');
+    if (!owned.length) this.closeCleanTray();
   },
-  bindCleaning(onPick) {
+  closeCleanTray() { $('clean-tray').hidden = true; $('btn-clean').setAttribute('aria-expanded', 'false'); },
+  // onPick(id): een middel gekozen in de la. onEmpty(): de voorraad is leeg (de knop leidt dan naar de winkel).
+  bindCleaning(onPick, onEmpty) {
     const tray = $('clean-tray'), btn = $('btn-clean');
     btn.addEventListener('click', () => {
-      if ($('hud-clean').dataset.owned === '0') return this.message(T.care.noCleaners);
-      if (document.body.dataset.cleaning) { onPick(null); tray.hidden = true; }
-      else tray.hidden = !tray.hidden;
+      if ($('hud-clean').dataset.owned === '0') return onEmpty();
+      tray.hidden = !tray.hidden;
       btn.setAttribute('aria-expanded', String(!tray.hidden));
     });
     tray.addEventListener('click', e => {
       const opt = e.target.closest('[data-cleaner]');
-      if (opt) onPick(opt.dataset.cleaner);
+      if (!opt) return;
+      this.closeCleanTray();
+      onPick(opt.dataset.cleaner);
     });
+    menus.push({ isOpen: () => !tray.hidden, close: () => this.closeCleanTray(), contains: el => tray.contains(el) || btn.contains(el) });
   },
   sparkle() {
     const layer = $('fx-layer');
@@ -117,7 +134,7 @@ export const hud = {
   },
 
   bucket(usedLiters, capacity, iconName) {
-    $('bucket-liters').textContent = T.liters(usedLiters, capacity);
+    $('bucket-liters').textContent = t('liters', { used: num(usedLiters, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), cap: capacity });
     $('btn-bucket').classList.toggle('full', usedLiters >= capacity);
     $('btn-bucket').innerHTML = icon(iconName, 26);
     $('btn-bucket-empty').hidden = usedLiters <= 0;
@@ -133,7 +150,7 @@ export const hud = {
       btn.className = 'tool-btn';
       btn.dataset.id = tool.id;
       btn.dataset.kind = tool.discovered || 'unknown';
-      btn.setAttribute('aria-label', tool.name);
+      btn.setAttribute('aria-label', itemName(tool));
       btn.innerHTML = `
         <svg class="cd-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="cd-track" cx="30" cy="30" r="24"/><circle class="cd-fill" cx="30" cy="30" r="24"/></svg>
         ${icon(tool.icon, 28, 'tool-icon')}
@@ -145,7 +162,7 @@ export const hud = {
         timer = setTimeout(() => {
           held = true;
           const r = btn.getBoundingClientRect();
-          tip.textContent = tool.short || tool.name;
+          tip.textContent = itemShort(tool);
           tip.style.left = `${r.right + 10}px`;
           tip.style.top = `${r.top + r.height / 2}px`;
           tip.hidden = false;
@@ -178,18 +195,16 @@ export const hud = {
   },
   // In- en uitklappen van het gereedschap, zodat de scène vrij is. De keuze wordt onthouden.
   bindTools() {
-    const KEY = 'flushfactor_tools_open';
     const btn = $('btn-tools-toggle'), bar = $('inventory-bar');
     const set = open => {
       document.body.dataset.tools = open ? 'open' : 'closed';
       btn.setAttribute('aria-expanded', String(open));
-      btn.setAttribute('aria-label', open ? 'Gereedschap verbergen' : 'Gereedschap tonen');
-      try { localStorage.setItem(KEY, open ? '1' : '0'); } catch { /* geen opslag */ }
+      btn.setAttribute('aria-label', open ? t('a.toolsHide') : t('a.toolsShow'));
+      storage.writeSetting('toolsOpen', open);
       this._fadeEdges();
     };
-    let open = true;
-    try { open = localStorage.getItem(KEY) !== '0'; } catch { /* geen opslag */ }
-    set(open);
+    set(storage.readSetting('toolsOpen') !== false);
+    this.toolsLabel = () => btn.setAttribute('aria-label', document.body.dataset.tools === 'open' ? t('a.toolsHide') : t('a.toolsShow'));
     btn.addEventListener('click', () => set(document.body.dataset.tools !== 'open'));
     bar.addEventListener('scroll', () => { this._fadeEdges(); $('tool-tip').hidden = true; }, { passive: true });
     new ResizeObserver(() => this._fadeEdges()).observe(bar);
@@ -211,7 +226,7 @@ export const hud = {
       b.className = 'menu-item';
       b.dataset.view = id;
       b.setAttribute('role', 'menuitemradio');
-      b.innerHTML = `${icon(v.icon, 18, v.flipIcon ? 'flip' : '')}<span>${v.label}</span>`;
+      b.innerHTML = `${icon(v.icon, 18, v.flipIcon ? 'flip' : '')}<span>${t(`view.${id}`)}</span>`;
       b.addEventListener('click', () => onPick(id));
       menu.appendChild(b);
     }
@@ -222,20 +237,58 @@ export const hud = {
     document.querySelectorAll('#camera-menu .menu-item').forEach(b => b.setAttribute('aria-checked', String(b.dataset.view === id)));
   },
 
-  // Uitklapmenu's: openen/sluiten, sluiten bij tik erbuiten.
+  // Uitklapmenu's: openen/sluiten met de knop. Sluiten bij een tik ernaast regelt bindDismiss().
   bindPopover(buttonId, menuId) {
     const btn = $(buttonId), menu = $(menuId);
     const set = open => { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
-    btn.addEventListener('click', e => { e.stopPropagation(); set(menu.hidden); });
-    document.addEventListener('pointerdown', e => { if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) set(false); });
+    btn.addEventListener('click', () => set(menu.hidden));
+    menus.push({ isOpen: () => !menu.hidden, close: () => set(false), contains: el => menu.contains(el) || btn.contains(el) });
     return { close: () => set(false) };
+  },
+  // Tik naast een open menu: het menu gaat dicht en die tik doet verder niets (punt 93) — niet inzoomen,
+  // niet spoelen, geen andere knop. Alleen de knop van een ander menu werkt meteen door, zodat je in één
+  // tik van het ene menu naar het andere kunt.
+  bindDismiss() {
+    let swallow = false, timer = 0;
+    const stop = e => { e.stopPropagation(); e.preventDefault(); };
+    document.addEventListener('pointerdown', e => {
+      clearTimeout(timer);
+      swallow = false;
+      const outside = menus.filter(m => m.isOpen() && !m.contains(e.target));
+      if (!outside.length) return;
+      outside.forEach(m => m.close());
+      if (menus.some(m => m.contains(e.target))) return;      // de knop van een ander menu
+      swallow = true;
+      stop(e);
+    }, true);
+    for (const type of ['pointermove', 'pointerup', 'pointercancel', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click']) {
+      document.addEventListener(type, e => {
+        if (!swallow) return;
+        stop(e);
+        // de klik komt direct na het loslaten; daarna is het gebaar voorbij
+        if (type === 'click') swallow = false;
+        else if (type === 'pointerup' || type === 'pointercancel') timer = setTimeout(() => { swallow = false; }, 400);
+      }, { capture: true, passive: false });
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') menus.forEach(m => m.isOpen() && m.close()); });
+  },
+  menuOpen: () => menus.some(m => m.isOpen()),
+
+  // Taalkeuze in het menu (punt 94): keuzelijst met elke taal in die taal zelf, zoals in Sudoku Kids.
+  buildLanguages(current, onPick) {
+    const select = $('setting-language');
+    select.innerHTML = LANGUAGES.map(([code, name]) => `<option value="${code}">${name}</option>`).join('');
+    select.value = current;
+    select.addEventListener('change', e => onPick(e.target.value));
   },
 
   buildCredits() {
-    $('credits-list').innerHTML = CREDITS.map(g => `
-      <h3>${g.group}</h3>
-      <ul>${g.items.map(i => `<li><strong>${i.title}</strong> — ${i.author}, ${i.license}<br><a href="${i.url}" target="_blank" rel="noopener">${i.url.replace('https://', '')}</a></li>`).join('')}</ul>
-      ${g.note ? `<p class="credits-note">${g.note}</p>` : ''}`).join('');
+    $('credits-list').innerHTML = `
+      <p class="credits-made">${t('credits.madeBy')}</p>
+      <p class="credits-contact">${t('credits.contact')}: <a href="mailto:${STUDIO.email}">${STUDIO.email}</a></p>` + CREDITS.map(g => `
+      <h3>${t(`credits.${g.group}`)}</h3>
+      <ul>${g.items.map(i => `<li><strong>${i.titleKey ? t(`credits.${i.titleKey}`, { n: i.count }) : i.title}</strong> — ${i.author}, ${i.license}<br><a href="${i.url}" target="_blank" rel="noopener">${i.url.replace('https://', '')}</a></li>`).join('')}</ul>
+      ${g.note ? `<p class="credits-note">${t(`credits.${g.note}`)}</p>` : ''}`).join('');
   },
 
   loading(done) { $('loading').hidden = done; },

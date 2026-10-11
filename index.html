@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1f2a33">
   <title>The Flush Factor</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icons/app/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icons/app/icon-192.png">
   <link rel="stylesheet" href="css/tokens.css">
@@ -26,75 +26,79 @@
 
   <div id="hud">
     <div id="hud-topleft">
-      <button id="btn-camera" class="round-btn" aria-label="Camerastand" aria-expanded="false" aria-controls="camera-menu"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#switch-camera"/></svg></button>
+      <button id="btn-camera" class="round-btn" data-i18n-aria="a.camera" aria-label="Camerastand" aria-expanded="false" aria-controls="camera-menu"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#switch-camera"/></svg></button>
       <div id="camera-menu" class="popover" role="menu" hidden></div>
-      <button id="btn-back" class="pill-btn" aria-label="Terug naar het toilet"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#arrow-left"/></svg><span>Terug</span></button>
+      <button id="btn-back" class="pill-btn" data-i18n-aria="a.backToilet" aria-label="Terug naar het toilet"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#arrow-left"/></svg><span data-i18n="back">Terug</span></button>
     </div>
 
     <div id="hud-topcenter">
-      <button id="btn-menu" class="round-btn" aria-label="Menu" aria-expanded="false" aria-controls="main-menu"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#menu"/></svg></button>
+      <button id="btn-menu" class="round-btn" data-i18n-aria="a.menu" aria-label="Menu" aria-expanded="false" aria-controls="main-menu"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#menu"/></svg></button>
       <div id="main-menu" class="popover" role="menu" hidden>
-        <button class="menu-item" data-action="sound"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-2"/></svg><span>Geluid</span></button>
-        <button class="menu-item" data-action="credits"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#info"/></svg><span>Credits</span></button>
-        <button class="menu-item" data-action="fullscreen"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#maximize"/></svg><span>Volledig scherm</span></button>
-        <button class="menu-item" data-action="camera-reset"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span>Camera terugzetten</span></button>
+        <button class="menu-item" data-action="sound"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-2"/></svg><span data-i18n="menu.sound">Geluid</span></button>
+        <button class="menu-item" data-action="credits"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#info"/></svg><span data-i18n="menu.credits">Credits</span></button>
+        <button class="menu-item" data-action="fullscreen"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#maximize"/></svg><span data-i18n="menu.fullscreen">Volledig scherm</span></button>
+        <button class="menu-item" data-action="camera-reset"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="menu.cameraReset">Camera terugzetten</span></button>
+        <!-- Taalkeuze (punt 94): zelfde lijst en dezelfde keuzelijst als in Sudoku Kids -->
+        <label class="menu-item menu-language"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#globe"/></svg><span data-i18n="menu.language">Taal</span>
+          <select id="setting-language" data-i18n-aria="menu.language" aria-label="Taal"></select>
+        </label>
       </div>
     </div>
 
     <div id="hud-topright">
-      <button id="score-bubble" aria-label="Profiel en statistieken">
+      <button id="score-bubble" data-i18n-aria="a.profile" aria-label="Profiel en statistieken">
         <span class="score-top"><span id="profile-avatar"></span><span id="score-value">0</span></span>
-        <span id="high-score">Beste: 0</span>
+        <span id="high-score"></span>
         <span class="streak-row">
-          <span id="streak-count" title="Spoelbeurten zonder verstopping"></span>
-          <span id="streak-best" title="Langste reeks"></span>
-          <span id="level-display" title="Huidig level">Lv.1</span>
+          <span id="streak-count" data-i18n-title="tip.streak" title="Spoelbeurten zonder verstopping"></span>
+          <span id="streak-best" data-i18n-title="tip.bestStreak" title="Langste reeks"></span>
+          <span id="level-display" data-i18n-title="tip.level" title="Huidig level"></span>
         </span>
       </button>
-      <div class="topright-row"><span id="dirt-pill" hidden></span><button id="btn-shop" class="round-btn shop-btn" aria-label="Winkel"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#shopping-cart"/></svg><span id="shop-badge" class="count-badge" hidden></span></button></div>
+      <div class="topright-row"><span id="dirt-pill" hidden></span><button id="btn-shop" class="round-btn shop-btn" data-i18n-aria="a.shop" aria-label="Winkel"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#shopping-cart"/></svg><span id="shop-badge" class="count-badge" hidden></span></button></div>
     </div>
 
     <!-- Links: waterstand + gereedschap (één kolom, scrollt, in te klappen; punt 82) -->
     <div id="hud-left">
       <button id="btn-tools-toggle" class="round-btn small" aria-label="Gereedschap verbergen" aria-expanded="true" aria-controls="inventory-bar"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#wrench"/></svg><svg class="ic" width="16" height="16" aria-hidden="true"><use href="assets/icons/sprite.svg#chevron-left"/></svg></button>
       <div id="tools-row">
-        <div class="water-bar" title="Waterstand"><div id="water-bar-fill"></div></div>
+        <div class="water-bar" data-i18n-title="tip.water" title="Waterstand"><div id="water-bar-fill"></div></div>
         <div id="inventory-bar"></div>
       </div>
     </div>
     <div id="tool-tip" role="tooltip" hidden></div>
 
-    <!-- Linksonder: schoonmaken (alleen als er iets vies is; punt 83) -->
-    <div id="hud-clean" hidden>
+    <!-- Linksonder: schoonmaakspullen. Altijd in beeld, met de voorraad op de knop (punten 83, 91 en 92) -->
+    <div id="hud-clean">
       <div id="clean-tray" hidden></div>
-      <button id="btn-clean" class="round-btn" aria-label="Schoonmaken" aria-expanded="false"><svg class="ic" width="26" height="26" aria-hidden="true"><use href="assets/icons/sprite.svg#care"/></svg><span id="clean-count" class="count-badge"></span></button>
+      <button id="btn-clean" class="round-btn" data-i18n-aria="care.open" aria-label="Schoonmaakspullen" aria-expanded="false" aria-controls="clean-tray"><span id="clean-icon"></span><span id="clean-count" class="count-badge"></span></button>
     </div>
 
     <div id="hud-bottom">
       <div id="combo-display"></div>
-      <button id="flush-btn" aria-label="Spoelen"><svg class="ic" width="44" height="44" aria-hidden="true"><use href="assets/icons/sprite.svg#flush"/></svg></button>
+      <button id="flush-btn" data-i18n-aria="a.flush" aria-label="Spoelen"><svg class="ic" width="44" height="44" aria-hidden="true"><use href="assets/icons/sprite.svg#flush"/></svg></button>
     </div>
 
     <div id="hud-bottomright">
-      <span id="bucket-liters">0,0 / 20 L</span>
-      <button id="btn-bucket" class="round-btn bucket-btn" aria-label="Emmer bekijken"></button>
-      <button id="btn-bucket-empty" class="round-btn danger" aria-label="Emmer legen" hidden><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#trash-2"/></svg></button>
+      <span id="bucket-liters"></span>
+      <button id="btn-bucket" class="round-btn bucket-btn" data-i18n-aria="a.bucketView" aria-label="Emmer bekijken"></button>
+      <button id="btn-bucket-empty" class="round-btn danger" data-i18n-aria="a.bucketEmpty" aria-label="Emmer legen" hidden><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#trash-2"/></svg></button>
     </div>
 
     <div id="status-msg" role="status"></div>
-    <div id="clog-warning" aria-hidden="true"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#triangle-alert"/></svg><span>VERSTOPT!</span></div>
+    <div id="clog-warning" aria-hidden="true"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#triangle-alert"/></svg><span data-i18n="clogWarning">VERSTOPT!</span></div>
     <div id="unclog-banner" aria-hidden="true"></div>
     <div id="levelup-banner" aria-hidden="true"></div>
   </div>
 
-  <div id="loading"><div class="spinner"></div><span>Laden…</span></div>
+  <div id="loading"><div class="spinner"></div><span data-i18n="loading">Laden…</span></div>
 </div>
 
 <!-- Winkel -->
 <div id="shop-screen" hidden>
   <header class="shop-header">
-    <button id="btn-shop-close" class="pill-btn shop-btn" aria-label="Terug naar het spel"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#arrow-left"/></svg><span>Terug</span></button>
-    <h2>Winkel</h2>
+    <button id="btn-shop-close" class="pill-btn shop-btn" data-i18n-aria="a.backToGame" aria-label="Terug naar het spel"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#arrow-left"/></svg><span data-i18n="back">Terug</span></button>
+    <h2 data-i18n="shop.title">Winkel</h2>
     <span id="shop-score"></span>
   </header>
   <div id="shop-scroll">
@@ -106,9 +110,9 @@
 </div>
 
 <!-- Credits -->
-<div id="credits-modal" role="dialog" aria-label="Credits" hidden>
+<div id="credits-modal" role="dialog" data-i18n-aria="menu.credits" aria-label="Credits" hidden>
   <div id="credits-content">
-    <button id="btn-credits-close" class="round-btn" aria-label="Sluiten"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#x"/></svg></button>
+    <button id="btn-credits-close" class="round-btn" data-i18n-aria="a.close" aria-label="Sluiten"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#x"/></svg></button>
     <h2>The Flush Factor</h2>
     <div id="credits-list"></div>
   </div>
@@ -117,23 +121,23 @@
 <!-- Profiel: welkom bij de eerste start, daarna via de scorebubbel (punt 69) -->
 <div id="profile-screen" role="dialog" aria-labelledby="profile-title" hidden>
   <div id="profile-content">
-    <button id="btn-profile-close" class="round-btn" aria-label="Sluiten"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#x"/></svg></button>
+    <button id="btn-profile-close" class="round-btn" data-i18n-aria="a.close" aria-label="Sluiten"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#x"/></svg></button>
     <h2 id="profile-title"></h2>
     <p id="profile-intro"></p>
 
     <form id="profile-form" autocomplete="off">
       <div class="profile-identity">
         <span id="profile-avatar-big"></span>
-        <label class="profile-name-label">Naam
+        <label class="profile-name-label"><span data-i18n="profile.name">Naam</span>
           <input id="profile-name" type="text" inputmode="text" enterkeyhint="done">
         </label>
       </div>
-      <div id="profile-avatars" role="radiogroup" aria-label="Kies een avatar"></div>
+      <div id="profile-avatars" role="radiogroup" data-i18n-aria="a.pickAvatar" aria-label="Kies een avatar"></div>
       <button id="profile-submit" class="primary-btn" type="submit"></button>
     </form>
 
     <div id="profile-stats-block">
-      <h3>Statistieken</h3>
+      <h3 data-i18n="profile.statsTitle">Statistieken</h3>
       <dl id="profile-stats"></dl>
     </div>
 
@@ -142,6 +146,58 @@
       <div id="profile-auth"></div>
       <p id="profile-auth-note"></p>
       <p id="profile-status" role="status"></p>
+    </div>
+
+    <!-- Gegevens: overzetten en verwijderen (CLAUDE.md §5). Niet op het welkomstscherm. -->
+    <div id="profile-data-block">
+      <h3 data-i18n="data.title">Gegevens</h3>
+      <div class="data-actions">
+        <button type="button" id="btn-transfer" class="data-btn"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#arrow-left-right"/></svg><span data-i18n="data.transfer">Voortgang overzetten</span></button>
+        <button type="button" id="btn-delete-profile" class="data-btn"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#user-x"/></svg><span data-i18n="data.deleteProfile">Profiel verwijderen</span></button>
+        <button type="button" id="btn-wipe" class="data-btn danger"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#trash-2"/></svg><span data-i18n="data.wipe">Alle gegevens van deze app verwijderen</span></button>
+      </div>
+      <p class="data-links"><a href="privacy.html" data-i18n="data.privacy">Privacyverklaring</a> · <a href="delete.html" data-i18n="data.deleteHelp">Gegevens verwijderen (uitleg)</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Voortgang overzetten: een code of bestand maken, of terugzetten. Er wordt niets verstuurd. -->
+<div id="transfer-dialog" class="dialog" role="dialog" aria-labelledby="transfer-title" hidden>
+  <div class="dialog-panel">
+    <button id="btn-transfer-close" class="round-btn dialog-close" data-i18n-aria="a.close" aria-label="Sluiten"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#x"/></svg></button>
+    <h2 id="transfer-title" data-i18n="data.transfer">Voortgang overzetten</h2>
+    <p data-i18n="data.transferHelp"></p>
+    <button type="button" id="btn-export" class="pill-btn" data-i18n="data.exportBtn">Maak code</button>
+    <div id="export-result" hidden>
+      <label class="field-label"><span data-i18n="data.exportLabel">Jouw code</span>
+        <textarea id="export-code" rows="4" readonly spellcheck="false"></textarea>
+      </label>
+      <div class="dialog-row">
+        <button type="button" id="btn-export-copy" class="pill-btn" data-i18n="data.copy">Kopieer</button>
+        <button type="button" id="btn-export-file" class="pill-btn" data-i18n="data.file">Bewaar als bestand</button>
+      </div>
+    </div>
+    <hr>
+    <p data-i18n="data.importHelp"></p>
+    <label class="field-label"><span data-i18n="data.importLabel">Code van je andere toestel</span>
+      <textarea id="import-code" rows="4" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    </label>
+    <div class="dialog-row">
+      <label class="pill-btn file-btn"><span data-i18n="data.chooseFile">Kies bestand</span><input id="import-file" type="file" accept=".txt,text/plain"></label>
+      <button type="button" id="btn-import" class="pill-btn" data-i18n="data.importBtn">Zet terug</button>
+    </div>
+    <p id="transfer-status" role="status"></p>
+  </div>
+</div>
+
+<!-- Bevestigen (verwijderen, terugzetten) en de melding daarna -->
+<div id="confirm-dialog" class="dialog" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-text" hidden>
+  <div class="dialog-panel">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-text"></p>
+    <div class="dialog-row">
+      <button type="button" id="confirm-no" class="pill-btn" data-i18n="data.cancel">Annuleren</button>
+      <button type="button" id="confirm-yes" class="pill-btn danger"></button>
     </div>
   </div>
 </div>

@@ -1,29 +1,29 @@
-// Schoonmaak en reparatie (punten 80 en 83). Alles wat je hier bijstelt werkt direct door in het spel.
+// Schoonmaak en reparatie (punten 80, 83 en 92). Alles wat je hier bijstelt werkt direct door in het spel.
+// Namen en omschrijvingen staan in de taalbestanden (js/i18n/, sleutels item.<id>.*).
 
 // Gebreken van het kapotte toilet waarmee nieuwe spelers beginnen. Elk gebrek heeft één reparatie.
-export const DEFECTS = {
-  seat: { label: 'Scheve bril' },
-  lid:  { label: 'Barst in het deksel' },
-  chip: { label: 'Stukje uit de rand' },
-};
+export const DEFECTS = { seat: {}, lid: {}, chip: {} };
 
-// Reparaties: eenmalig. Kopen = meteen uitvoeren (met animatie in de scène).
+// Reparaties: één keer te gebruiken. Kopen = meteen uitvoeren (met animatie in de scène); daarna is hij op.
 export const REPAIRS = [
-  { id: 'repair-kit', name: 'Lijm & reparatieset', icon: 'repair-kit', price: 60,  minLevel: 1, fixes: 'chip', description: 'Plakt het stukje terug. Niemand die het ziet.' },
-  { id: 'new-seat',   name: 'Nieuwe bril',         icon: 'new-seat',   price: 120, minLevel: 1, fixes: 'seat', description: 'Eindelijk recht zitten.' },
-  { id: 'new-lid',    name: 'Nieuw deksel',        icon: 'new-lid',    price: 150, minLevel: 1, fixes: 'lid',  description: 'Zonder barst. Luxe.' },
+  { id: 'repair-kit', icon: 'repair-kit', price: 60, minLevel: 1, fixes: 'chip', uses: 1 },
+  { id: 'new-seat', icon: 'new-seat', price: 120, minLevel: 1, fixes: 'seat', uses: 1 },
+  { id: 'new-lid', icon: 'new-lid', price: 150, minLevel: 1, fixes: 'lid', uses: 1 },
 ];
 
-// Schoonmaakspullen: je koopt ze één keer en gebruikt ze zo vaak je wilt.
+// Schoonmaakspullen raken op (punt 92).
 // targets: waar het voor is ('toilet', 'floor', 'wall'). power: hoeveel vuil één veeg weghaalt (1 = alles).
+// uses: hoe vaak je ermee kunt vegen voordat het op is; daarna koop je een nieuwe. Elke veeg die vuil weghaalt
+// telt als één keer. Duurdere spullen gaan langer mee én halen meer weg per veeg.
+//   vegen per vlek = 1 / power (afgerond naar boven) → vlekken per aankoop = uses / dat aantal
 export const CLEANERS = [
-  { id: 'sponge',          name: 'Spons',             icon: 'sponge',          price: 60,   minLevel: 1, targets: ['wall'],          power: 0.34, description: 'Boenen. En nog eens boenen.' },
-  { id: 'toilet-brush',    name: 'Wc-borstel',        icon: 'toilet-brush',    price: 80,   minLevel: 1, targets: ['toilet'],        power: 0.34, description: 'Niemands favoriet. Wel nodig.' },
-  { id: 'mop',             name: 'Dweil en emmer',    icon: 'mop',             price: 100,  minLevel: 1, targets: ['floor'],         power: 0.34, description: 'Sop erin, vloer erdoor.' },
-  { id: 'spray',           name: 'Schoonmaakspray',   icon: 'spray',           price: 250,  minLevel: 2, targets: ['wall'],          power: 0.6,  description: 'Pssst. Weg vlek.' },
-  { id: 'toilet-cleaner',  name: 'Toiletreiniger',    icon: 'toilet-cleaner',  price: 300,  minLevel: 2, targets: ['toilet'],        power: 1,    description: 'Eén scheut en hij blinkt.' },
-  { id: 'scrubber',        name: 'Schrobmachine',     icon: 'scrubber',        price: 800,  minLevel: 4, targets: ['floor'],         power: 1,    description: 'Brrrrrr. Vloer als nieuw.' },
-  { id: 'pressure-washer', name: 'Hogedrukreiniger',  icon: 'pressure-washer', price: 1200, minLevel: 4, targets: ['wall', 'floor'], power: 1,    description: 'Alles weg. Ook het behang, bijna.' },
+  { id: 'sponge', icon: 'sponge', price: 60, minLevel: 1, targets: ['wall'], power: 0.34, uses: 6 },                      // 2 vlekken
+  { id: 'toilet-brush', icon: 'toilet-brush', price: 80, minLevel: 1, targets: ['toilet'], power: 0.34, uses: 6 },        // 2 keer het toilet
+  { id: 'mop', icon: 'mop', price: 100, minLevel: 1, targets: ['floor'], power: 0.34, uses: 6 },                          // 2 vlekken
+  { id: 'spray', icon: 'spray', price: 250, minLevel: 2, targets: ['wall'], power: 0.6, uses: 10 },                       // 5 vlekken
+  { id: 'toilet-cleaner', icon: 'toilet-cleaner', price: 300, minLevel: 2, targets: ['toilet'], power: 1, uses: 5 },      // 5 keer het toilet
+  { id: 'scrubber', icon: 'scrubber', price: 800, minLevel: 4, targets: ['floor'], power: 1, uses: 12 },                  // 12 vlekken
+  { id: 'pressure-washer', icon: 'pressure-washer', price: 1200, minLevel: 4, targets: ['wall', 'floor'], power: 1, uses: 20 },   // 20 vlekken
 ];
 
 export const CARE = {
@@ -39,5 +39,3 @@ export const CARE = {
   // Kapot toilet raakt sneller verstopt.
   brokenClogFactor: 1.5,
 };
-
-export const SURFACE_LABELS = { toilet: 'het toilet', floor: 'de vloer', wall: 'de muur' };

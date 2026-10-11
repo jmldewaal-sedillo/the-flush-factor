@@ -1,4 +1,64 @@
-# The Flush Factor — ROADMAP
+# The Flush Factor — Roadmap
+
+## Status
+
+Live: https://jmldewaal-sedillo.github.io/the-flush-factor/ — versie 0.2 (branch `main`)
+Android: nog niet in de Play Store (de app is nog niet omgezet naar Capacitor)
+Test: https://jmldewaal-sedillo.github.io/the-flush-factor-test/ (noindex; repo `the-flush-factor-test`, zie `docs/testversie.md`)
+Webportals: nog geen
+
+**Besluit van Jenn, 2026-10-11 (`Apps/CLAUDE.md`, sectie 11):** eerst de Android-app en webportals; geen app-website op een subdomein tot "lanceren web". Het plan "verhuizen naar flushfactor.studiosedillo.com" en de TWA zijn vervallen.
+
+Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet gemerged naar `main`.
+
+## Nu bezig
+
+- [x] **Sprint 10 (punten 89–95)**: zie de sectie onderaan. Klaar op de branch, wacht op testen door Jenn.
+
+## Volgende
+
+- [ ] **88 / 61. Puntenbalans opnieuw nakijken.** Er is veel bijgekomen (opbouw, schoonmaakspullen die opraken). Neem de aantallen in `js/data/care.js` mee: hoeveel spelen kost een spons, en loont schoonmaken dan nog?
+- [ ] **Omzetten naar één codebase met drie bouwdoelen** (`Apps/CLAUDE.md`, sectie 11; voorbeeld: de template `studio-sedillo-app-template` en Sudoku Kids): een dunne laag per bouwdoel (opslag, advertenties, SDK, terugknop), `android` met Capacitor (alle bestanden in de app, zonder service worker, package `com.studiosedillo.flushfactor`), `webportals` als upload-zip zonder service worker en zonder externe links, en de testversie op github.io met noindex. Wat van het oude plan was (subdomein, TWA, `assetlinks.json`) is al weg; `tools/bouw-site.mjs` (testversie voor github.io) gaat dan op in `tools/bouw.mjs`.
+- [ ] ~~Verhuizen naar flushfactor.studiosedillo.com~~ **Vervallen** (besluit 2026-10-11): geen subdomein en geen DNS-records tot "lanceren web".
+- [x] Test-repo `the-flush-factor-test` aangemaakt (2026-10-11, na akkoord), met deploy naar github.io na groene tests.
+- [ ] Op een echte telefoon testen via het testadres (nog nooit gedaan).
+- [ ] Merge `sprint-9` naar `main` na akkoord ("zet live").
+
+## Later / ideeën
+
+- [ ] 58. Geluiden · 60. Echte betaling voor punten · 63. Aankleden (zie "Toekomst" verderop)
+- [ ] 59. Echt inloggen met Google/Facebook. **Eerst** privacyverklaring en Data Safety bijwerken (CLAUDE.md §5).
+- [ ] 72–75, 77: zie "Toekomst (vastgelegd, nog niet bouwen)" verderop.
+- [ ] Meer dan 16 gereedschappen (het menu is erop voorbereid).
+
+## Voor publicatie in Google Play
+
+- [ ] **Vertalingen laten nakijken door moedertaalsprekers**: alle tien talen in `js/i18n/` (spel) en `js/i18n/legal/` (privacyverklaring en verwijderpagina). Ze zijn door Claude geschreven en nog door niemand nagelezen; vooral de grappen en de juridische tekst.
+- [ ] Doelgroep en leeftijd vastleggen (aanname nu: geen kinder-app; zie `CLAUDE.md` van deze app).
+- [ ] Privacyverklaring en verwijderpagina **live** op https://studiosedillo.com/the-flush-factor/privacy en `/delete` (de URL's voor de Play Store; minimaal EN en NL). De pagina's zelf zijn er (Sprint 10); ze moeten nog naar de hoofdsite.
+- [ ] Controleren of het EU-U.S. Data Privacy Framework nog geldt voor GitHub en Google (de tekst gaat daarvan uit).
+- [ ] Data Safety ingevuld (antwoorden volgen uit `docs/privacy-audit.md`).
+- [ ] Store-teksten (begin in `store/`), icoon, feature graphic 1024×500, telefoon- en tabletscreenshots.
+- [ ] Android-app gebouwd met Capacitor en getest in de interne test van de Play Console. De upload key maakt Jenn zelf. (Was: TWA met `assetlinks.json`; vervallen.)
+- [ ] Gesloten test: 12 testers, 14 dagen (eis voor een nieuw persoonlijk ontwikkelaarsaccount).
+- [ ] **Vóór advertenties (AdMob) of aankopen:** zakelijk postadres bij de KvK vastgelegd en het bezoekadres afgeschermd, anders toont Google het adres. AdMob via de Capacitor-plug-in, standaard uit tot akkoord van Jenn. Zonder dat: uitbrengen zonder advertenties en zonder aankopen.
+- [ ] Webportals (CrazyGames, Poki, …): eerst de voorwaarden over exclusiviteit en advertenties lezen; niets inbouwen zonder akkoord van Jenn.
+- [ ] Contentbeoordeling (IARC) ingevuld.
+- [ ] App toevoegen aan studiosedillo.com, pas **na de lancering** (`Apps/tools/hoofdsite-toevoegen.sh`, na akkoord).
+- [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
+
+## Logboek
+
+### 2026-10-11
+- **App-structuur Studio Sedillo** (`Apps/CLAUDE.md`, sectie 11) vastgelegd. In deze roadmap aangepast: status (geen subdomein, testversie op github.io), "Verhuizen naar flushfactor.studiosedillo.com" vervallen, TWA vervangen door Capacitor, privacy-URL's op de hoofdsite, gesloten test, en de voorwaarde voor advertenties en aankopen. Nieuw onder "Volgende": omzetten naar drie bouwdoelen. `CLAUDE.md` verwijst nu naar sectie 11. Aan de app zelf is niets veranderd.
+
+- **Punten 41, 46, 59 en 60 bijgewerkt voor Capacitor** (alleen vastgelegd): nieuwe sectie "Capacitor: betalen, inloggen en offline" met de keuze van de plug-in voor Google Play Billing, de aansluiting op `purchaseService.buy()` en `authService`, en wat er verandert aan service worker en offline. De TWA-regels zijn doorgestreept, het stappenplan voor de login heeft een aantekening.
+- **Sprint 10 (punten 89–95)** op de branch `sprint-9`: controle tegen `Apps/CLAUDE.md` (AUDIT.md deel 5), water blijft in de kom, knop voor schoonmaakspullen altijd in beeld, schoonmaakspullen raken op, menu's sluiten bij een tik ernaast, tien talen. Uit de controle: opslag onder de prefix `flushfactor.` met migratie, privacyverklaring en verwijderpagina in tien talen, voortgang overzetten, profiel en alle gegevens verwijderen, test-repo en deploy naar het testadres.
+- **Sprint 9 (punten 78–88)** afgerond: eigen stijl (A · Sticker), opbouw van kapotte wc naar luxe badkamer, schoonmaak en reparatie, emmer stapelen, speelse winkel. `npm run serve` kiest zelf een vrije poort; de tests draaien op poort 5599.
+
+*De geschiedenis per sprint staat hieronder (oudste eerst).*
+
+---
 
 ## Versie 0.1 — Werkende basisversie (huidig)
 
@@ -164,10 +224,10 @@
 
 ## Versie 1.0 — Play Store release
 
-- [ ] **TWA-integratie**: Digital Asset Links (`/.well-known/assetlinks.json`), Bubblewrap-configuratie.
+- [ ] ~~TWA-integratie~~ **Vervallen** (besluit 2026-10-11): de Android-app wordt een Capacitor-app. Zie "Capacitor: betalen, inloggen en offline" verderop.
 - [ ] **Privacybeleid** (vereist voor Play Store).
-- [ ] **Reclame-integratie** (optioneel): AdMob via TWA.
-- [ ] **In-app aankopen** (optioneel): punten kopen via Google Play Billing.
+- [ ] **Reclame-integratie** (optioneel): AdMob via de Capacitor-plug-in, standaard uit; pas na het KvK-postadres en akkoord van Jenn (`Apps/CLAUDE.md`, sectie 11, punt 5).
+- [ ] **In-app aankopen** (optioneel): punten kopen via Google Play Billing, met een Capacitor-plug-in (punt 60).
 - [ ] **Volledige offline test** op Android-apparaat.
 - [ ] **Prestatieoptimalisatie**: Lighthouse-score ≥ 90.
 
@@ -193,7 +253,7 @@
 
 - [ ] **41. Aankopen met echt geld**
   - Kostenprofiel / betaalomgeving voor aankopen met echt geld (bv. puntenpakketten, premium items).
-  - Let op: voor digitale aankopen in een app via de Google Play Store is Google Play Billing verplicht. Voor de PWA/TWA gaat dat via de Digital Goods API + Payment Request API. Andere betaalmethoden (Stripe, PayPal) zijn voor in-app digitale items niet toegestaan.
+  - Let op: voor digitale aankopen in een app via de Google Play Store is Google Play Billing verplicht. ~~Voor de PWA/TWA gaat dat via de Digital Goods API + Payment Request API.~~ *Bijgewerkt 2026-10-11: in de Capacitor-app loopt dat via een plug-in voor Google Play Billing; zie punt 60.* Andere betaalmethoden (Stripe, PayPal) zijn voor in-app digitale items niet toegestaan.
   - Aankopen moeten server-side gecontroleerd worden en aan het account (punt 40) gekoppeld zijn.
   - Duidelijke prijzen, geen misleidende aankopen; nadenken over leeftijdsclassificatie en ouderlijk toezicht.
 
@@ -217,7 +277,7 @@
 
 - [x] **45. Winkel accordion** — Winkel herschreven als accordion met categorieën (Punten kopen, Gereedschap, Toiletmodellen, Tegelpatronen, Vloeren, Decoratie, Manden). Data-driven via `CATEGORIES`-array in `shop.js`. Meerdere categorieën tegelijk open. Staat opgeslagen in `localStorage` (`flushfactor_shop_open`). CSS-accordion via `grid-template-rows: 0fr → 1fr`.
 
-- [x] **46. Punten kopen** — "Punten kopen" als eerste categorie in de winkel, met vier pakketten (500 / 1.500 / 5.000 / 15.000 punten, €0,99–€17,99). Koppelpunt Digital Goods API / Google Play Billing via `purchaseService.buy(productId)` in `js/purchases.js` (dispatcht `purchase:pending`-event). Saldo wijzigt niet.
+- [x] **46. Punten kopen** — "Punten kopen" als eerste categorie in de winkel, met vier pakketten (500 / 1.500 / 5.000 / 15.000 punten, €0,99–€17,99). Koppelpunt Digital Goods API / Google Play Billing via `purchaseService.buy(productId)` in `js/purchases.js` (dispatcht `purchase:pending`-event). Saldo wijzigt niet. *Bijgewerkt 2026-10-11: het koppelpunt `purchaseService.buy()` blijft, maar wordt in de Android-app gevuld door een Capacitor-plug-in en niet door de Digital Goods API (punt 60).*
 
 - [x] **47. Eigen icon-set (emoji's weg)** — Alle emoji's vervangen door lokale SVG-iconen in `js/icons.js`. Lucide MIT voor UI; game-icons.net CC BY 3.0 voor spel-iconen. Exports: `icon()`, `iconEl()`, `iconDataUrl()`. Three.js sprites gebruiken `iconDataUrl(name, 128, 'white')`. Chaos-effecten via `_spawnIcons()`.
 
@@ -247,13 +307,115 @@ Ook in deze sprint (uit de audit): code opgesplitst in data (`js/data/`), logica
 ## Toekomst (alleen vastgelegd, nog niet bouwen)
 
 - [ ] **58. Geluiden** — Spoelen, gorgelen, plop bij ontstoppen, chaos-geluiden, kassa, level-up (CC0-bronnen); volume en aan/uit in het menu.
-- [ ] **59. Profiel** — *Fase 1 (lokaal gastprofiel, naam, avatar, statistieken) is gedaan in punt 69.* Nog te doen: echt koppelen met Google/Facebook/e-mail om te synchroniseren, gastvoortgang overzetten, account verwijderen. Zie het stappenplan bij Sprint 8. *(Vervangt punt 40.)*
-- [ ] **60. Echte betaling voor punten** — Google Play Billing (Digital Goods API + Payment Request API in de TWA), via `purchaseService.buy()` in `js/purchases.js`, server-side gecontroleerd. *(Vervangt punt 41.)*
+- [ ] **59. Profiel** — *Fase 1 (lokaal gastprofiel, naam, avatar, statistieken) is gedaan in punt 69.* Nog te doen: echt koppelen met Google/Facebook/e-mail om te synchroniseren, gastvoortgang overzetten, account verwijderen. *Bijgewerkt 2026-10-11 voor Capacitor:* in de Android-app kan inloggen niet met een webvenster (pop-up of omleiding), maar via een plug-in die het inlogscherm van Android zelf opent; `authService` in `js/auth.js` blijft het enige koppelpunt. Zie "Capacitor: betalen, inloggen en offline" hieronder en de aangepaste stappen in het stappenplan bij Sprint 8. *(Vervangt punt 40.)*
+- [ ] **60. Echte betaling voor punten** — Google Play Billing via een Capacitor-plug-in, achter `purchaseService.buy()` in `js/purchases.js`. ~~Digital Goods API + Payment Request API in de TWA~~ is vervallen (besluit 2026-10-11). Uitwerking: "Capacitor: betalen, inloggen en offline" hieronder. Voorwaarden vooraf: het KvK-postadres en akkoord van Jenn (sectie 11, punt 5), en de privacyverklaring en Data Safety bijgewerkt. *(Vervangt punt 41.)*
 - [ ] **61. Logische puntenbalans** — Eén doordacht systeem voor punten per spoelbeurt/combo/ontstopping/level en prijzen, met een overzicht "hoeveel minuten spelen voor item X"; straffen in verhouding. Alle getallen staan al bij elkaar in `js/data/`.
 - [ ] **62. Meerdere talen** — Alle teksten naar taalbestanden (nl, en), taalkeuze in het menu, standaard de toesteltaal. Voorbereid: teksten uit JavaScript staan in `js/data/texts.js`.
 - [ ] **63. Aankleden** — Toilet en hokje aankleden (wc-hoes, matjes, handdoeken, spiegels, kastjes, planten, posters, verlichting) op de ankerpunten; thema-sets; items plaatsen, verschuiven en weghalen. Basis ligt er: ankerpunten in `js/data/room.js`, decoratie in `js/data/cosmetics.js`.
 
 ---
+
+### Capacitor: betalen, inloggen en offline (vastgelegd 2026-10-11, nog niet bouwen)
+
+Hoort bij de punten 41, 46, 59 en 60 en bij "Omzetten naar drie bouwdoelen" (bovenaan, onder "Volgende").
+Aanleiding: `Apps/CLAUDE.md`, sectie 11. De Android-app wordt een **Capacitor-app** (alle bestanden in de
+app, zonder service worker) in plaats van een TWA. Een TWA draait in Chrome en kon daardoor de Digital
+Goods API, de Payment Request API en een gewone web-login gebruiken; een Capacitor-app draait in de
+WebView van Android, en daar bestaan die niet. Alles hieronder moet bij het bouwen opnieuw nagelopen
+worden: versies en eisen van Google veranderen.
+
+**1. Punten kopen: Google Play Billing (punten 41, 46, 60)**
+
+- De regel blijft: digitale spullen in een Android-app uit de Play Store mogen alleen via Google Play
+  Billing. In de Capacitor-app gaat dat via een plug-in die de Billing-bibliotheek van Android aanroept.
+- **Welke plug-in** (kiezen bij het bouwen; eerst npm, de changelog en de ondersteunde versie van de
+  Play Billing Library controleren, want Google weigert updates met een te oude versie):
+
+  | Kandidaat | Wat het is | Past bij onze regels? |
+  |---|---|---|
+  | `@capgo/native-purchases` | Praat rechtstreeks met Google Play Billing, zonder tussendienst | **Voorkeur**: geen extra partij die gegevens krijgt. Onderhoud en Billing-versie nog controleren (alleen de eigen beschrijving van de maker gezien). |
+  | `cordova-plugin-purchase` | Oudere, veelgebruikte plug-in; werkt ook in Capacitor | Reserve. Status in 2026 niet kunnen bevestigen. |
+  | `@revenuecat/purchases-capacitor` | Officiële plug-in van RevenueCat, met hun server ertussen | Alleen na akkoord van Jenn: RevenueCat is een extra verwerker (account, eigen privacyparagraaf), en dat botst met "geen externe verzoeken" (sectie 11, punt 6). |
+
+- **Aansluiting op de code.** De winkel blijft `purchaseService.buy(productId)` aanroepen en weet niets
+  van Android. Wat verandert zit achter dat koppelpunt:
+  - `js/purchases.js` vraagt aan de platformlaag (`platform/android.js`, `platform/web.js`,
+    `platform/portal.js`) of kopen kan. Web en webportals: `{ status: 'unavailable' }`, en de categorie
+    "Punten kopen" wordt daar **niet getoond** (nu staat hij er met "Binnenkort beschikbaar").
+  - Android: `buy()` start de aankoop bij Google, wacht op het resultaat en geeft
+    `{ status: 'purchased' | 'cancelled' | 'pending' | 'error', productId }` terug. Pas bij `purchased`
+    schrijft het spel de punten bij, en daarna wordt de aankoop bij Google **verbruikt** ("consume"),
+    zodat hetzelfde pakket nog eens gekocht kan worden. Bijschrijven vóór verbruiken, en bij het starten
+    van de app openstaande aankopen alsnog afhandelen (anders is iemand geld kwijt zonder punten, of
+    betaalt Google na drie dagen vanzelf terug).
+  - De product-id's in `js/data/packages.js` (`pack_500`, …) worden de id's in de Play Console. De
+    **prijs komt dan van Google** (in de valuta van de speler), niet meer uit `price` in dat bestand; de
+    winkel toont wat de plug-in teruggeeft. De regel "echt geld altijd met een duidelijke prijs, apart van
+    punten" en de test daarvoor blijven gelden.
+  - Tests: een nagemaakte platformlaag die elk resultaat kan teruggeven; in de tests wordt nooit echt
+    gekocht. Echt testen kan alleen met een testaccount in de interne test van de Play Console.
+- **"Server-side gecontroleerd" (stond in 41 en 60).** Het spel heeft geen server, en dat is ook de
+  afspraak. Voorstel: bij verbruikbare puntenpakketten vertrouwen op het antwoord van Google op het
+  toestel, zonder eigen server. Gevolg: wie het toestel manipuleert kan zichzelf punten geven, maar dat
+  kan nu ook al (de spelstand staat lokaal) en het kost niemand anders iets. Een server wordt pas nodig
+  als punten tussen toestellen gedeeld worden via een account (punt 59). **Besluit van Jenn nodig.**
+- **Voorwaarden vooraf** (sectie 11, punt 5): zakelijk postadres bij de KvK vastgelegd en het
+  bezoekadres afgeschermd (Google toont bij apps met aankopen het adres), akkoord van Jenn, en daarna
+  eerst de privacyverklaring, Data Safety ("financiële gegevens: aankoopgeschiedenis, verwerkt door
+  Google") en de leeftijdsclassificatie bijwerken.
+
+**2. Inloggen (punten 40, 59, 69)**
+
+- Nu: `authService.signIn()` en `linkAccount()` in `js/auth.js` geven `unavailable`. Dat koppelpunt
+  blijft; het profielscherm verandert niet.
+- Wat **niet** meer kan in de Android-app: het webvenster van Firebase (`signInWithPopup`,
+  `linkWithPopup`, omleiden). Google staat inloggen in een ingebouwde WebView niet toe, en de app draait
+  op een eigen intern adres (`https://localhost`), niet op `github.io`. De stappen 7, 13–14 en 16–17 van
+  het stappenplan bij Sprint 8 gingen daarvan uit; zie de aantekening daar.
+- In plaats daarvan: een plug-in die het **inlogscherm van Android zelf** opent en het resultaat aan
+  Firebase doorgeeft. Kandidaat: `@capacitor-firebase/authentication` (Capawesome, Robin Genz), met
+  Google en Facebook als aanbieders. Nog controleren bij het bouwen: of hij de huidige manier van
+  Android gebruikt (Credential Manager), en de versie.
+- Extra werk aan de kant van Jenn, bovenop het stappenplan: in Firebase een **Android-app** toevoegen
+  (package `com.studiosedillo.flushfactor`) met de SHA-1/SHA-256 van de upload key én van de app signing
+  key van Google Play, het bestand `google-services.json` in het Android-project (geen geheim, maar wel
+  buiten de gedeelde webcode), en bij Facebook het Android-platform met de key hash.
+- Voortgang bewaren bij een account vraagt een database (Firestore). Dat is de eerste keer dat gegevens
+  het toestel verlaten: account verwijderen in de app én via een web-URL wordt dan verplicht, en de
+  privacyverklaring, de verwijderpagina en Data Safety moeten **eerst** aangepast (sectie 5).
+- Web en webportals: geen inloggen (portals staan geen externe links of eigen accounts toe zonder hun
+  voorwaarden; sectie 11, punt 5). De inlogknoppen worden daar via de platformlaag verborgen.
+- Geen kinder-app, anders mag inloggen via Google/Facebook helemaal niet (sectie 5).
+
+**3. Service worker en offline**
+
+| | Web (nu) | Android (Capacitor) | Webportal |
+|---|---|---|---|
+| Waar staan de bestanden | Op de website; `sw.js` zet ze in een cache | **In de app zelf** (38 MB aan modellen, textures en code) | In de upload-zip bij de portal |
+| Service worker | Ja (`registerServiceWorker()` in `js/game.js`) | **Nee**: niet registreren, `sw.js` en `manifest.webmanifest` gaan niet mee | **Nee** |
+| Offline | Na het eerste bezoek | **Altijd, vanaf de installatie** | Hangt af van de portal |
+| Bijwerken | Nieuwe `sw.js` haalt de nieuwe bestanden op | **Alleen via een update in de Play Store** | Nieuwe upload |
+| Opslag | `localStorage` van het webadres | `localStorage` van de WebView, hoort bij de app; Android kan die bij weinig ruimte in theorie wissen, dus bij het omzetten de opslag via de platformlaag laten lopen (Capacitor Preferences), zoals de template doet | Van de portal; kan per portal anders zijn |
+
+Wat daardoor in de code moet veranderen bij het omzetten (nu gaat het uit van de webversie):
+
+- `registerServiceWorker()` in `js/game.js`: alleen op het bouwdoel web.
+- `storage.wipeEverything()` in `js/storage.js` wist caches en de service worker; in de app bestaan die
+  niet. "Alle gegevens verwijderen" wist daar alleen de opslag, en de tekst van de bevestiging
+  ("…en de bestanden voor gebruik zonder internet") klopt daar niet: eigen tekst per bouwdoel.
+- De privacyverklaring noemt hosting bij GitHub Pages en het ophalen van bestanden van de website. Voor
+  de Android-app geldt dat niet (er wordt niets opgehaald); de versie op de hoofdsite moet dat
+  onderscheid maken.
+- `js/storage.js` praat rechtstreeks met `localStorage`; dat wordt de opslag van de platformlaag. De
+  sleutels (`flushfactor.…`) en de overzetcode blijven gelijk, zodat een code van de webversie in de app
+  werkt en andersom.
+- "Volledig scherm" in het menu en de ontwikkel-preview (`js/phone-preview.js`) horen alleen bij web.
+- De terugknop van Android: eerst een open menu, de winkel of een close-up sluiten, pas op het
+  spelscherm de app verlaten.
+- De links in het credits-scherm en naar `privacy.html`/`delete.html` openen in de app in de browser van
+  het toestel; in de portal-versie mogen er geen externe links in zitten.
+- `tools/build-sw.mjs` en `tests/sw.spec.js` blijven voor web; de Android- en portal-bouw krijgen een
+  test dat er géén service worker en geen manifest in zit.
 
 ## Sprint 8 (punten 64–71)
 
@@ -269,6 +431,14 @@ Gemerged naar `main` als `v0.2-rebuild`; daarna op `main` verder gewerkt.
 - [x] **71. Tests** — `tests/toilet.spec.js`, `tests/profile.spec.js` en uitbreidingen in `camera.spec.js`, `layout.spec.js`, `emoji.spec.js` en `screenshots.spec.js`.
 
 ### Stappenplan: echte Google- en Facebook-login (voor punt 69)
+
+> **Aantekening 2026-10-11 (Capacitor).** Dit stappenplan is geschreven voor een web-login en klopt voor de
+> Android-app niet meer op deze punten: stap 7 (het toegestane domein is in de app niet `github.io`; er komt een
+> Android-app in Firebase bij, met SHA-vingerafdrukken), stap 13–14 (Facebook krijgt het Android-platform met een
+> key hash in plaats van alleen een omleidings-URI), en stap 16–17 (geen `linkWithPopup`: inloggen gaat via een
+> Capacitor-plug-in). De stappen A, B en het aanmaken van de aanbieders blijven geldig. Zie "Capacitor: betalen,
+> inloggen en offline" hierboven. Het voorbeeldadres van de privacyverklaring in stap 1 wordt
+> `https://studiosedillo.com/the-flush-factor/privacy`.
 
 Dit moet jij zelf aanmaken, omdat het aan jouw accounts hangt. Daarna kan de koppeling in `js/auth.js` gebouwd worden.
 Voorstel: **Firebase Authentication** (inloggen) + **Cloud Firestore** (voortgang bewaren). Gratis voor dit gebruik.
@@ -334,7 +504,7 @@ Het Facebook App-geheim hoef je mij niet te geven; dat vul je zelf in bij Fireba
   - Formulier **Gegevensveiligheid (Data safety)**: per soort gegevens (naam, e-mail, gebruikers-ID's, aankoopgeschiedenis,
     app-activiteit) aangeven of ze verzameld/gedeeld worden, of ze versleuteld onderweg zijn en of verwijderen kan.
   - **Account verwijderen**: verplicht als je accounts kunt aanmaken: in de app én via een web-URL (zie stappenplan, stap 2).
-  - **In-app aankopen**: digitale items alleen via Google Play Billing (punt 60); prijzen duidelijk, geen aankoop zonder bevestiging.
+  - **In-app aankopen**: digitale items alleen via Google Play Billing (punt 60, in de Capacitor-app via een plug-in); prijzen duidelijk, geen aankoop zonder bevestiging.
   - **Advertenties** (alleen als ze komen): aangeven in de Play Console, advertentie-ID declareren, geen misleidende plaatsing.
   - **Doelgroep**: in "Doelgroep en content" kiezen voor 13+ of 16+ en aangeven dat de app niet op kinderen gericht is;
     anders gelden de strengere regels van het Families-beleid.
@@ -396,4 +566,14 @@ Branch `sprint-9` (nog niet gemerged). Feedback na het testen van Sprint 8: mure
 
 ---
 
-*Bijgewerkt: Sprint 9 — punten 78–87 uitgevoerd op de branch `sprint-9`; 88 staat open voor later.*
+## Sprint 10 (punten 89–95)
+
+Branch `sprint-9` (nog niet gemerged).
+
+- [x] **89. CLAUDE.md uit de Apps-map** — Elke afspraak nagelopen; de lijst voldaan / niet voldaan / niet van toepassing staat in AUDIT.md deel 5. Aangepast: opslag onder `flushfactor.` met migratie van de oude sleutels, privacyverklaring en verwijderpagina (`privacy.html`, `delete.html`, `verwijderen.html`) in tien talen, in de app "Voortgang overzetten", "Profiel verwijderen" en "Alle gegevens van deze app verwijderen", "Gemaakt door Studio Sedillo" met contactadres in de credits, `docs/` (privacy-audit, credits, testversie, publiceren), `store/`, `.nojekyll`, `manifest.webmanifest`, tests bij elke push, test-repo met deploy naar github.io (noindex), en deze roadmap in de vaste opbouw. Tijdens de sprint kwam sectie 11 erbij (geen subdomein, Capacitor in plaats van TWA); wat ik voor het oude plan had klaargezet is weer weggehaald. Het omzetten naar drie bouwdoelen staat onder "Volgende".
+- [x] **90. Water alleen ín de pot** — Oorzaak 1: de trechter van de draaikolk zakte tijdens het spoelen ruim een halve meter weg, dwars door de voet. Oorzaak 2: onder de kom is het model niet overal dicht, waardoor het weggezakte water bij de afvoer te zien was. Opgelost op twee manieren: het wateroppervlak volgt de gemeten binnenmaat van de kom en komt nooit onder de bodem, en een masker (stencil) op de opening van de kom tekent water, watergordijn en kalkrand alleen waar je door die opening kijkt. Spetters van het spoelen blijven in de kom. Het zwarte streepje was een van vier zwarte bouten in het model (twee in de voet, twee onder de stortbak); die worden niet meer getoond.
+- [x] **91. Knop schoonmaakspullen altijd zichtbaar** — Linksonder, altijd (behalve in de close-up van de emmer). De teller toont hoe vaak je nog kunt vegen; bij een lege voorraad is hij grijs met een 0 en opent de knop de categorie "Schoonmaak & Reparatie" in de winkel.
+- [x] **92. Schoonmaakspullen raken op** — Elk middel heeft een aantal keer gebruik (`uses` in `js/data/care.js`); elke veeg die vuil weghaalt telt als één. In de la en in de winkel zie je wat er over is ("3/6", balkje). Op = uit de voorraad en weer te koop. Duurder gaat langer mee. Reparaties zijn eenmalig. Wie al schoonmaakspullen had, krijgt van elk een volle voorraad.
+- [x] **93. Schoonmaakmenu sluit bij tik ernaast** — Ook het cameramenu en het hoofdmenu. De tik wordt ingeslikt: niet inzoomen, niet spoelen, geen andere knop. Van het ene menu naar het andere kan wel in één tik; Escape sluit ook. **Afwijking (besluit van Jenn, 11 oktober):** het gereedschapsmenu blijft open tot je op de moersleutel tikt, anders zou de eerste tik op Spoelen het inklappen en niet spoelen.
+- [x] **94. Talen zoals Sudoku Kids** — Dezelfde tien talen (Nederlands, English, Deutsch, Français, Español, Português, Italiano, Polski, Türkçe, Bahasa Indonesia), dezelfde keuzelijst (in het hoofdmenu), standaard de taal van het toestel en anders Engels. Eén bestand per taal in `js/i18n/`; in de code en de data staat geen tekst meer. In Sudoku Kids is niets gewijzigd.
+- [x] **95. Tests** — `tests/water.spec.js`, `menus.spec.js`, `i18n.spec.js`, `storage.spec.js`, `pages.spec.js`; uitbreidingen in `care.spec.js`, `layout.spec.js` en `screenshots.spec.js`.

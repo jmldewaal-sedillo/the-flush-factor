@@ -4,3 +4,8 @@ playwright-report/
 tests/screenshots/
 # Referentiemateriaal van de maker: blijft lokaal, hoort niet in de app of op de site
 assets/reference/
+_site/
+
+# Sleutels voor de Android-app: nooit in Git
+*.keystore
+*.jks

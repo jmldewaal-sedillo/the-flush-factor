@@ -151,6 +151,7 @@ export async function init3D(container, snapshot) {
       quality, frames: () => ctx.frames, clock: () => ctx.time,
       view: () => rig.view(), cameraIdle: () => rig.idle(), topCovered: () => rig.topCovered(),
       swipe: step => rig.swipe(step),
+      inspect: (pos, target) => rig.inspect(pos, target),
       bucketId: () => bucket.id(), bucketItemCount: () => bucket.itemCount(),
       bucketHasHandle: () => bucket.hasHandle(), bucketHandleVisible: () => bucket.handleVisible(),
       propInBowl: () => effects.propInBowl(), propId: () => effects.propId(), effectsBusy: () => effects.busy(),
@@ -158,9 +159,56 @@ export async function init3D(container, snapshot) {
       waterLevel: () => water.level(), waterFit: () => water.fit,
       markersVisible: () => decor.markersVisible(), markerCount: () => decor.visibleMarkerCount(), decor: () => decor.placed(),
       surfaces: () => room.surfaceIds(), toiletSkin: () => toilet.skinId(), toiletOwnTextures: () => toilet.usesOwnTextures(),
+      toiletComponents: () => toilet.components(),
       toiletParts: () => toilet.parts(), toiletCondition: () => ({ ...toilet.condition(), limescale: water.scale() }),
       stains: () => stains.ids(), stainScreen(id) { const p = stains.position(id); return p ? this.project(p.x, p.y, p.z) : null; },
-      bucketPacking: () => bucket.packing(), bucketMeasure: () => bucket.measureInner(), flush: () => water.flushState(), freezeFlush: p => water.freeze(p),
+      bucketPacking: () => bucket.packing(), bucketMeasure: () => bucket.measureInner(), flush: () => water.flushState(), freezeFlush: p => water.freeze(p), waterVisible: on => water.setVisible(on),
+      drops: () => effects.containedDrops(), unsafeFunnel: depth => water.setUnsafeFunnel(depth),
+      // Punt 90: is er water te zien buiten de kom? Tekent hetzelfde beeld met en zonder water en telt de
+      // pixels die verschillen; een verschil mag alleen binnen de opening van de kom liggen (wat je van
+      // bovenaf door de bril ziet). → { changed, outside }: aantal pixels dat verschilt, en hoeveel daarvan
+      // buiten de opening.
+      waterLeak(pos, target, flushAt) {
+        rig.inspect(pos, target);
+        water.freeze(flushAt);
+        for (let i = 0; i < 2; i++) ctx.tick();                    // camera en water op hun plek, zelfde tijdstip
+        // zonder – met – zonder: een pixel telt alleen als hij mét water anders is dan in beide opnamen zonder
+        // (zo telt toevallige beeldruis tussen twee opnamen niet mee)
+        water.setVisible(false);
+        const without = ctx.pixels();
+        water.setVisible(true);
+        const withWater = ctx.pixels();
+        water.setVisible(false);
+        const again = ctx.pixels();
+        water.setVisible(true);
+        // de opening van de kom, geprojecteerd op het beeld (iets ruimer genomen)
+        const { width, height } = withWater, fit = water.fit, poly = [];
+        for (let i = 0; i < 48; i++) {
+          const a = i / 48 * Math.PI * 2;
+          const v = water.localToWorld(new THREE.Vector3(fit.center.x + Math.cos(a) * fit.rimRx * 1.08, fit.rimY + 0.012, fit.center.z + fit.shiftZ + Math.sin(a) * fit.rimRz * 1.08)).clone().project(ctx.camera);
+          poly.push([(v.x + 1) / 2 * width, (v.y + 1) / 2 * height]);
+        }
+        const inside = (x, y) => {
+          let hit = false;
+          for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            const [xi, yi] = poly[i], [xj, yj] = poly[j];
+            if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) hit = !hit;
+          }
+          return hit;
+        };
+        const near = (x, y) => [[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2]].some(([dx, dy]) => inside(x + dx, y + dy));
+        let changed = 0, outside = 0; const where = [];
+        for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+          const i = (y * width + x) * 4;
+          const diff = other => Math.abs(withWater.buffer[i] - other.buffer[i]) + Math.abs(withWater.buffer[i + 1] - other.buffer[i + 1]) + Math.abs(withWater.buffer[i + 2] - other.buffer[i + 2]);
+          if (Math.min(diff(without), diff(again)) <= 12) continue;
+          changed++;
+          if (!near(x + 0.5, y + 0.5)) { outside++; if (where.length < 8) where.push([x, y]); }
+        }
+        rig.inspect(null);
+        water.freeze(null);
+        return { changed, outside, where, size: [width, height], opening: poly.filter((_, i) => i % 12 === 0).map(q => q.map(Math.round)) };
+      },
       hasEnvironment: () => !!ctx.scene.environment,
       project(x, y, z) {
         const v = new THREE.Vector3(x, y, z).project(ctx.camera);

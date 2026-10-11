@@ -2,7 +2,7 @@
 const { test, expect } = require('@playwright/test');
 const { execFileSync } = require('child_process');
 const path = require('path');
-const { ready, PROFILE } = require('./helpers');
+const { ready, PROFILE, SAVE_KEY } = require('./helpers');
 
 test.use({ serviceWorkers: 'allow' });
 
@@ -18,7 +18,7 @@ test('installeert, cachet alle bestanden, herlaadt de pagina niet en werkt offli
   const failed = [];
   page.on('response', r => { if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`); });
 
-  await page.addInitScript(profile => { if (!localStorage.getItem('flushfactor_v1')) localStorage.setItem('flushfactor_v1', JSON.stringify({ version: 2, profile })); }, PROFILE);
+  await page.addInitScript(([key, profile]) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ version: 2, profile })); }, [SAVE_KEY, PROFILE]);
   await page.goto('./?sw=on&clogs=off&quality=low&pixelratio=0.3');
   await ready(page);
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
@@ -47,7 +47,7 @@ test('installeert, cachet alle bestanden, herlaadt de pagina niet en werkt offli
 
 test('manifest verwijst naar bestaande iconen en een relatieve start-URL', async ({ request }, info) => {
   test.skip(info.project.name !== 'phone-portrait', 'één keer is genoeg');
-  const manifest = await (await request.get('./manifest.json')).json();
+  const manifest = await (await request.get('./manifest.webmanifest')).json();
   expect(manifest.start_url).toBe('./');
   expect(manifest.icons.length).toBeGreaterThanOrEqual(3);
   for (const icon of manifest.icons) {

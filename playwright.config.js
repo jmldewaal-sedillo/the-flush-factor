@@ -4,7 +4,9 @@ const { defineConfig, devices } = require('@playwright/test');
 // De tests draaien onder een submap, net als op GitHub Pages; absolute paden vallen dan meteen op.
 // Ze hebben een eigen poort (tests/server.js), los van `npm run serve`.
 const { PORT, PATH, BASE } = require('./tests/server');
-const mobile = { ...devices['Pixel 5'], serviceWorkers: 'block' };
+// locale: de app volgt de taal van het toestel (punt 94); de tests draaien in het Nederlands,
+// behalve tests/i18n.spec.js, dat elke taal apart laadt.
+const mobile = { ...devices['Pixel 5'], serviceWorkers: 'block', locale: 'nl-NL' };
 
 module.exports = defineConfig({
   testDir: './tests',

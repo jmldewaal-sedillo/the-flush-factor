@@ -16,8 +16,18 @@
     if (window.__game && window.__game.ready) return;
     var fatal = document.getElementById('fatal');
     if (!fatal || !fatal.hidden) return;
-    document.getElementById('fatal-title').textContent = 'Het spel kon niet starten';
-    document.getElementById('fatal-body').textContent = 'Er ging iets mis bij het laden. Controleer je verbinding en herlaad de pagina.';
+    // De tekst komt uit de taalbestanden (toesteltaal, anders Engels). Laden die ook niet, dan blijft de
+    // korte Engelse noodtekst hieronder staan: zonder taalbestanden valt er niets te vertalen.
+    var title = document.getElementById('fatal-title'), body = document.getElementById('fatal-body');
+    title.textContent = 'The game could not start';
+    body.textContent = 'Something went wrong while loading. Check your connection and reload the page.';
+    import('./i18n/index.js').then(function (i18n) {
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem('flushfactor.settings') || 'null'); } catch (e) { /* geen opslag */ }
+      var lang = saved && i18n.STRINGS[saved.language] ? saved.language : i18n.deviceLanguage();
+      title.textContent = i18n.STRINGS[lang]['fatal.title'];
+      body.textContent = i18n.STRINGS[lang]['fatal.body'];
+    }).catch(function () { /* noodtekst blijft staan */ });
     var loading = document.getElementById('loading');
     if (loading) loading.hidden = true;
     fatal.hidden = false;

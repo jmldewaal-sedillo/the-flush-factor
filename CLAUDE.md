@@ -1,0 +1,56 @@
+# The Flush Factor — afspraken voor deze app
+
+De basis voor alle apps staat in `Apps/CLAUDE.md` en geldt hier ook. De vaste opzet van elke
+app (merk, één codebase met drie bouwdoelen, hoofdsite, testen, advertenties, privacy en de
+blocklist) staat daar in **sectie 11, "App-structuur Studio Sedillo"**; die regels worden hier
+niet herhaald. Dit bestand bevat alleen wat specifiek is voor deze app. Lees aan het begin van
+elke sessie `ROADMAP.md`.
+
+## Doel
+
+Een absurd, brutaal en grappig spoelspel: je spoelt een toilet door, lost verstoppingen op met
+(soms nutteloos) gereedschap en bouwt een armoedig wc-hokje uit tot een luxe badkamer.
+
+## Doelgroep
+
+Algemeen publiek dat van flauwe toilethumor houdt; **geen kinder-app** (geen ouderslot). Er zijn
+knoppen voor inloggen en voor punten kopen met echt geld voorbereid (nog niet actief), en dat past
+niet bij een app voor kinderen onder de 13. *Aanname van Claude; Jenn beslist dit definitief vóór
+publicatie (zie `docs/publiceren.md`).*
+
+## Toon
+
+Brutaal, droog en grappig; korte zinnen, veel uitroepen in hoofdletters. Smerig mag, maar
+**cartoonesk**: vlekken, klodders en troep, nooit realistisch of walgelijk. Geen seksuele of
+kwetsende grappen. De speler wordt met "je" aangesproken.
+
+## Techniek
+
+- Vanilla JavaScript met ES-modules, geen bouwstap. 3D met three.js r170 (lokaal in `js/vendor/`).
+- Slug `flushfactor`; opslag alleen via `js/storage.js` (prefix `flushfactor.`).
+- Tien talen (zelfde lijst als Sudoku Kids): één bestand per taal in `js/i18n/`, de juridische
+  teksten in `js/i18n/legal/`. Nieuwe tekst = in **alle** tien bestanden; de tests controleren dat.
+- Eén designbestand: `css/tokens.css` (stijl "Sticker"). Geen losse kleuren of lettertypen elders.
+- Alle getallen en lijsten (prijzen, levels, gereedschap, schoonmaakspullen) staan in `js/data/`.
+- `sw.js` heeft geen handmatige `CACHE_VERSION`: `npm run build` (`tools/build-sw.mjs`) berekent de
+  versie uit de inhoud van de bestanden, en een test faalt als hij niet actueel is.
+- Tests: Playwright, vier formaten, eigen poort (5599). `npm test`; `npm run serve` voor zelf kijken.
+
+## App-specifieke regels
+
+- **Deze app is nog niet omgezet naar de drie bouwdoelen** van sectie 11 (android met Capacitor,
+  webportals, web). Tot dat gedaan is (zie `ROADMAP.md`, "Volgende") bestaat er alleen de
+  webversie. Het oude plan (eigen subdomein en TWA) is vervallen; de bestanden daarvoor zijn weg.
+  `tools/bouw-site.mjs` zet alleen nog de testversie voor github.io klaar.
+- **Geen verhuizing naar een subdomein en geen DNS-records.** De webversie blijft staan op
+  `jmldewaal-sedillo.github.io/the-flush-factor/` tot Jenn iets anders besluit; een eigen
+  subdomein komt er pas bij "lanceren web". Zet **geen `CNAME`-bestand in de root**.
+- **Geld verdienen:** de knoppen voor punten kopen en de plek voor advertenties blijven uit.
+  AdMob of aankopen kunnen pas nadat het zakelijke postadres bij de KvK is vastgelegd en het
+  bezoekadres is afgeschermd, en dan alleen na akkoord van Jenn (sectie 11, punt 5).
+- Testen op de telefoon: de testversie staat op `jmldewaal-sedillo.github.io/the-flush-factor-test/`
+  (noindex). Push naar test: `git push test <branch>:main`; zie `docs/testversie.md`.
+- De houten emmer is CC BY-SA 4.0 (gelijk delen): het bewerkte model moet onder dezelfde licentie
+  beschikbaar blijven. Zie `docs/credits.md`.
+- Eerlijke winkel: geen nep-timers of "laatste kans"; echt geld altijd met de prijs in euro's en
+  duidelijk anders dan punten (een test bewaakt dit).

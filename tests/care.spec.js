@@ -78,16 +78,21 @@ test('toilet schoonmaken: wc-borstel kopen, boenen in drie vegen, straf weg, bew
   const problems = await openGame(page, { save: { ...NEW_PLAYER, score: 500, level: 1 } });
   await expect(page.locator('#dirt-pill')).toContainText('10% vies');
   expect((await snap(page)).pointsFactor).toBe(0.9);
-  // zonder schoonmaakspullen: de knop legt uit wat je nodig hebt
+  // zonder schoonmaakspullen: de knop staat er wel (voorraad 0) en brengt je naar de juiste categorie in de winkel
+  await expect(page.locator('#btn-clean')).toBeVisible();
+  await expect(page.locator('#clean-count')).toHaveText('0');
   await page.locator('#btn-clean').click();
-  await expect(page.locator('#status-msg')).toContainText('Koop eerst schoonmaakspullen');
+  await expect(page.locator('#shop-screen')).toBeVisible();
+  await expect(page.locator('.shop-category[data-cat="care"] .shop-category-header')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('#shop-message')).toContainText('Hier koop je nieuwe');
+  await expect(card(page, 'toilet-brush')).toBeInViewport();
   await expect(page.locator('#clean-tray')).toBeHidden();
 
-  await page.locator('#btn-shop').click();
-  await openCat(page, 'care');
   await card(page, 'toilet-brush').click();
   await card(page, 'sponge').click();
+  await expect(card(page, 'toilet-brush').locator('.badge-owned')).toContainText('Nog 6 van 6');
   await page.locator('#btn-shop-close').click();
+  await expect(page.locator('#clean-count')).toHaveText('12');                    // 6 + 6 keer vegen in voorraad
 
   // verkeerde middel: de spons is voor de muur
   await page.locator('#btn-clean').click();
@@ -95,15 +100,19 @@ test('toilet schoonmaken: wc-borstel kopen, boenen in drie vegen, straf weg, bew
   // de la ligt nergens over de spoelknop
   const [tray, flush] = await Promise.all(['#clean-tray', '#flush-btn'].map(sel => page.locator(sel).boundingBox()));
   expect(tray.x + tray.width <= flush.x || tray.y + tray.height <= flush.y, 'schoonmaakla overlapt de spoelknop niet').toBe(true);
+  await expect(page.locator('.clean-option[data-cleaner="sponge"] .uses')).toHaveText('6/6');
   await page.locator('.clean-option[data-cleaner="sponge"]').click();
   await expect(page.locator('body')).toHaveAttribute('data-cleaning', 'sponge');
+  await expect(page.locator('#clean-tray')).toBeHidden();                         // kiezen sluit de la
   const toilet = () => window.__game.three.toiletScreen();
   await tapScene(page, await page.evaluate(toilet));
   await expect(page.locator('#status-msg')).toContainText('iets anders nodig');
   expect((await snap(page)).toilet.dirt).toBe(1);
+  expect((await snap(page)).supplies.sponge, 'een veeg met het verkeerde middel kost niets').toBe(6);
   expect(await page.evaluate(() => window.__game.three.view()), 'in de schoonmaakstand wisselt een tik niet van camerastand').toBe('toilet');
 
   // goede middel: drie vegen met de borstel
+  await page.locator('#btn-clean').click();
   await page.locator('.clean-option[data-cleaner="toilet-brush"]').click();
   const t1 = await page.evaluate(() => window.__game.three.clock());
   await until(page, t0 => window.__game.three.clock() > t0 + 0.35, t1);
@@ -114,8 +123,10 @@ test('toilet schoonmaken: wc-borstel kopen, boenen in drie vegen, straf weg, bew
   await until(page, () => { const c = window.__game.three.toiletCondition(); return c.grime === 0 && c.limescale === 0; });
   const s = await snap(page);
   expect(s).toMatchObject({ pointsFactor: 1, dirtCount: 0, cleaner: null });       // klaar: schoonmaakstand gaat vanzelf uit
+  expect(s.supplies).toEqual({ sponge: 6, 'toilet-brush': 3 });                    // drie vegen gebruikt
   await expect(page.locator('#dirt-pill')).toBeHidden();
-  await expect(page.locator('#hud-clean')).toBeHidden();
+  await expect(page.locator('#btn-clean')).toBeVisible();                          // de knop blijft staan, ook als alles schoon is
+  await expect(page.locator('#clean-count')).toHaveText('9');
   await expect(page.locator('body')).not.toHaveAttribute('data-cleaning', /.+/);
 
   // volle punten per spoelbeurt
@@ -124,6 +135,7 @@ test('toilet schoonmaken: wc-borstel kopen, boenen in drie vegen, straf weg, bew
   await page.reload();
   await until(page, () => window.__game?.ready);
   expect((await snap(page)).toilet.dirt).toBe(0);
+  expect((await snap(page)).supplies).toEqual({ sponge: 6, 'toilet-brush': 3 });
   expect((await cond(page)).grime).toBe(0);
   expectNoProblems(problems);
 });
@@ -143,7 +155,7 @@ test('drie verstoppingen achter elkaar die overlopen: troep tegen muren en vloer
   expect(s.pointsFactor).toBeCloseTo(0.5, 5);                                   // 6 vlekken, straf is begrensd op 50%
   expect(await page.evaluate(() => window.__game.three.stains().length)).toBe(6);
   await expect(page.locator('#dirt-pill')).toContainText('50% vies');
-  await expect(page.locator('#clean-count')).toHaveText('6');
+  await expect(page.locator('#btn-clean')).toBeVisible();
 
   // spoelen levert nu de helft op
   await page.locator('#flush-btn').click();
@@ -192,11 +204,12 @@ test('vlekken schoonmaken: juiste middel per plek, vegen tot het weg is, bewaard
   await until(page, () => !window.__game.three.stains().includes('f1'));
   expect((await snap(page)).stains.map(s => s.id)).toEqual(['w1']);
 
-  // spons op de muurvlek
-  await page.locator('#btn-clean').click();                                     // stand uit…
-  await expect(page.locator('body')).not.toHaveAttribute('data-cleaning', /.+/);
-  await page.locator('#btn-clean').click();                                     // …la open
+  // spons op de muurvlek: la open, ander middel kiezen
+  await page.locator('#btn-clean').click();
+  await expect(page.locator('.clean-option[data-cleaner="mop"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.clean-option[data-cleaner="mop"] .uses')).toHaveText('3/6');     // drie vegen op de plas
   await page.locator('.clean-option[data-cleaner="sponge"]').click();
+  await expect(page.locator('body')).toHaveAttribute('data-cleaning', 'sponge');
   const t2 = await page.evaluate(() => window.__game.three.clock());
   await until(page, t0 => window.__game.three.clock() > t0 + 0.35, t2);
   await tapScene(page, await page.evaluate(() => window.__game.three.stainScreen('w1')));

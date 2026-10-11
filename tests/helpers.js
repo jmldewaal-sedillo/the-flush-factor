@@ -2,7 +2,10 @@
 const { expect } = require('@playwright/test');
 const { BASE } = require('./server');
 
-const SAVE_KEY = 'flushfactor_v1';
+// Opslag (js/storage.js): de spelstand van het profiel, en de instellingen van het toestel.
+const SAVE_KEY = 'flushfactor.profile.p1.game';
+const SETTINGS_KEY = 'flushfactor.settings';
+const LEGACY_SAVE_KEY = 'flushfactor_v1';       // tot en met Sprint 9; alleen nog voor de migratietest
 const PROFILE = { name: 'Tester', avatar: 'duck', mode: 'guest', createdAt: '2026-01-01T00:00:00.000Z' };
 const EMOJI = /\p{Extended_Pictographic}/gu;
 
@@ -24,11 +27,13 @@ async function openGame(page, { query = '', save = null, clogs = false, quality 
   if (!firstStart) {
     // Bestaande speler met een gastprofiel (anders staat het welkomstscherm ervoor).
     // Alleen bij de eerste keer laden zetten, zodat herladen de echte opslag test.
-    await page.addInitScript(([key, data]) => {
+    const { language, ...game } = { version: 2, profile: PROFILE, ...(save || {}) };
+    await page.addInitScript(([key, data, settingsKey, lang]) => {
       if (sessionStorage.getItem('__seeded')) return;
       sessionStorage.setItem('__seeded', '1');
       localStorage.setItem(key, JSON.stringify(data));
-    }, [SAVE_KEY, { version: 2, profile: PROFILE, ...(save || {}) }]);
+      if (lang) localStorage.setItem(settingsKey, JSON.stringify({ language: lang }));
+    }, [SAVE_KEY, game, SETTINGS_KEY, language || null]);
   }
   // Lage renderresolutie: de testbrowser heeft geen GPU. Layout en spelregels zijn daar niet van afhankelijk.
   const q = [`quality=${quality}`, `pixelratio=${pixelRatio}`, clogs ? '' : 'clogs=off', query].filter(Boolean).join('&');
@@ -99,4 +104,7 @@ const domText = page => page.evaluate(() => {
 // Een nieuwe speler (Sprint 9: armoedige start) die het welkomstscherm al gehad heeft. Vul aan met score, level, …
 const NEW_PLAYER = { version: 3, toilet: { defects: { seat: true, lid: true, chip: true }, dirt: 1 } };
 
-module.exports = { NEW_PLAYER, PROFILE, tapScene, watch, seen, SAVE_KEY, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };
+/** Zet een spelstand klaar in de opslag (voor een herlaad midden in een test). */
+const seedSave = (page, data) => page.evaluate(([key, d]) => localStorage.setItem(key, JSON.stringify(d)), [SAVE_KEY, { version: 2, profile: PROFILE, ...data }]);
+
+module.exports = { NEW_PLAYER, PROFILE, tapScene, watch, seen, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, seedSave, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };

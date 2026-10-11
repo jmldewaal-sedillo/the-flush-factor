@@ -20,6 +20,7 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
   let fly = null;                      // { from, to, t }
   let shake = 0;
   let scrub = null;                    // schoonmaakstand: functie die elke aanraking krijgt (x, y)
+  let inspect = null;                  // tests: vaste camerapositie { pos, target } die de stand tijdelijk overschrijft
 
   function pose(def) {
     const target = def.target === 'bucket' ? bucketTarget() : new THREE.Vector3(...def.target);
@@ -105,6 +106,7 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
       camera.position.y += Math.cos(time * 83) * a;
     }
     camera.lookAt(cur.target);
+    if (inspect) { camera.position.copy(inspect.pos); camera.lookAt(inspect.target); }
   });
   ctx.onResize(() => go(true));
 
@@ -181,6 +183,8 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     shake(amount = 1) { shake = Math.max(shake, amount); },
     // fn(x, y) krijgt elke aanraking en veeg; null zet de gewone bediening terug.
     setScrub(fn) { scrub = fn; },
+    // Tests en screenshots: bekijk de scène vanuit een vrij punt (null = terug naar de gewone stand).
+    inspect(pos, target) { inspect = pos ? { pos: new THREE.Vector3(...pos), target: new THREE.Vector3(...target) } : null; },
     // Terug uit een close-up naar het vorige standpunt.
     back() { setView(CAMERA_VIEWS[viewId].zoom ? previousView : DEFAULT_VIEW); },
     // Automatische close-up op de pot bij een verstopping: alleen vanuit de toiletstand, en na het

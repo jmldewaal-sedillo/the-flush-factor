@@ -1,0 +1,48 @@
+// Nederlands — privacyverklaring en "gegevens verwijderen". De brontekst; elke andere taal heeft dezelfde opbouw.
+// {app} = naam van het spel, {short} = korte naam, {mail} = contactadres, {date} = datum van de laatste wijziging.
+export default {
+  privacy: {
+    title: 'Privacyverklaring',
+    sub: '{app} – laatst bijgewerkt op {date}',
+    sections: [
+      ['Wie is verantwoordelijk',
+        '<p>{app} wordt gemaakt en uitgegeven door <strong>Studio Sedillo</strong>. Voor alles over privacy kun je ons bereiken via {mail}.</p>'],
+      ['In het kort',
+        '<p>Dit spel is zo gebouwd dat <strong>wij helemaal geen persoonsgegevens ontvangen</strong>. Alles wat het spel onthoudt, blijft op je eigen toestel.</p>'],
+      ['Wat er wordt bewaard, en waar',
+        '<p>Alleen op het toestel zelf (in de opslag van de app of browser):</p><ul><li>de gekozen taal;</li><li>één profiel met een gekozen avatar en, alleen als je die intypt, een naam of bijnaam;</li><li>je voortgang: punten, level, wat je hebt gekocht en vrijgespeeld en hoe je toilet en hokje erbij staan;</li><li>spelstatistieken, zoals hoe vaak je hebt gespoeld;</li><li>welke menu\'s je open of dicht had staan.</li></ul><p>Niets hiervan wordt naar ons of naar iemand anders gestuurd. De reden dat het bewaard wordt: zodat je de volgende keer verder kunt waar je was.</p>'],
+      ['Wat het spel niet doet',
+        '<ul><li>Geen accounts en geen inloggen. De knoppen "Inloggen met Google" en "Inloggen met Facebook" werken nog niet: ze versturen niets.</li><li>Geen aankopen. "Punten kopen" werkt nog niet: er wordt niets afgerekend.</li><li>Geen advertenties.</li><li>Geen tracking, geen statistieken over gebruikers, geen cookies van anderen.</li><li>Geen toegang tot camera, microfoon, locatie, contacten of bestanden.</li><li>Geen pushmeldingen.</li></ul><p>Komen inloggen of aankopen er later bij, dan passen we deze verklaring aan vóórdat dat uitkomt.</p>'],
+      ['Delen met anderen',
+        '<p>Wij delen niets met derden, want wij hebben niets. Het spel haalt alleen zijn eigen bestanden op bij de website waar het staat, zodat je het daarna ook zonder internet kunt spelen. Die website wordt gehost door GitHub Pages (GitHub, Inc.). Zoals elke webserver kan die bij het ophalen van de bestanden kort technische gegevens zoals het IP-adres vastleggen; wij hebben geen toegang tot gegevens waarmee jij te herkennen bent. De website en het spel zijn alleen bereikbaar via een versleutelde verbinding (HTTPS).</p>'],
+      ['Als je ons mailt',
+        '<p>Onze e-mail loopt via Gmail, een dienst van Google. Als je ons mailt, staan je e-mailadres en je bericht bij Google; zie de <a href="https://policies.google.com/privacy" rel="noopener">privacyverklaring van Google</a>. We gebruiken ze alleen om je vraag te beantwoorden. De grondslag is ons gerechtvaardigd belang om vragen te beantwoorden die we krijgen (artikel 6 lid 1 sub f AVG). We geven je bericht aan niemand anders door en wissen het binnen een jaar nadat je vraag is afgehandeld.</p>'],
+      ['Gegevens buiten de EU',
+        '<p>GitHub (hosting) en Google (e-mail) zijn Amerikaanse bedrijven. De technische gegevens en e-mails die hierboven staan, kunnen daardoor in de Verenigde Staten worden verwerkt. Beide bedrijven doen mee aan het EU-U.S. Data Privacy Framework, dat volgens de Europese Commissie voldoende bescherming biedt. Hun privacyverklaringen: <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub</a> en <a href="https://policies.google.com/privacy" rel="noopener">Google</a>.</p>'],
+      ['Hoe lang gegevens bewaard blijven',
+        '<p>De gegevens blijven op het toestel staan tot je ze wist, je profiel verwijdert of het spel verwijdert. Wij bewaren zelf niets, dus er is aan onze kant geen bewaartermijn.</p>'],
+      ['Hoe je gegevens verwijdert',
+        '<ul><li>Je profiel: tik op de scorebubbel rechtsboven en kies <em>Profiel verwijderen</em>.</li><li>Alles: tik op de scorebubbel en kies <em>Alle gegevens van deze app verwijderen</em>. Dat wist je profiel, alle voortgang, de instellingen en de bestanden voor gebruik zonder internet.</li><li>Of verwijder de app (of wis de sitegegevens in je browser).</li></ul><p>Meer uitleg: <a href="delete.html">Gegevens verwijderen</a>.</p>'],
+      ['Je rechten (AVG)',
+        '<p>Volgens de AVG heb je recht op inzage, correctie en verwijdering van je gegevens, op beperking van en bezwaar tegen het gebruik ervan, op het meenemen van je gegevens, en op het indienen van een klacht bij de toezichthouder (in Nederland: de Autoriteit Persoonsgegevens). Omdat alle gegevens alleen op je eigen toestel staan, kun je ze daar zelf bekijken, aanpassen en wissen; met <em>Voortgang overzetten</em> neem je ze mee als code of bestand.</p>'],
+      ['Wijzigingen',
+        '<p>Als het spel verandert op een manier die voor privacy van belang is, passen we deze verklaring en de datum bovenaan aan voordat de wijziging uitkomt.</p>'],
+    ],
+  },
+  delete: {
+    title: 'Gegevens verwijderen',
+    sub: '{app} van Studio Sedillo',
+    sections: [
+      ['Geen account, niets op onze servers',
+        '<p>{app} heeft geen accounts. Studio Sedillo ontvangt en bewaart <strong>geen gegevens</strong> over spelers. Alles (profiel, voortgang, instellingen) staat alleen op het toestel waarop het spel gespeeld wordt. Er is dus niets dat wij kunnen wissen; je wist het zelf, in een paar tikken.</p>'],
+      ['Je profiel verwijderen',
+        '<ol><li>Open het spel en tik op de scorebubbel (rechtsboven).</li><li>Kies <em>Profiel verwijderen</em> en bevestig.</li></ol><p>Dit wist je naam, avatar, punten, aankopen en statistieken. De gekozen taal blijft staan.</p>'],
+      ['Alle gegevens van de app verwijderen',
+        '<ol><li>Open het spel en tik op de scorebubbel (rechtsboven).</li><li>Kies <em>Alle gegevens van deze app verwijderen</em> en bevestig.</li></ol><p>Dit wist je profiel, alle voortgang, de instellingen en de bestanden voor gebruik zonder internet. Daarna start het spel schoon.</p>'],
+      ['Zonder het spel te openen',
+        '<ul><li>Android-app: verwijder de app, of <em>Instellingen → Apps → {short} → Opslag → Opslag wissen</em>.</li><li>In een browser: wis de sitegegevens van deze website.</li></ul>'],
+      ['Vragen of een verzoek',
+        '<p>Mail naar {mail}. Omdat wij geen gegevens over je hebben, kunnen we niets opzoeken; we kunnen je wel helpen het op je toestel te wissen.</p>'],
+    ],
+  },
+};

@@ -1,10 +1,11 @@
-// Spelstand: standaardwaarden, opslaan/laden in localStorage en migratie van oude opslag.
-import { SAVE_KEY } from './data/config.js';
+// Spelstand: standaardwaarden, opslaan/laden (via js/storage.js) en migratie van oudere versies.
+import { storage } from './storage.js';
 import { BUCKETS, DEFAULT_BUCKET, LEGACY_DEFAULT_BUCKET, LEGACY_BUCKET_IDS } from './data/buckets.js';
 import { CLOG_PROPS } from './data/clog-props.js';
 import { DECORATIONS, DEFAULT_COSMETICS, LEGACY_COSMETICS, COSMETIC_LISTS } from './data/cosmetics.js';
 import { STARTING_TOOLS, LEGACY_STARTING_TOOLS, TOOLS } from './data/tools.js';
-import { DEFECTS } from './data/care.js';
+import { DEFECTS, CLEANERS } from './data/care.js';
+import { STRINGS, deviceLanguage } from './i18n/index.js';
 import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from './data/profile.js';
 
 // Een nieuwe speler begint in een armoedig hokje (punt 79): kapot en vies toilet, roestige emmer,
@@ -25,6 +26,8 @@ export function createState() {
     stains: [],                         // vlekken op muren en vloer: { id, surface, look, u, v, size, turn, dirt }
     overflowStreak: 0,                  // verstoppingen achter elkaar die overliepen
     newItems: [],                       // net vrijgespeeld bij een level-up, nog niet bekeken in de winkel
+    supplies: {},                       // voorraad schoonmaakspullen: { cleanerId: aantal keer gebruik over } (punt 92)
+    language: deviceLanguage(),         // taal: eerst die van het toestel (anders Engels), daarna de keuze uit het menu
     // niet opgeslagen:
     lastFlushTime: 0, isFlushing: false, currentProp: null,
   };
@@ -35,7 +38,7 @@ export const bucketLiters = state => state.bucketItems.reduce((sum, it) => sum +
 
 export function saveState(state) {
   const data = {
-    version: 3,
+    version: 4,
     score: state.score, highScore: state.highScore, combo: state.combo,
     streak: state.streak, bestStreak: state.bestStreak, level: state.level,
     bucketId: state.bucketId, bucketItems: state.bucketItems,
@@ -43,15 +46,26 @@ export function saveState(state) {
     purchased: [...state.purchased], ownedTools: state.ownedTools,
     toolDiscovery: state.toolDiscovery, stats: state.stats, profile: state.profile,
     toilet: state.toilet, stains: state.stains, overflowStreak: state.overflowStreak, newItems: state.newItems,
+    supplies: state.supplies,
   };
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* opslag vol of geblokkeerd */ }
+  storage.write('game', data, state.profile?.name);
+  storage.writeSetting('language', state.language);       // de taal hoort bij het toestel, niet bij het profiel
 }
 
 // Oude opslag bewaarde mand-inhoud als icoonnaam; zet om naar voorwerp-id's.
 const LEGACY_PROP_ICONS = { 'rubber-duck': 'duck', smartphone: 'phone', 'teddy-bear': 'teddy', lego: 'brick' };
 
 function migrate(data) {
-  return migrateV3(data.version >= 2 ? data : migrateV2(data));
+  return migrateV4(migrateV3(data.version >= 2 ? data : migrateV2(data)));
+}
+
+// Versie 3 → 4 (punt 92). Schoonmaakspullen raken voortaan op. Wie ze al had gekocht toen ze nog
+// onbeperkt meegingen, krijgt van elk een volle voorraad.
+function migrateV4(data) {
+  if (data.version >= 4) return data;
+  const supplies = {};
+  for (const c of CLEANERS) if ((data.purchased || []).includes(c.id)) supplies[c.id] = c.uses;
+  return { ...data, version: 4, supplies };
 }
 
 // Versie 2 → 3 (Sprint 9). Wie al speelde houdt alles wat hij had: het hele toilet, de houten emmer,
@@ -89,8 +103,9 @@ function migrateV2(data) {
 }
 
 export function loadState(state) {
-  let data;
-  try { data = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { data = null; }
+  const language = storage.readSetting('language');
+  if (STRINGS[language]) state.language = language;
+  let data = storage.read('game');
   if (!data || typeof data !== 'object') return state;
   data = migrate(data);
 
@@ -129,9 +144,15 @@ export function loadState(state) {
     .map(st => ({ id: st.id, surface: st.surface, look: st.look === 'puddle' ? 'puddle' : 'splat', u: num(st.u, 0), v: num(st.v, 1), size: num(st.size, 0.3), turn: num(st.turn, 0), dirt: Math.min(1, st.dirt) }));
   state.overflowStreak = num(data.overflowStreak, 0);
   state.newItems = Array.isArray(data.newItems) ? data.newItems.filter(x => typeof x === 'string') : [];
+  // Voorraad: alleen bekende middelen, nooit meer dan er in een nieuwe zit. "Gekocht" volgt de voorraad.
+  state.supplies = {};
+  for (const c of CLEANERS) {
+    const left = Math.min(c.uses, Math.floor(num(data.supplies?.[c.id], 0)));
+    if (left > 0) { state.supplies[c.id] = left; state.purchased.add(c.id); } else state.purchased.delete(c.id);
+  }
   if (data.profile && typeof data.profile === 'object') {
     state.profile = {
-      name: String(data.profile.name || DEFAULT_PROFILE.name).slice(0, NAME_MAX),
+      name: String(data.profile.name || '').slice(0, NAME_MAX),      // leeg = "Gast" in de gekozen taal
       avatar: AVATARS.includes(data.profile.avatar) ? data.profile.avatar : DEFAULT_PROFILE.avatar,
       mode: 'guest',
       createdAt: data.profile.createdAt || null,

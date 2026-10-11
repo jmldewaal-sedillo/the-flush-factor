@@ -2,11 +2,12 @@
 // Alleen DOM; het echte aanmelden loopt via authService (js/auth.js).
 import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from '../data/profile.js';
 import { AUTH_PROVIDERS, authService } from '../auth.js';
-import { T } from '../data/texts.js';
+import { t } from '../i18n/index.js';
 import { icon } from './icons.js';
 
 const $ = id => document.getElementById(id);
-const cleanName = raw => String(raw ?? '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX) || DEFAULT_PROFILE.name;
+// Leeg gelaten = "Gast" in de gekozen taal.
+const cleanName = raw => String(raw ?? '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX) || t('profile.guest');
 
 export class ProfileScreen {
   // getStats() → [{ label, value }]; onSave(profile) wordt aangeroepen bij "Spelen als gast" / "Opslaan"
@@ -17,24 +18,35 @@ export class ProfileScreen {
     this.avatar = DEFAULT_PROFILE.avatar;
     this.welcome = false;
 
-    $('profile-avatars').innerHTML = AVATARS.map(a =>
-      `<button type="button" class="avatar-option" data-avatar="${a}" role="radio" aria-label="Avatar ${a}" aria-checked="false">${icon(a, 30)}</button>`).join('');
+    $('profile-avatars').innerHTML = AVATARS.map((a, i) =>
+      `<button type="button" class="avatar-option" data-avatar="${a}" role="radio" aria-label="${t('a.avatar', { n: i + 1 })}" aria-checked="false">${icon(a, 30)}</button>`).join('');
     $('profile-avatars').addEventListener('click', e => {
       const btn = e.target.closest('[data-avatar]');
       if (btn) this._pick(btn.dataset.avatar);
     });
-    $('profile-auth').innerHTML = AUTH_PROVIDERS.map(p =>
-      `<button type="button" class="auth-btn" data-provider="${p.id}" aria-describedby="profile-auth-note"><span>${p.label}</span><span class="soon">${T.profile.soon}</span></button>`).join('');
+    this._buildAuth();
     $('profile-auth').addEventListener('click', async e => {
       const btn = e.target.closest('[data-provider]');
       if (!btn) return;
       const result = await (this.welcome ? authService.signIn(btn.dataset.provider) : authService.linkAccount(btn.dataset.provider));
-      if (result.status === 'unavailable') this._say(T.profile.authSoon);
+      if (result.status === 'unavailable') this._say(t('profile.authSoon'));
     });
     $('profile-name').maxLength = NAME_MAX;
     $('profile-form').addEventListener('submit', e => { e.preventDefault(); this._save(); });
     $('btn-profile-close').addEventListener('click', () => this.close());
     $('profile-screen').addEventListener('click', e => { if (e.target === $('profile-screen') && !this.welcome) this.close(); });
+  }
+
+  _buildAuth() {
+    $('profile-auth').innerHTML = AUTH_PROVIDERS.map(p =>
+      `<button type="button" class="auth-btn" data-provider="${p.id}" aria-describedby="profile-auth-note"><span>${t(`profile.${p.id}`)}</span><span class="soon">${t('profile.soon')}</span></button>`).join('');
+  }
+
+  // Na een taalwissel: teksten opnieuw zetten (ook als het scherm openstaat).
+  refresh() {
+    this._buildAuth();
+    document.querySelectorAll('.avatar-option').forEach((b, i) => b.setAttribute('aria-label', t('a.avatar', { n: i + 1 })));
+    if (this.isOpen()) this._texts();
   }
 
   _pick(avatar) {
@@ -60,24 +72,28 @@ export class ProfileScreen {
   open({ welcome = false } = {}) {
     this.welcome = welcome;
     const profile = this.getProfile() || DEFAULT_PROFILE;
-    $('profile-title').textContent = welcome ? T.profile.welcomeTitle : T.profile.title;
-    $('profile-intro').textContent = welcome ? T.profile.welcomeIntro : T.profile.intro;
-    $('profile-submit').textContent = welcome ? T.profile.playAsGuest : T.profile.save;
-    $('profile-auth-title').textContent = welcome ? T.profile.orSignIn : T.profile.linkAccount;
-    $('profile-auth-note').textContent = T.profile.authNote;
     $('btn-profile-close').hidden = welcome;
     $('profile-stats-block').hidden = welcome;
-    $('profile-name').value = welcome ? '' : profile.name;
-    $('profile-name').placeholder = DEFAULT_PROFILE.name;
+    $('profile-data-block').hidden = welcome;
+    $('profile-name').value = welcome ? '' : (profile.name || '');
     $('profile-status').textContent = '';
     $('profile-status').classList.remove('visible');
     this._pick(profile.avatar);
-    if (!welcome) {
-      $('profile-stats').innerHTML = this.getStats().map(s => `<div><dt>${s.label}</dt><dd>${s.value}</dd></div>`).join('');
-    }
+    this._texts();
     $('profile-screen').hidden = false;
     $('profile-content').scrollTop = 0;
     $('profile-screen').dataset.mode = welcome ? 'welcome' : 'profile';
+  }
+
+  _texts() {
+    const welcome = this.welcome;
+    $('profile-title').textContent = t(welcome ? 'profile.welcomeTitle' : 'profile.title');
+    $('profile-intro').textContent = t(welcome ? 'profile.welcomeIntro' : 'profile.intro');
+    $('profile-submit').textContent = t(welcome ? 'profile.playAsGuest' : 'profile.save');
+    $('profile-auth-title').textContent = t(welcome ? 'profile.orSignIn' : 'profile.linkAccount');
+    $('profile-auth-note').textContent = t('profile.authNote');
+    $('profile-name').placeholder = t('profile.guest');
+    if (!welcome) $('profile-stats').innerHTML = this.getStats().map(s => `<div><dt>${s.label}</dt><dd>${s.value}</dd></div>`).join('');
   }
 
   close(force = false) {

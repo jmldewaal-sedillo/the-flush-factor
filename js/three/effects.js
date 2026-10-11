@@ -6,7 +6,7 @@ import { buildProp } from './props.js';
 export function createEffects(ctx, { toilet, water, bucket, rig }) {
   const fx = ctx.fx;
   const scene = ctx.scene;
-  const tmp = new THREE.Vector3();
+  const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
 
   // ── Belletjes ──
   const bubbleMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false });
@@ -27,7 +27,9 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
     scene.add(m);
     return { m, life: 0, v: new THREE.Vector3() };
   });
-  function splash(origin, count, power = 1) {
+  // contain: de spetters blijven boven het water in de kom en verdwijnen zodra ze die verlaten (spoelen, punt 90).
+  const contained = { spawned: 0, drawn: 0, maxFromCenter: 0, maxAboveRim: -Infinity };
+  function splash(origin, count, power = 1, contain = false) {
     let n = 0;
     for (const d of drops) {
       if (d.life > 0 || n >= count) continue;
@@ -36,7 +38,8 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
       d.m.position.copy(origin);
       d.m.scale.setScalar(0.005 + Math.random() * 0.007);
       d.v.set(Math.cos(a) * r * power, (1.1 + Math.random() * 0.9) * power, Math.sin(a) * r * power);
-      d.life = 1; d.m.visible = true;
+      d.life = 1; d.m.visible = true; d.contain = contain;
+      if (contain) contained.spawned++;
     }
   }
 
@@ -66,6 +69,8 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
   ctx.onFrame((dt, time) => {
     const surface = water.surface(tmp).clone();
     const radius = water.radius();
+    // binnen de kom: tot aan de onderkant van de bril, en binnen de straal van het rustpeil
+    const rimY = toilet.shaker.getWorldPosition(tmp2).y + water.fit.rimY, bowlRadius = Math.min(water.fit.restRx, water.fit.restRz) * 0.85;
 
     // toilet trilt, harder naarmate het water stijgt
     const tremble = clogged ? (0.4 + level * 0.9) * fx.shake : 0;
@@ -99,7 +104,14 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
       d.v.y -= 6.5 * dt;
       d.m.position.addScaledVector(d.v, dt);
       d.life -= dt * 1.2;
-      if (d.life <= 0 || d.m.position.y < 0.01) { d.life = 0; d.m.visible = false; }
+      const escaped = d.contain && (Math.hypot(d.m.position.x - surface.x, d.m.position.z - surface.z) > bowlRadius || d.m.position.y > rimY || d.m.position.y < surface.y - 0.005);
+      if (d.life <= 0 || d.m.position.y < 0.01 || escaped) { d.life = 0; d.m.visible = false; }
+      else if (d.contain) {
+        // wat er van deze spetter getekend wordt, voor de test van punt 90
+        contained.drawn++;
+        contained.maxFromCenter = Math.max(contained.maxFromCenter, Math.hypot(d.m.position.x - surface.x, d.m.position.z - surface.z));
+        contained.maxAboveRim = Math.max(contained.maxAboveRim, d.m.position.y - rimY);
+      }
     }
 
     // plas
@@ -150,7 +162,7 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
     flush() {
       water.flush();
       toilet.pressHandle();
-      splash(water.surface(tmp), 4, 0.5);
+      splash(water.surface(tmp), 4, 0.4, true);      // alleen ín de kom
     },
     clog(propId) {
       if (prop?.phase === 'fly') land();      // vorige vangst is nog onderweg: meteen afronden
@@ -191,6 +203,8 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
     },
     setWater(pct, isClogged) { level = isClogged ? pct / 100 : 0; clogged = isClogged; if (!isClogged && prop?.phase === 'bob') removeProp(); },
     // voor tests
+    // Spetters die in de kom moeten blijven (spoelen): hoeveel er waren en hoe ver ze getekend zijn (punt 90).
+    containedDrops: () => ({ ...contained, maxFromCenter: +contained.maxFromCenter.toFixed(4), maxAboveRim: +contained.maxAboveRim.toFixed(4), bowlRadius: +(Math.min(water.fit.restRx, water.fit.restRz) * 0.85).toFixed(4) }),
     propInBowl: () => !!prop && prop.phase !== 'fly',
     propId: () => prop?.obj.userData.propId ?? null,
     activeBubbles: () => bubbles.filter(b => b.m.visible).length,

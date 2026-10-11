@@ -11,6 +11,7 @@ test('één spoelhendel op de stortbak; stopkraan en slang (het "losse hendeltje
   const parts = await three(page, 'toiletParts');
   expect(parts.flushHandles).toBe(1);
   expect(parts.plumbingPartsHidden).toBe(6);                       // kraan, wandplaat, slang en koppelingen
+  expect(parts.boltsHidden).toBe(4);                               // de zwarte bouten bij de voet en onder de stortbak (punt 90)
   expect(parts.bodyWidth).toBeLessThan(parts.widthWithPlumbing - 0.03);   // er steekt niets meer links uit
   expect(parts.handleAngle).toBe(0);
 

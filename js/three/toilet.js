@@ -3,13 +3,16 @@
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { PLACES } from '../data/room.js';
-import { splitByTriCounts, expandByMesh } from './geometry.js';
+import { splitByTriCounts, expandByMesh, listComponents } from './geometry.js';
 import { paintCrack, paintChip } from './patterns.js';
 
 const MODEL = 'assets/models/toilet.glb';
 // Het model heeft een stopkraan met toevoerslang die links laag tegen de wand hangt. In het spel leest dat
 // als een los hendeltje naast de pot, dus die onderdelen (herkend aan hun aantal driehoeken) tonen we niet.
 const PLUMBING_TRIS = [784, 384, 320, 196, 58, 46];
+// Vier zwarte bouten (elk 174 driehoeken): twee in de voet bij de vloer en twee onder de stortbak. Van een
+// afstand lezen ze als losse zwarte streepjes naast de pot (punt 90), dus die tonen we ook niet.
+const BOLT_TRIS = [174, 174, 174, 174];
 const HANDLE_PRESS = 0.6;        // radialen: hoe ver de spoelhendel omlaag gaat
 // Kapot (punt 80): hoe scheef bril en deksel hangen (radialen), en de kleur van een vies toilet.
 const SEAT_SKEW = { yaw: 0.17, roll: 0.07 };
@@ -79,7 +82,7 @@ export async function createToilet(ctx) {
   const handle = model.getObjectByName('ToiletFlushHandle');
 
   // Stopkraan en slang verbergen (zie PLUMBING_TRIS).
-  const plumbing = splitByTriCounts(bowlMesh, PLUMBING_TRIS);
+  const plumbing = splitByTriCounts(bowlMesh, [...PLUMBING_TRIS, ...BOLT_TRIS]);
   if (plumbing) plumbing.material.visible = false;
 
   // De spoelhendel op de stortbak draait om zijn eigen bevestigingspunt, om de as die naar voren wijst.
@@ -197,6 +200,12 @@ export async function createToilet(ctx) {
       seatSkew: +show.seat.toFixed(2), lidSkew: +show.lid.toFixed(2), crackVisible: crack.visible, chipVisible: chip.visible,
       grime: +show.dirt.toFixed(2), settled: Object.keys(want).every(k => show[k] === want[k]),
     }),
+    // Alle losse onderdelen van het model, per mesh (om vreemde dingetjes op te sporen; punt 90).
+    components() {
+      const out = [];
+      model.traverse(o => { if (o.isMesh && !o.userData.layer && o !== crack && o !== chip) out.push({ node: o.parent.name || o.name, parts: listComponents(o) }); });
+      return out;
+    },
     // voor tests (punt 64)
     parts() {
       let handles = 0;
@@ -207,7 +216,7 @@ export async function createToilet(ctx) {
       expandByMesh(body, bowlMesh, plumbing ? plumbing.bodyIndexCount : Infinity);
       const all = new THREE.Box3().setFromObject(bowlMesh);
       return {
-        flushHandles: handles, plumbingPartsHidden: plumbing ? plumbing.found : 0,
+        flushHandles: handles, plumbingPartsHidden: plumbing ? Math.min(plumbing.found, PLUMBING_TRIS.length) : 0, boltsHidden: plumbing ? Math.max(0, plumbing.found - PLUMBING_TRIS.length) : 0,
         bodyWidth: +(body.max.x - body.min.x).toFixed(3), widthWithPlumbing: +(all.max.x - all.min.x).toFixed(3),
         handleAngle: +handleAngle.toFixed(3),
       };

@@ -7,7 +7,7 @@ const { openGame, emojiIn, domText, until, setView } = require('./helpers');
 const ROOT = path.join(__dirname, '..');
 
 function sourceFiles() {
-  const out = ['index.html', 'manifest.json', 'sw.js'];
+  const out = ['index.html', 'privacy.html', 'delete.html', 'verwijderen.html', 'manifest.webmanifest', 'sw.js'];
   const walk = dir => {
     for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
       const rel = `${dir}/${e.name}`;

@@ -1,25 +1,31 @@
-name: Tests
+name: Testen en publiceren
+
+# Elke push: de tests draaien (CLAUDE.md §3).
+# Test-repo (the-flush-factor-test), branch main: zijn de tests groen, dan gaat de testversie naar
+#   https://jmldewaal-sedillo.github.io/the-flush-factor-test/   (noindex; Apps/CLAUDE.md sectie 11)
+# Live-repo (the-flush-factor): hier publiceert deze workflow NIET. Het live adres wordt door GitHub
+#   Pages rechtstreeks vanaf branch main gevuld, en main verandert alleen na akkoord van Jenn.
+# Zie docs/testversie.md.
 
 on:
   push:
-    branches: [main]
-    paths-ignore: ['**.md']      # alleen documentatie gewijzigd: geen testrun van een half uur
+    paths-ignore: ['**.md']      # alleen documentatie gewijzigd: geen testrun van een uur
   pull_request:
-    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
-
-      # Vangnet: geen privégegevens (huisadres) online. De lijst komt uit het geheim
-      # PRIVATE_BLOCKLIST; zonder geheim volgt een waarschuwing en gaat de run door.
-      - name: Controle op privégegevens
-        env:
-          PRIVATE_BLOCKLIST: ${{ secrets.PRIVATE_BLOCKLIST }}
-        run: python3 tests/no-private-data.py --ci
 
       - uses: actions/setup-node@v4
         with:
@@ -47,3 +53,46 @@ jobs:
             tests/screenshots/
             test-results/
           retention-days: 7
+          if-no-files-found: ignore
+
+  deploy:
+    name: Publiceren op het testadres
+    needs: test
+    # Alleen de test-repo, alleen main, alleen als de tests groen zijn.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && endsWith(github.event.repository.name, '-test')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Testversie klaarzetten (noindex)
+        run: node tools/bouw-site.mjs _site "${{ github.event.repository.name }}" "$GITHUB_SHA"
+
+      # Zelf inpakken in plaats van actions/upload-pages-artifact: die laat bestanden die met een
+      # punt beginnen weg (.nojekyll).
+      - name: Inpakken
+        run: tar --dereference --hard-dereference --directory _site -cf "$RUNNER_TEMP/artifact.tar" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Publiceren
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Adres in de samenvatting
+        run: echo "Gepubliceerd op ${{ steps.deployment.outputs.page_url }} (${GITHUB_SHA::7})" >> "$GITHUB_STEP_SUMMARY"

@@ -28,7 +28,8 @@ export function createContext(container, quality) {
   canvas.id = 'scene-canvas-3d';
   container.prepend(canvas);
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: fx.antialias, powerPreference: 'high-performance' });
+  // stencil: het water in de pot wordt alleen getekend waar je door de opening van de kom kijkt (three/water.js)
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: fx.antialias, powerPreference: 'high-performance', stencil: true });
   // ?pixelratio=0.3 rendert op lagere resolutie (tests draaien zonder GPU; de layout blijft gelijk).
   const forcedRatio = parseFloat(new URLSearchParams(location.search).get('pixelratio'));
   renderer.setPixelRatio(forcedRatio > 0 ? forcedRatio : Math.min(window.devicePixelRatio || 1, fx.maxDpr));
@@ -78,6 +79,18 @@ export function createContext(container, quality) {
       camera.updateProjectionMatrix();
       resizeFns.forEach(fn => fn(w, h));
     },
+    // Tests: het beeld van dit moment als pixels (RGBA, van onder naar boven), op lage resolutie.
+    pixels(width = 240) {
+      const height = Math.max(1, Math.round(width / camera.aspect));
+      const target = new THREE.WebGLRenderTarget(width, height, { stencilBuffer: true });
+      const buffer = new Uint8Array(width * height * 4);
+      renderer.setRenderTarget(target);
+      renderer.render(scene, camera);
+      renderer.readRenderTargetPixels(target, 0, 0, width, height, buffer);
+      renderer.setRenderTarget(null);
+      target.dispose();
+      return { width, height, buffer };
+    },
     start() {
       if (ctx.running) return;
       ctx.running = true;
@@ -90,6 +103,11 @@ export function createContext(container, quality) {
         renderer.render(scene, camera);
         watchPerformance(dt);
       });
+    },
+    // Tests: alles één stap bijwerken zonder dat de tijd verstrijkt (camera en water op hun plek zetten).
+    tick() {
+      for (const fn of frameFns) fn(0, ctx.time);
+      scene.updateMatrixWorld(true);
     },
   };
 

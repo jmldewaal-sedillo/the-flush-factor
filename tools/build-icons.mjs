@@ -40,7 +40,7 @@ for (const [name, src] of Object.entries(cfg.gameIcons)) {
 if (new Set(symbols.map(s => s.match(/id="([^"]+)"/)[1])).size !== symbols.length) throw new Error('Dubbele icoonnaam in icons.config.json');
 
 await writeFile(join(ROOT, 'assets/icons/sprite.svg'),
-  `<svg xmlns="http://www.w3.org/2000/svg" style="display:none">\n<!-- Gegenereerd door tools/build-icons.mjs. Lucide (ISC) + game-icons.net (CC BY 3.0); zie CREDITS.md -->\n${symbols.join('\n')}\n</svg>\n`);
+  `<svg xmlns="http://www.w3.org/2000/svg" style="display:none">\n<!-- Gegenereerd door tools/build-icons.mjs. Lucide (ISC) + game-icons.net (CC BY 3.0); zie docs/credits.md -->\n${symbols.join('\n')}\n</svg>\n`);
 
 const AUTHOR_NAMES = { delapouite: 'Delapouite', lorc: 'Lorc', sbed: 'sbed', 'caro-asercion': 'Caro Asercion' };
 const credits = Object.entries(byAuthor).sort().map(([a, files]) => ({ author: AUTHOR_NAMES[a] || a, url: `https://game-icons.net/1x1/${a}/`, icons: files.sort() }));

@@ -20,7 +20,7 @@ async function walk(dir, filter) {
 
 // Alles wat nodig is om het spel offline te starten. Extra emmers worden pas bij gebruik gecachet.
 const files = [
-  'index.html', 'manifest.json',
+  'index.html', 'privacy.html', 'delete.html', 'manifest.webmanifest',
   ...await walk('css', f => f.endsWith('.css')),
   ...await walk('js', f => f.endsWith('.js')),
   'assets/icons/sprite.svg',

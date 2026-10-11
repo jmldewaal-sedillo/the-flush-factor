@@ -8,7 +8,7 @@ const PROFILES = {
   notch:             { portrait: [47, 0, 34, 0], landscape: [0, 0, 21, 47] },
   'punch-hole':      { portrait: [36, 0, 20, 0], landscape: [0, 0, 20, 36] },
 };
-const CONTROLS = ['#btn-camera', '#btn-menu', '#score-bubble', '#btn-shop', '#flush-btn', '#btn-bucket', '#bucket-liters', '.water-bar', '#btn-tools-toggle', '#inventory-bar'];
+const CONTROLS = ['#btn-camera', '#btn-menu', '#score-bubble', '#btn-shop', '#flush-btn', '#btn-bucket', '#bucket-liters', '.water-bar', '#btn-tools-toggle', '#inventory-bar', '#btn-clean'];
 const MARGIN = 6;
 const overlap = (a, b) => a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.5 && a.y < b.y + b.height - 0.5 && b.y < a.y + a.height - 0.5;
 
@@ -45,7 +45,8 @@ for (const [profile, safes] of Object.entries(PROFILES)) {
     const vp = page.viewportSize();
     const safe = vp.width > vp.height ? safes.landscape : safes.portrait;
     // 16 gereedschappen: het zwaarste geval voor de linkerkolom
-    await openGame(page, { query: `safe=${safe.join(',')}`, save: { level: 5, ownedTools: ['plunger', 'toilet-snake', 'drain-cleaner', 'hot-water', 'rubber-duck', 'confetti-cannon', 'flamingo', 'disco-ball', 'magic-wand', 'tiny-elephant', 'ninja-unclogger', 'super-plunger', 'megaphone', 'electric-plunger', 'hydro-jet', 'robot-arm'], bucketItems: [{ id: 'duck', liters: 1 }] } });
+    await openGame(page, { query: `safe=${safe.join(',')}`, save: { level: 5, ownedTools: ['plunger', 'toilet-snake', 'drain-cleaner', 'hot-water', 'rubber-duck', 'confetti-cannon', 'flamingo', 'disco-ball', 'magic-wand', 'tiny-elephant', 'ninja-unclogger', 'super-plunger', 'megaphone', 'electric-plunger', 'hydro-jet', 'robot-arm'], bucketItems: [{ id: 'duck', liters: 1 }],
+      purchased: ['sponge', 'toilet-brush', 'mop', 'spray', 'toilet-cleaner', 'scrubber', 'pressure-washer'] } });      // alle zeven schoonmaakmiddelen: de volste la
 
     // Het gereedschap staat in één kolom die scrollt (punt 82): de kolom zelf moet binnen beeld blijven
     // en nergens overheen vallen; de knoppen erin mogen elkaar niet raken.
@@ -56,9 +57,12 @@ for (const [profile, safes] of Object.entries(PROFILES)) {
     expectNoOverlap(await boxes(page, ['.tool-btn']), `${profile} gereedschap onderling`);
 
     // menu's blijven binnen beeld
-    for (const [btn, menu] of [['#btn-menu', '#main-menu'], ['#btn-camera', '#camera-menu']]) {
+    for (const [btn, menu] of [['#btn-menu', '#main-menu'], ['#btn-camera', '#camera-menu'], ['#btn-clean', '#clean-tray']]) {
       await page.locator(btn).click();
-      expectInside(await boxes(page, [menu]), vp, safe, `${profile} ${menu}`);
+      const open = await boxes(page, [menu]);
+      expectInside(open, vp, safe, `${profile} ${menu}`);
+      // de schoonmaakla (punt 91) ligt niet over de spoelknop of de emmerknop
+      if (menu === '#clean-tray') expectNoOverlap({ ...open, ...(await boxes(page, ['#flush-btn', '#btn-bucket'])) }, `${profile} schoonmaakla`);
       await page.locator(btn).click();
     }
 

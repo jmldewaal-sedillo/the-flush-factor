@@ -1,11 +1,20 @@
 // Water in de pot: schijf die zich aan de kom aanpast (maten gemeten met stralen op het model), met golfjes,
 // troebel worden en stijgen bij een verstopping. Bij spoelen: watergordijn langs de binnenwand, draaikolk,
 // het peil zakt weg in de afvoer en de pot loopt weer vol.
+//
+// Water blijft ín de kom (punt 90), op twee manieren:
+//  1. Het oppervlak volgt op elke hoogte de gemeten binnenmaat van de kom (fit.profile) en de trechter van
+//     de kolk reikt nooit dieper dan de bodem. Zo ligt het water achter het porselein.
+//  2. Een masker op de opening van de kom (stencil): water, watergordijn en kalkrand worden alleen getekend
+//     waar je door die opening naar binnen kijkt. Het model is onder de kom niet overal dicht (bij de
+//     afvoer zit een kier); dit masker houdt het water ook daar onzichtbaar, vanuit elke hoek.
 import * as THREE from 'three';
 import { WATER_PHASES } from '../data/config.js';
 
 // Duur van een spoelbeurt en de fases daarin (als deel van de duur). Punt 68.
 const FLUSH_SECONDS = 1.8;
+const FUNNEL_DEPTH = 0.06;     // meters: hoe diep de kolk in het midden hooguit wegzakt
+const FLOOR_MARGIN = 0.008;    // meters: zo ver blijft het water boven de bodem van de kom
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const PHASES = {
   curtainFront: p => Math.min(1, p / 0.14),                 // water loopt van de rand naar beneden
@@ -15,14 +24,14 @@ const PHASES = {
 };
 
 const VERT = `
-  uniform float uTime; uniform float uAmp; uniform float uSwirl; uniform float uDrop;
+  uniform float uTime; uniform float uAmp; uniform float uFunnel;
   varying vec2 vPos;
   void main() {
     vPos = position.xz;
     vec3 p = position;
     float r = length(p.xz);
     p.y += (sin(p.x * 9.0 + uTime * 3.1) + cos(p.z * 7.0 + uTime * 2.3)) * uAmp * (1.0 - r * 0.6);
-    p.y -= (uSwirl * 0.25 + uDrop * 0.35) * (1.0 - r) * (1.0 - r);   // trechter in het midden
+    p.y -= uFunnel * (1.0 - r) * (1.0 - r);                           // trechter in het midden (uFunnel in meters)
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
   }`;
 const FRAG = `
@@ -84,19 +93,35 @@ const SCALE_FRAG = `
 export function createWater(ctx, toilet) {
   const fit = measureBowl(toilet, ctx.quality === 'low' ? { around: 18, down: 4 } : { around: 36, down: 8 });
   const uniforms = {
-    uTime: { value: 0 }, uAmp: { value: 0.01 }, uSwirl: { value: 0 }, uDrop: { value: 0 }, uMurk: { value: 0 },
+    uTime: { value: 0 }, uAmp: { value: 0.01 }, uSwirl: { value: 0 }, uDrop: { value: 0 }, uMurk: { value: 0 }, uFunnel: { value: 0 },
     uColor: { value: new THREE.Color(WATER_PHASES[0].water) },
   };
   const geo = new THREE.CircleGeometry(1, 40, 0, Math.PI * 2);
   geo.rotateX(-Math.PI / 2);
-  const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms, transparent: true, depthWrite: false }));
+
+  // Masker: een onzichtbare schijf op de opening van de kom, alleen van bovenaf te zien en alleen waar het
+  // porselein en de bril er niet vóór zitten. Hij tekent geen kleur, maar zet de stencilwaarde op 1.
+  const mask = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    colorWrite: false, depthWrite: false, transparent: true,
+    stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp,
+  }));
+  mask.name = 'bowlOpening';
+  mask.renderOrder = -1;                                    // vóór het water, na al het ondoorzichtige
+  mask.position.set(fit.center.x, fit.rimY + 0.002, fit.center.z + fit.shiftZ);
+  mask.scale.set(fit.rimRx * 1.03, 1, fit.rimRz * 1.03);
+  mask.raycast = () => {};
+  toilet.shaker.add(mask);
+  // Alles wat water is tekent alleen binnen dat masker.
+  const IN_BOWL = { stencilWrite: true, stencilRef: 1, stencilFunc: THREE.EqualStencilFunc };
+
+  const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms, transparent: true, depthWrite: false, ...IN_BOWL }));
   mesh.name = 'water';
   mesh.renderOrder = 2;
   toilet.shaker.add(mesh);
 
   const curtainU = { uTime: uniforms.uTime, uFront: { value: 0 }, uTail: { value: 0 }, uColor: uniforms.uColor };
   const curtain = new THREE.Mesh(fit.curtainGeometry, new THREE.ShaderMaterial({
-    vertexShader: CURTAIN_VERT, fragmentShader: CURTAIN_FRAG, uniforms: curtainU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    vertexShader: CURTAIN_VERT, fragmentShader: CURTAIN_FRAG, uniforms: curtainU, transparent: true, depthWrite: false, side: THREE.DoubleSide, ...IN_BOWL,
   }));
   curtain.name = 'flushCurtain';
   curtain.renderOrder = 1;
@@ -105,7 +130,7 @@ export function createWater(ctx, toilet) {
 
   const scaleU = { uAmount: { value: 0 } };
   const scaleRing = new THREE.Mesh(fit.curtainGeometry, new THREE.ShaderMaterial({
-    vertexShader: CURTAIN_VERT, fragmentShader: SCALE_FRAG, uniforms: scaleU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    vertexShader: CURTAIN_VERT, fragmentShader: SCALE_FRAG, uniforms: scaleU, transparent: true, depthWrite: false, side: THREE.DoubleSide, ...IN_BOWL,
   }));
   scaleRing.name = 'limescale';
   scaleRing.renderOrder = 0;
@@ -119,6 +144,7 @@ export function createWater(ctx, toilet) {
   let flushP = -1;        // voortgang van de spoelbeurt 0–1; -1 = er wordt niet gespoeld
   let frozen = null;      // tests/screenshots: zet de spoelbeurt vast op een moment
   let slosh = 0;          // klotsen (0–1)
+  let unsafeFunnel = null; // alleen voor de test van punt 90: bootst de oude fout na (trechter door de bodem)
   const local = new THREE.Vector3();
 
   ctx.onFrame((dt, time) => {
@@ -148,8 +174,17 @@ export function createWater(ctx, toilet) {
     const y = THREE.MathUtils.lerp(fit.restY, fit.rimY, level) - drop * fit.drainDrop;
     const k = THREE.MathUtils.clamp((y - fit.restY) / (fit.rimY - fit.restY), -0.4, 1);
     const shrink = 1 - drop * 0.4;
-    mesh.position.set(fit.center.x, y, fit.center.z + fit.shiftZ * Math.max(0, k));
-    mesh.scale.set(THREE.MathUtils.lerp(fit.restRx, fit.rimRx, Math.max(0, k)) * shrink, 1, THREE.MathUtils.lerp(fit.restRz, fit.rimRz, Math.max(0, k)) * shrink);
+    // Onder het rustpeil wordt de kom smaller: het oppervlak volgt de gemeten binnenmaat op die hoogte.
+    const inner = unsafeFunnel === null ? fit.innerAt(y) : { rx: Infinity, rz: Infinity, dz: 0 };
+    mesh.position.set(fit.center.x, y, fit.center.z + (k > 0 ? fit.shiftZ * k : inner.dz));
+    mesh.scale.set(
+      Math.min(THREE.MathUtils.lerp(fit.restRx, fit.rimRx, Math.max(0, k)) * shrink, inner.rx),
+      1,
+      Math.min(THREE.MathUtils.lerp(fit.restRz, fit.rimRz, Math.max(0, k)) * shrink, inner.rz),
+    );
+    // De trechter van de kolk: hooguit FUNNEL_DEPTH diep, en nooit door de bodem van de kom.
+    uniforms.uFunnel.value = Math.max(0, Math.min((swirl * 0.42 + drop * 0.58) * FUNNEL_DEPTH, y - fit.bottomY - FLOOR_MARGIN));
+    if (unsafeFunnel !== null) uniforms.uFunnel.value = unsafeFunnel;
     mesh.rotation.x = Math.sin(time * 5.3) * 0.05 * slosh;
     mesh.rotation.z = Math.cos(time * 4.1) * 0.05 * slosh;
   });
@@ -177,7 +212,17 @@ export function createWater(ctx, toilet) {
       active: flushP >= 0, progress: +Math.max(0, flushP).toFixed(3), seconds: FLUSH_SECONDS,
       curtainVisible: curtain.visible, curtainTriangles: fit.curtainGeometry.index.count / 3,
       swirl: +uniforms.uSwirl.value.toFixed(3), drop: +uniforms.uDrop.value.toFixed(3), waterY: +mesh.position.y.toFixed(4), restY: +fit.restY.toFixed(4),
+      // laagste punt van het water en de bodem van de kom (punt 90: water blijft in de kom)
+      lowestY: +(mesh.position.y - uniforms.uFunnel.value).toFixed(4), bottomY: +fit.bottomY.toFixed(4),
+      radius: [+mesh.scale.x.toFixed(4), +mesh.scale.z.toFixed(4)], innerRadius: (i => [+i.rx.toFixed(4), +i.rz.toFixed(4)])(fit.innerAt(mesh.position.y)),
     }),
+    // Tests: water aan/uit, om te vergelijken wat er van buitenaf van te zien is.
+    setVisible(on) { mesh.visible = on; curtain.material.visible = on; },
+    // Zet beide beveiligingen uit en laat de trechter `depth` meter zakken (null = weer normaal).
+    setUnsafeFunnel(depth) {
+      unsafeFunnel = depth;
+      for (const m of [mesh.material, curtain.material]) { m.stencilWrite = depth === null; m.needsUpdate = true; }
+    },
   };
 }
 
@@ -219,6 +264,22 @@ function measureBowl(toilet, detail) {
   const rest = radii(restY, best.z);
   const rim = radii(rimY - 0.01, rest.cz);
 
+  // Binnenmaat onder het rustpeil, van boven naar beneden: de kom wordt daar smaller (naar de afvoer toe).
+  // Een straal die niets raakt (afvoergat) telt als de maat van de laag erboven; smaller worden mag, wijder niet.
+  const PROFILE_STEPS = 8;
+  const profile = [];
+  let above = { rx: rest.rx, rz: rest.rz, cz: rest.cz };
+  for (let i = 0; i <= PROFILE_STEPS; i++) {
+    const y = THREE.MathUtils.lerp(restY, bottomY + 0.004, i / PROFILE_STEPS);
+    const o = new THREE.Vector3(center.x, y, above.cz);
+    const d = [[1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]].map(v => hit(o, new THREE.Vector3(...v)));
+    const rx = d[0] != null && d[1] != null ? Math.min(above.rx, Math.min(d[0], d[1])) : above.rx;
+    const rz = d[2] != null && d[3] != null ? Math.min(above.rz, (d[2] + d[3]) / 2) : above.rz;
+    const cz = d[2] != null && d[3] != null ? above.cz + (d[2] - d[3]) / 2 : above.cz;
+    above = { rx, rz, cz };
+    profile.push({ y, rx, rz, cz });
+  }
+
   // Binnenwand aftasten: per hoogte een ring van punten, net binnen het porselein.
   const toLocalPoint = v => shaker.worldToLocal(v);
   const positions = [], uvs = [], indices = [];
@@ -251,8 +312,21 @@ function measureBowl(toilet, detail) {
   const toLocal = v => shaker.worldToLocal(v);
   const c = toLocal(new THREE.Vector3(center.x, 0, rest.cz));
   const yOff = shaker.getWorldPosition(new THREE.Vector3()).y;
+  const INSET = 0.94;      // het wateroppervlak blijft iets binnen de wand
+  const steps = profile.map(p => ({ y: p.y - yOff, rx: p.rx * INSET, rz: p.rz * INSET, dz: p.cz - rest.cz }));
+  // Binnenmaat van de kom op hoogte y (onder het rustpeil); erboven geldt de maat van het rustpeil.
+  const innerAt = y => {
+    if (y >= steps[0].y) return { rx: Infinity, rz: Infinity, dz: 0 };
+    for (let i = 1; i < steps.length; i++) {
+      if (y < steps[i].y) continue;
+      const a = steps[i - 1], b = steps[i], t = (a.y - y) / (a.y - b.y);
+      return { rx: THREE.MathUtils.lerp(a.rx, b.rx, t), rz: THREE.MathUtils.lerp(a.rz, b.rz, t), dz: THREE.MathUtils.lerp(a.dz, b.dz, t) };
+    }
+    const last = steps[steps.length - 1];
+    return { rx: last.rx, rz: last.rz, dz: last.dz };
+  };
   return {
-    center: c, shiftZ: rim.cz - rest.cz,
+    center: c, shiftZ: rim.cz - rest.cz, profile: steps, innerAt,
     restY: restY - yOff, rimY: rimY - yOff, bottomY: bottomY - yOff,
     restRx: rest.rx * 0.98, restRz: rest.rz * 0.98,
     rimRx: rim.rx * 0.99, rimRz: rim.rz * 0.99,

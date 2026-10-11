@@ -1,5 +1,6 @@
 // Schoonmaak en reparatie (punten 80 en 83): staat van het toilet, vlekken op muren en vloer,
-// wat er gebeurt bij herhaald overlopen, en wat vies zijn kost. Alleen logica: geen DOM, geen 3D.
+// wat er gebeurt bij herhaald overlopen, wat vies zijn kost, en de voorraad schoonmaakspullen die opraakt
+// (punt 92). Alleen logica: geen DOM, geen 3D.
 import { CARE, CLEANERS, DEFECTS, REPAIRS } from './data/care.js';
 import { ROOM } from './data/room.js';
 
@@ -29,7 +30,26 @@ export class CareSystem {
   // Deel van de punten dat je per spoelbeurt overhoudt (1 = alles).
   pointsFactor() { return 1 - Math.min(CARE.maxPenalty, this.dirtCount() * CARE.penaltyPerDirt); }
   clogFactor() { return this.isBroken() ? CARE.brokenClogFactor : 1; }
-  ownedCleaners() { return CLEANERS.filter(c => this.state.purchased.has(c.id)); }
+  // ── voorraad (punt 92) ──
+  usesLeft(id) { return this.state.supplies[id] || 0; }
+  // Wat je in huis hebt: [{ ...cleaner, left }]
+  ownedCleaners() { return CLEANERS.filter(c => this.usesLeft(c.id) > 0).map(c => ({ ...c, left: this.usesLeft(c.id) })); }
+  totalUses() { return CLEANERS.reduce((sum, c) => sum + this.usesLeft(c.id), 0); }
+  // Nieuwe gekocht: de voorraad is weer vol.
+  restock(id) {
+    const def = CLEANERS.find(c => c.id === id);
+    if (!def) return 0;
+    this.state.supplies[id] = def.uses;
+    this.state.purchased.add(id);
+    return def.uses;
+  }
+  // Eén keer gebruikt. Is het op, dan verdwijnt het uit de voorraad en kun je een nieuwe kopen.
+  _consume(id) {
+    const left = Math.max(0, this.usesLeft(id) - 1);
+    if (left > 0) this.state.supplies[id] = left;
+    else { delete this.state.supplies[id]; this.state.purchased.delete(id); }
+    return left;
+  }
 
   // ── repareren ──
   // → defect-id dat hersteld is, of null als het niet (meer) nodig was
@@ -42,16 +62,17 @@ export class CareSystem {
 
   // ── schoonmaken ──
   // target: { kind: 'toilet' } of { kind: 'stain', id }
-  // → { result: 'cleaned' | 'cleaner' | 'wrong-tool' | 'nothing', surface, dirt, id? }
+  // → { result: 'cleaned' | 'cleaner' | 'wrong-tool' | 'nothing', surface, dirt, id?, left? }
+  //   left = hoe vaak het middel daarna nog te gebruiken is (alleen als er echt geveegd is; 0 = op)
   scrub(cleanerId, target) {
-    const cleaner = CLEANERS.find(c => c.id === cleanerId && this.state.purchased.has(c.id));
+    const cleaner = CLEANERS.find(c => c.id === cleanerId && this.usesLeft(c.id) > 0);
     if (!cleaner) return { result: 'nothing' };
     if (target.kind === 'toilet') {
       if (!this.isToiletDirty()) return { result: 'nothing', surface: 'toilet' };
       if (!cleaner.targets.includes('toilet')) return { result: 'wrong-tool', surface: 'toilet' };
       const dirt = Math.max(0, +(this.state.toilet.dirt - cleaner.power).toFixed(3));
       this.state.toilet.dirt = dirt < 0.02 ? 0 : dirt;
-      return { result: this.state.toilet.dirt === 0 ? 'cleaned' : 'cleaner', surface: 'toilet', dirt: this.state.toilet.dirt };
+      return { result: this.state.toilet.dirt === 0 ? 'cleaned' : 'cleaner', surface: 'toilet', dirt: this.state.toilet.dirt, left: this._consume(cleaner.id) };
     }
     const stain = this.state.stains.find(s => s.id === target.id);
     if (!stain) return { result: 'nothing' };
@@ -60,7 +81,7 @@ export class CareSystem {
     const dirt = Math.max(0, +(stain.dirt - cleaner.power).toFixed(3));
     stain.dirt = dirt < 0.02 ? 0 : dirt;
     if (stain.dirt === 0) this.state.stains = this.state.stains.filter(s => s !== stain);
-    return { result: stain.dirt === 0 ? 'cleaned' : 'cleaner', surface, dirt: stain.dirt, id: stain.id };
+    return { result: stain.dirt === 0 ? 'cleaned' : 'cleaner', surface, dirt: stain.dirt, id: stain.id, left: this._consume(cleaner.id) };
   }
 
   // ── overlopen ──
