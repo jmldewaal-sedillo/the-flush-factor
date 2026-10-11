@@ -9,11 +9,21 @@ Het meest absurde spoelspel ooit gemaakt. Mobile-first PWA in vanilla JavaScript
 
 ```bash
 npm install          # eenmalig (alleen Playwright)
-npm run serve        # http://localhost:5000/the-flush-factor/
+npm run serve        # http://localhost:5000/the-flush-factor/ (het adres staat in de terminal)
 ```
 
 De testserver (`tools/serve.mjs`) zet het spel bewust in de submap `/the-flush-factor/`, net als GitHub Pages.
 Een pad dat met `/` begint geeft dan meteen een 404 in plaats van pas op de live site.
+
+**Poorten.** Je eigen server en de tests zitten elkaar niet in de weg:
+
+| Wat | Poort | Als de poort bezet is |
+|---|---|---|
+| `npm run serve` | 5000 | neemt de eerstvolgende vrije (5001, 5002, …) en toont het adres in de terminal |
+| `npm test` (Playwright) | 5599 | start en stopt zijn eigen server; staat er al een testserver op die poort, dan gebruikt hij die |
+
+Kijk dus altijd naar het adres dat de terminal toont. Een andere poort kiezen kan met `node tools/serve.mjs 8080`
+(of `PORT=8080`), voor de tests met `TEST_PORT=5600 npm test`. De testpoort staat op één plek: `tests/server.js`.
 
 Het spel gebruikt ES-modules en werkt dus niet via `file://`.
 
@@ -164,7 +174,7 @@ GitHub Pages toont alleen `main`. Een andere branch (bijvoorbeeld `rebuild`) pro
 ```bash
 git fetch && git checkout rebuild
 npm install
-npm run serve        # open http://localhost:5000/the-flush-factor/
+npm run serve        # open het adres uit de terminal (standaard http://localhost:5000/the-flush-factor/)
 npm test
 ```
 

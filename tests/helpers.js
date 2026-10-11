@@ -1,5 +1,6 @@
 // Gedeelde hulpfuncties voor de Playwright-tests.
 const { expect } = require('@playwright/test');
+const { BASE } = require('./server');
 
 const SAVE_KEY = 'flushfactor_v1';
 const PROFILE = { name: 'Tester', avatar: 'duck', mode: 'guest', createdAt: '2026-01-01T00:00:00.000Z' };
@@ -18,7 +19,7 @@ async function openGame(page, { query = '', save = null, clogs = false, quality 
   page.on('response', r => { if (r.status() >= 400) problems.push(`${r.status()}: ${r.url()}`); });
   page.on('request', r => {
     const u = r.url();
-    if (!u.startsWith('http://localhost:5000/the-flush-factor/') && !/^(data|blob):/.test(u)) problems.push(`extern of buiten submap: ${u}`);
+    if (!u.startsWith(BASE) && !/^(data|blob):/.test(u)) problems.push(`extern of buiten submap: ${u}`);
   });
   if (!firstStart) {
     // Bestaande speler met een gastprofiel (anders staat het welkomstscherm ervoor).

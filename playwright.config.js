@@ -2,7 +2,8 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 // De tests draaien onder een submap, net als op GitHub Pages; absolute paden vallen dan meteen op.
-const BASE = 'http://localhost:5000/the-flush-factor/';
+// Ze hebben een eigen poort (tests/server.js), los van `npm run serve`.
+const { PORT, PATH, BASE } = require('./tests/server');
 const mobile = { ...devices['Pixel 5'], serviceWorkers: 'block' };
 
 module.exports = defineConfig({
@@ -23,7 +24,7 @@ module.exports = defineConfig({
     { name: 'tablet-landscape', use: { ...mobile, viewport: { width: 1024, height: 768 } } },
   ],
   webServer: {
-    command: 'node tools/serve.mjs 5000 /the-flush-factor/',
+    command: `node tools/serve.mjs ${PORT} ${PATH} --strict`,
     url: BASE,
     reuseExistingServer: !process.env.CI,
     timeout: 15_000,

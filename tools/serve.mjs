@@ -1,14 +1,19 @@
 // Statische testserver. Serveert de repo onder een submap (standaard /the-flush-factor/),
 // net als GitHub Pages, zodat absolute paden in de code meteen als 404 opvallen.
-// Gebruik: node tools/serve.mjs [poort] [basispad]
+// Gebruik: node tools/serve.mjs [poort] [basispad] [--strict]
+// Is de poort bezet, dan neemt hij de eerstvolgende vrije. Met --strict (de tests) stopt hij dan met een fout,
+// omdat de tests een vast adres verwachten.
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const PORT = Number(process.argv[2] || process.env.PORT || 5000);
-const BASE = (process.argv[3] || process.env.BASE || '/the-flush-factor/').replace(/\/?$/, '/');
+const ARGS = process.argv.slice(2).filter(a => !a.startsWith('--'));
+const STRICT = process.argv.includes('--strict');
+const PORT = Number(ARGS[0] || process.env.PORT || 5000);
+const BASE = (ARGS[1] || process.env.BASE || '/the-flush-factor/').replace(/\/?$/, '/');
+const MAX_TRIES = 20;   // zoveel poorten na de gevraagde proberen
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -18,7 +23,7 @@ const TYPES = {
   '.glb': 'model/gltf-binary', '.hdr': 'application/octet-stream', '.md': 'text/markdown; charset=utf-8',
 };
 
-http.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   let path = decodeURIComponent(url.pathname);
   if (path === BASE.slice(0, -1)) { res.writeHead(301, { Location: BASE }); return res.end(); }
@@ -33,4 +38,21 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     res.end(body);
   } catch { res.writeHead(404); res.end('404'); }
-}).listen(PORT, () => console.log(`http://localhost:${PORT}${BASE}`));
+});
+
+let port = PORT;
+server.on('error', err => {
+  if (err.code !== 'EADDRINUSE') throw err;
+  if (STRICT || port >= PORT + MAX_TRIES) {
+    console.error(STRICT ? `Poort ${port} is bezet (--strict: geen andere poort gekozen).`
+                         : `Geen vrije poort gevonden tussen ${PORT} en ${port}.`);
+    process.exit(1);
+  }
+  server.listen(++port);
+});
+server.on('listening', () => {
+  const url = `http://localhost:${port}${BASE}`;
+  if (port !== PORT) console.log(`\nPoort ${PORT} is bezet; de server draait op poort ${port}.`);
+  console.log(`\n  The Flush Factor draait op:\n\n    ${url}\n    ${url}style-preview.html  (stijlvoorbeelden)\n\n  Stoppen: Ctrl+C\n`);
+});
+server.listen(port);

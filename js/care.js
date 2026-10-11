@@ -14,6 +14,7 @@ const STAIN_AREAS = {
 };
 const WALLS = ['wall-back', 'wall-left', 'wall-right'];
 const rand = (a, b) => a + Math.random() * (b - a);
+let stainSeq = 0;      // volgnummer, zodat twee vlekken in dezelfde milliseconde nooit hetzelfde id krijgen
 
 export class CareSystem {
   constructor(state) {
@@ -95,7 +96,7 @@ export class CareSystem {
     if (this.state.stains.length >= CARE.maxStains) return null;
     const [u0, u1, v0, v1] = STAIN_AREAS[surface];
     const stain = {
-      id: `s${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`,
+      id: `s${Date.now().toString(36)}-${stainSeq++}-${Math.floor(Math.random() * 1e4)}`,
       surface, look,
       u: +rand(u0, u1).toFixed(3), v: +rand(v0, v1).toFixed(3),
       size: +(look === 'puddle' ? rand(0.5, 0.65) : rand(0.26, 0.42)).toFixed(3),

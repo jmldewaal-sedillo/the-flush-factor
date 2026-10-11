@@ -92,6 +92,9 @@ test('toilet schoonmaken: wc-borstel kopen, boenen in drie vegen, straf weg, bew
   // verkeerde middel: de spons is voor de muur
   await page.locator('#btn-clean').click();
   await expect(page.locator('#clean-tray .clean-option')).toHaveCount(2);
+  // de la ligt nergens over de spoelknop
+  const [tray, flush] = await Promise.all(['#clean-tray', '#flush-btn'].map(sel => page.locator(sel).boundingBox()));
+  expect(tray.x + tray.width <= flush.x || tray.y + tray.height <= flush.y, 'schoonmaakla overlapt de spoelknop niet').toBe(true);
   await page.locator('.clean-option[data-cleaner="sponge"]').click();
   await expect(page.locator('body')).toHaveAttribute('data-cleaning', 'sponge');
   const toilet = () => window.__game.three.toiletScreen();

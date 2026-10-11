@@ -365,3 +365,73 @@ draaien. Er is daarom niets op te ruimen. Wat wél kan blijven hangen is de gewo
 - Echte telefoon: nog niet getest (alles in een headless browser met gesimuleerde notch).
 - De testsuite is traag op de CI-runner (twee kernen, geen GPU): ruim een half uur. Lokaal ± 13 minuten.
 - Maker van "Old Rusted Bucket": nog te bevestigen.
+
+---
+---
+
+# Deel 4 — Sprint 9 (punten 78–88), branch `sprint-9`
+
+## Stijl (punt 78)
+
+Gekozen: **A · Sticker**. Het designbestand is `css/tokens.css`: kleuren, lettertypen, omlijning, hoekradius,
+harde schaduw en de scheve hoekjes staan daar en nergens anders. `css/style.css` gebruikt alleen die variabelen
+(een test bewaakt dat er geen losse lettertypen of kleuren insluipen en dat de oude "glazen" stijl weg is).
+`style-preview.html` met de drie richtingen blijft staan als naslag; het spel laadt hem niet.
+
+Afwijking van het voorbeeld: op de voorbeeldpagina was de spoelknop rood. In het spel is hij **blauw en wordt
+hij rood bij een verstopping**, omdat rood anders niets meer betekent.
+
+## Gedownload of zelf gemaakt (nieuw in deze sprint)
+
+| Onderdeel | Keuze | Waarom |
+|---|---|---|
+| Lettertypen Lilita One en Nunito | **Gedownload** (SIL OFL), lokaal in `assets/fonts/` | Een eigen letter maak je niet zelf; OFL mag mee in de app |
+| Vuillaag op het toilet, kalkrand in de pot | Zelf (shader bovenop het model) | Het model en zijn textures blijven ongewijzigd, zoals gevraagd |
+| Barst in het deksel, ontbrekend stukje uit de bril | Zelf (getekend, als sticker op het onderdeel) | Cartoonesk; de geometrie van het model hoeft niet kapot |
+| Scheve bril en scheef deksel | Zelf (de bestaande onderdelen een paar graden gedraaid om hun scharnier) | Het model heeft losse onderdelen met een scharnierpunt |
+| Kale stucmuur, bruine vieze vloer | Zelf (getekend patroon) | Vlakken |
+| Spetters en plassen op muur en vloer | Zelf (getekende klodders op een vlak) | Cartoonesk, licht, overal te plaatsen |
+| Start-emmer | **Gedownload** (`old_rusted_bucket`, stond er al) | Past precies bij "vieze emmer" |
+
+## Beslissingen in de opbouw (punt 79)
+
+| Wat | Nieuwe speler | Bestaande speler (opslag van vóór Sprint 9) |
+|---|---|---|
+| Toilet | kapot (bril, deksel, stukje) en vies | heel en schoon |
+| Emmer | roestig, 12 L, gratis | houdt zijn emmer; de houten emmer blijft van hem |
+| Muur / vloer | kale muur / vieze vloer | houdt Delfts blauw en de houten vloer |
+| Gereedschap | 4 (ontstopper, heet water, eendje, confetti) | houdt alle 8 van toen, plus wat hij kocht |
+| Level-slot | geldt | geldt alleen voor wat hij nog niet heeft |
+
+De roestige emmer was eerst een upgrade van 30 liter; als start-emmer is hij nu **12 liter** en het model staat
+een beetje scheef, waardoor er onderin weinig ruimte is. De overige emmers zijn iets kleiner in beeld gemaakt
+(de dweilemmer was ruim een halve meter breed).
+
+## Regels die ik zelf heb gekozen (stel gerust bij in `js/data/care.js`)
+
+- Vies kost **10% per vieze plek** (een vies toilet telt als één), tot maximaal **50%** minder punten per spoelbeurt.
+- Een **kapot toilet raakt 1,5× zo snel verstopt**. Dat stond niet in de opdracht; het geeft repareren een reden.
+- Troep tegen de muren komt bij de **derde verstopping op rij die overloopt**: 4 vlekken op de muren, 2 op de vloer.
+  Een verstopping die je zonder overlopen oplost zet de teller terug.
+- Loopt **dezelfde** verstopping twee keer over, dan blijft er een plas op de vloer staan.
+- Schoonmaakspullen koop je één keer. Eenvoudige middelen hebben drie vegen nodig, de dure één.
+- Reparaties zijn per gebrek: lijm voor het stukje, een nieuwe bril, een nieuw deksel.
+- Andere toiletmodellen kun je pas kopen als het toilet heel en schoon is.
+
+## Gevonden tijdens het bouwen (en hersteld)
+
+| Fout | Hoe gevonden |
+|---|---|
+| Halverwege een veeg ging de schoonmaakstand uit (vlek was al weg) en werd de rest van het gebaar een wissel van muur | test "vegen over een vlek poetst ook" |
+| De vuillaag werd ook getekend bij een schoon toilet (dubbel tekenwerk, tests drie keer zo traag) | de volledige testrun |
+| Winkel crashte op de categorie "Punten kopen" (geen collectie) | eerste screenshot van de winkel |
+| Binnenmaten van de emmers klopten niet met de modellen (geschat) | gemeten met stralen; een test vergelijkt de data nu met het model |
+| De schoonmaakla lag op een smal staand scherm over de spoelknop | screenshot `s9-08`; hij staat er nu boven, met een test |
+| Eigen server en tests deelden poort 5000 | de tests hebben nu een eigen poort (5599, `tests/server.js`); `npm run serve` kiest zelf een vrije poort |
+
+## Nog open
+
+- **Punt 88**: de puntenbalans (punt 61) moet opnieuw bekeken worden; er is veel bijgekomen en de prijzen zijn een eerste schatting.
+- "20+ gereedschappen": er bestaan er nu 16. Het menu is daarmee getest (scrollen, vervaging); meer is alleen data.
+- Echte telefoon: nog steeds niet getest.
+- De ontwikkel-preview (`phone-preview.js`) heeft de nieuwe stijl niet gekregen; die hoort niet bij het spel.
