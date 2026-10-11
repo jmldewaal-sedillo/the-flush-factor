@@ -368,7 +368,7 @@ Het Facebook App-geheim hoef je mij niet te geven; dat vul je zelf in bij Fireba
     een drukknop met twee standen. Bestaand icoon uit een vrije set of zelf getekend (dan zonder andermans naam erbij).
   - Pas na jouw keuze doorvoeren in `tools/icons.config.json`.
 
-- [ ] **76. Troep op de muren + schoonmaken**
+- [ ] **76. Troep op de muren + schoonmaken** *(wordt uitgevoerd als onderdeel van punt 83, Sprint 9)*
   - Als een verstopping **3 keer achter elkaar** overloopt, vliegt er troep tegen de muren en op de vloer: vlekken en
     spetters (decals op de wanden), voorwerpen die blijven plakken. De teller staat in de spelstand; hij gaat terug naar
     nul na een schone ontstopping.
@@ -378,9 +378,63 @@ Het Facebook App-geheim hoef je mij niet te geven; dat vul je zelf in bij Fireba
   - Zolang het vies is: minder punten per spoelbeurt (bv. −10% per vlek, maximaal −50%), zichtbaar bij de score.
     Afstemmen met de puntenbalans (punt 61).
   - Bediening: in de muurstanden (punt 67) over een vlek vegen om te poetsen.
+## Sprint 9 (punten 78–88)
 
-- [ ] **77.** *(gereserveerd voor latere punten)*
+Branch `sprint-9` (nog niet gemerged). Feedback na het testen van Sprint 8: muren aantikken en inzoomen werken goed.
+
+- [ ] **78. Eigen visuele stijl (eerst, met keuzemoment)**
+  - De layout voelt generiek ("standaard AI-app": donkerblauwe glazen panelen, zachte schaduwen, standaardlettertype). Doel: een eigen, herkenbare stijl die past bij een brutaal, grappig toiletspel.
+  - [x] Stijlvoorbeeldpagina `style-preview.html` met drie duidelijk verschillende richtingen (A Sticker, B Tegelwerk, C Stripboek). Per richting: kleurpalet, lettertype (OFL, lokaal in `assets/fonts/`), knoppen, scorebubbel, gereedschapsknop, winkelkaart en welkomstscherm.
+  - [ ] **Keuzemoment:** jij kiest een richting.
+  - [ ] De gekozen stijl overal consequent toepassen (alle schermen, menu's, meldingen, welkomstscherm).
+  - [ ] De gekozen stijl vastleggen in één designbestand (CSS-variabelen/tokens).
+
+- [ ] **79. Opbouw: van kapotte wc naar luxe badkamer**
+  - Nieuwe spelers beginnen op level 1 in een armoedig hokje: kapot, vies toilet (punt 80), vieze emmer (`old_rusted_bucket` als start-emmer; de houten emmer wordt een upgrade, capaciteiten en prijzen logisch aangepast), kale witte muur zonder tegels, bruine vieze vloer.
+  - Hoe hoger je level, hoe mooiere spullen je kunt kopen: tegels, vloeren, toiletten, emmers, decoratie. Spullen kun je ook repareren en upgraden (toilet: kapot → gerepareerd → schoon → luxe model).
+  - Bestaande spelers houden alles wat ze al gekocht of vrijgespeeld hebben; de start-staat wordt hun niet opgedrongen. Testen met een opgeslagen voortgang op level 4.
+  - Alle stappen, prijzen en levels in `js/data/`.
+
+- [ ] **80. Vies en kapot toilet**
+  - Zichtbare staten: kapot (gebarsten of scheve bril, barst in het deksel, ontbrekend stukje), vies (vlekken, aanslag, kalkrand in de pot, vuile randen), daarna gerepareerd en schoon.
+  - Bovenop de eigen textures van het model (vuil-/decal-lagen, aangepaste onderdelen), niet door het model te vervangen. Cartoonesk-smerig, niet walgelijk realistisch.
+  - Repareren en schoonmaken met spullen uit de winkel (punt 83), met een duidelijke animatie van voor naar na.
+
+- [ ] **81. Minder gereedschap aan het begin**
+  - Nieuwe spelers starten met 4 gereedschappen: 2 werkende (oldschool ontstopper + één ander simpel) en 2 chaos-items.
+  - De rest komt per level vrij ("nieuw beschikbaar" in de winkel bij een level-up), volgens de opbouw van punt 6 (lomp → luxe).
+  - Bestaande spelers houden hun gereedschap.
+
+- [ ] **82. Gereedschapsmenu links**
+  - Eén kolom, scrollbaar met een zachte vervaging aan de randen, en een knop om het menu in/uit te klappen zodat de scène vrij is.
+  - In de nieuwe stijl: duidelijk onderscheid werkend/chaos/onbekend, cooldown-ring en seconden goed leesbaar, korte naam bij lang indrukken.
+  - Werkt met 4 tools (begin) en met 20+ tools (later).
+
+- [ ] **83. Schoonmaak en reparatie (inclusief punt 76)**
+  - Nieuwe winkelcategorie "Schoonmaak & Reparatie": reparatie (lijm/reparatieset, nieuwe bril, nieuw deksel), toilet schoonmaken (wc-borstel, toiletreiniger), vloer (dweil en emmer, later een schrobmachine), muren (doekjes/spons, schoonmaakspray, later een hogedrukreiniger).
+  - Na 3 keer achter elkaar overlopen vliegt er troep tegen muren en vloer: spetters, vlekken, plassen (cartoonesk). Na lang overlopen staat de vloer nat en vies.
+  - Schoonmaken: kies het juiste middel en veeg/tik over de vieze plek, met een bevredigende "schoon"-animatie.
+  - Zolang het vies is: minder punten per spoelbeurt.
+  - Alles in de databestanden.
+
+- [ ] **84. Troep netjes in de emmer**
+  - Voorwerpen vallen en blijven binnen de emmer: passend geschaald, binnen de binnenwand, laag voor laag gestapeld (eenvoudige botsing met bodem, wand en elkaar). Niets steekt door de wand of zweeft erboven; bij een volle emmer ligt het netjes bovenop.
+  - Werkt voor alle emmermodellen, elk met eigen binnenmaat in de databestanden.
+  - Test: screenshots van een halfvolle en een volle emmer, van opzij en van boven.
+
+- [ ] **85. Speelse, verslavende winkel (eerlijk)**
+  - Winkel in de nieuwe stijl: categorieën met eigen kleur en illustratie, kaarten die opvallen, vrolijke animaties bij kopen (confetti, muntjes), "Nieuw!"- en "Bijna betaalbaar!"-labels, voortgangsbalk naar het volgende item of level, een uitgelicht item, zichtbare collectie (x van y per categorie).
+  - Eerlijk: geen nep-afteltimers, geen misleidende "laatste kans"; bij aankopen met echt geld altijd een duidelijke prijs in euro's en een duidelijk onderscheid met punten.
+
+- [ ] **86. Welkomstscherm**
+  - In de nieuwe stijl. Google- en Facebook-knoppen tonen duidelijk dat ze nog niet beschikbaar zijn (label "Binnenkort").
+
+- [ ] **87. Tests**
+  - Voor 78 t/m 86: start-staat van een nieuwe speler (4 tools, kapot toilet, kale muur, vieze vloer, roestige emmer), bestaande voortgang blijft behouden, ontgrendelen per level, schoonmaken en repareren werkt en wordt bewaard, troep blijft binnen de emmer, gereedschapsmenu scrollt en klapt in, geen overlap op alle formaten.
+
+- [ ] **88. Notitie voor later**
+  - Na deze sprint de puntenbalans (punt 61) opnieuw nakijken, omdat er nu veel nieuwe dingen te koop zijn.
 
 ---
 
-*Bijgewerkt: Sprint 8 — punten 64–71 uitgevoerd; 58–63 en 72–77 vastgelegd voor later.*
+*Bijgewerkt: Sprint 9 gestart — punten 78–88 toegevoegd; stijlvoorbeelden klaar, wacht op de stijlkeuze.*
