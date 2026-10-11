@@ -12,7 +12,7 @@ const DRESSED = {
 };
 
 test('screenshots van alle belangrijke toestanden', async ({ page }, info) => {
-  test.setTimeout(480_000);
+  test.setTimeout(process.env.CI ? 1_200_000 : 480_000);
   const dir = path.join(__dirname, 'screenshots', info.project.name);
   fs.mkdirSync(dir, { recursive: true });
   const shot = name => page.screenshot({ path: path.join(dir, `${name}.png`) });
@@ -20,7 +20,7 @@ test('screenshots van alle belangrijke toestanden', async ({ page }, info) => {
   const safe = vp.width > vp.height ? '0,0,21,47' : '47,0,34,0';
 
   // eerste start: welkomstscherm, daarna het profiel
-  await openGame(page, { quality: 'medium', pixelRatio: 0.75, query: `safe=${safe}`, firstStart: true });
+  await openGame(page, { quality: 'medium', pixelRatio: process.env.CI ? 0.4 : 0.75, query: `safe=${safe}`, firstStart: true });
   await until(page, () => window.__game.three.hasEnvironment());
   await shot('00-welkom');
   await page.locator('#profile-submit').click();

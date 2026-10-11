@@ -7,9 +7,10 @@ const mobile = { ...devices['Pixel 5'], serviceWorkers: 'block' };
 
 module.exports = defineConfig({
   testDir: './tests',
-  timeout: 90_000,
-  expect: { timeout: 15_000 },
-  workers: process.env.CI ? 3 : 4,
+  // De CI-runner heeft twee kernen en geen GPU: minder tegelijk en ruimere limieten.
+  timeout: process.env.CI ? 240_000 : 90_000,
+  expect: { timeout: process.env.CI ? 30_000 : 15_000 },
+  workers: process.env.CI ? 2 : 4,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

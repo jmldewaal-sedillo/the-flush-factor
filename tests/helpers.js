@@ -41,7 +41,7 @@ async function ready(page) {
 }
 
 /** Wacht tot een uitdrukking in de pagina waar is. */
-const until = (page, fn, arg) => page.waitForFunction(fn, arg, { timeout: 30_000 });
+const until = (page, fn, arg) => page.waitForFunction(fn, arg, { timeout: process.env.CI ? 90_000 : 30_000 });
 const cameraIdle = page => until(page, () => window.__game.three.cameraIdle());
 
 async function setView(page, id) {
