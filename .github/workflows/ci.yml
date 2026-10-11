@@ -2,7 +2,8 @@ name: Tests
 
 on:
   push:
-    branches: [main, rebuild]
+    branches: [main]
+    paths-ignore: ['**.md']      # alleen documentatie gewijzigd: geen testrun van een half uur
   pull_request:
     branches: [main]
 

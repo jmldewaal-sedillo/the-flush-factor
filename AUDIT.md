@@ -321,3 +321,47 @@ cache van je browser, niet door de code op de site.
   site toont `main`. De rebuild staat pas live na het mergen.
 - **Maker van Old Rusted Bucket**: te bevestigen (zie boven).
 - **Level hangt nog aan het uitgeefbare saldo** en de straffen zijn niet herzien: dat is punt 61.
+
+---
+---
+
+# Deel 3 — Sprint 8 (punten 64–71), op `main` na `v0.2-rebuild`
+
+## Uitgezocht: het "losse hendeltje" (punt 64)
+
+| Vraag | Antwoord |
+|---|---|
+| Welk onderdeel? | Geen `ToiletFlushHandle` en geen `ToiletSeatMount`, maar een **stopkraan met toevoerslang** die deel is van de mesh `Toilet` (de romp): zes losse onderdelen (kraan, wandplaat, slang, koppelingen) |
+| Waarom stond het daar? | Zo is het model gemaakt: de kraan hangt links laag tegen de achterwand. Geen fout in draaipunt of transformatie, en niets werd dubbel geladen |
+| Wat is gedaan? | De zes onderdelen worden herkend aan hun aantal driehoeken en niet meer getoond (`PLUMBING_TRIS` in `js/three/toilet.js`). Het model zelf is ongewijzigd |
+| Spoelhendel | Er was en is er één, op de stortbak. Hij bewoog eerst een paar millimeter omlaag; nu draait hij om zijn eigen bevestigingspunt |
+
+## Gevonden tijdens het testen (en hersteld)
+
+| Fout | Hoe gevonden |
+|---|---|
+| Knijpen met twee vingers kon als veeg tellen en van muur wisselen | nieuwe test "slepen, knijpen en lang vasthouden tellen niet als tik" |
+| Een tik direct na het laden miste soms: het spel meldde zich klaar vóór het eerste getekende beeld, de camera stond dan nog niet op zijn plek | eerste van de drie stabiliteitsruns |
+| Een fout in een script liet het spel eeuwig op "Laden…" staan | eigen tikfout tijdens het bouwen; nu toont `js/boot.js` een melding |
+| Profielscherm opende soms halverwege gescrold | screenshot liggend formaat |
+
+## Bewuste keuzes
+
+1. **"In de pot" is een zevende camerastand, maar staat niet in het cameramenu.** Je komt er door op het toilet te tikken, of vanzelf bij een verstopping. Het menu houdt de zes standen van punt 53.
+2. **In een close-up gaat élke tik in de scène terug**, niet alleen een tik op het voorwerp zelf (punt 66 noemt beide).
+3. **Na een verstopping zoomt de camera alleen vanzelf uit als hij ook vanzelf inzoomde.** Tikte je zelf op het toilet, dan blijf je in de pot kijken.
+4. **Het rustpeil van het water staat hoger** dan vóór sprint 8 (60% in plaats van 38% van de komdiepte), zodat de kolk en het leeglopen te zien zijn.
+5. **Inlogknoppen zonder merklogo's.** De iconenset heeft die niet en de huisstijlregels van Google en Facebook stellen eisen aan hun logo's; dat hoort bij de echte koppeling.
+6. **Bestaande spelers zien het welkomstscherm ook één keer**, omdat zij nog geen profiel hebben. Hun voortgang blijft staan (getest met een oude opslag).
+
+## Oude service worker (vraag bij de merge)
+
+Alle tien oude versies van `sw.js` (v1 t/m v11) probeerden `/index.html` op de domeinroot te cachen. Op GitHub Pages
+geeft dat een 404, dus de installatie mislukte elke keer: op de live site heeft nooit een oude service worker kunnen
+draaien. Er is daarom niets op te ruimen. Wat wél kan blijven hangen is de gewone browsercache (GitHub Pages: 10 minuten).
+
+## Nog open
+
+- Echte telefoon: nog niet getest (alles in een headless browser met gesimuleerde notch).
+- De testsuite is traag op de CI-runner (twee kernen, geen GPU): ruim een half uur. Lokaal ± 13 minuten.
+- Maker van "Old Rusted Bucket": nog te bevestigen.
