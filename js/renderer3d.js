@@ -105,6 +105,9 @@ export async function init3D(container, snapshot) {
   rig.refresh();
   applyView(rig.view());
   ctx.start();
+  // Pas klaar melden als het eerste beeld er echt staat (de camera staat dan op zijn plek;
+  // tikken in de scène rekent met de stand van het laatst getekende beeld).
+  await new Promise(resolve => { const wait = () => (ctx.frames > 0 ? resolve() : requestAnimationFrame(wait)); wait(); });
 
   // Omgevingslicht is niet nodig voor het eerste beeld: kort daarna laden.
   setTimeout(() => loadEnvironment(ctx).catch(err => console.warn('[3D] omgevingslicht niet geladen:', err.message)), 250);
