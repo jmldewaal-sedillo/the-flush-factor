@@ -73,8 +73,8 @@ body[data-screen] #game-screen { visibility: hidden; }
   transition: transform 0.1s;
 }
 .round-btn:active, .pill-btn:active { transform: scale(0.93); }
-.pill-btn.shop-btn { background: rgba(244, 162, 97, 0.95); }
-.pill-btn.danger { background: rgba(230, 57, 70, 0.92); height: 38px; font-size: 0.82rem; padding: 0 14px; }
+.pill-btn.shop-btn, .round-btn.shop-btn { background: rgba(244, 162, 97, 0.95); }
+.round-btn.danger { background: rgba(230, 57, 70, 0.92); --btn: 44px; }
 
 .popover {
   position: absolute; top: calc(var(--btn) + 8px);
@@ -103,7 +103,7 @@ body[data-screen] #game-screen { visibility: hidden; }
 
 #hud-topright {
   top: calc(var(--sat) + var(--gap)); right: calc(var(--sar) + var(--gap));
-  display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
   /* Nooit breder dan de ruimte rechts van de menuknop, welk lettertype het toestel ook gebruikt. */
   max-width: calc(50vw - var(--btn) / 2 - var(--gap) - var(--sar) - 8px);
 }
@@ -111,9 +111,14 @@ body[data-screen] #game-screen { visibility: hidden; }
   background: var(--c-glass); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 26px;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
-  padding: 8px 14px 9px; min-width: min(124px, 100%); text-align: center;
+  padding: 8px 14px 9px; min-width: min(124px, 100%); max-width: 100%; text-align: center;
   display: flex; flex-direction: column; align-items: center;
+  transition: transform 0.1s;
 }
+#score-bubble:active { transform: scale(0.96); }
+.score-top { display: inline-flex; align-items: center; gap: 6px; }
+#profile-avatar { display: inline-flex; }
+#profile-avatar:empty { display: none; }
 #score-value { font-size: 1.7rem; font-weight: 900; line-height: 1.05; }
 #high-score { font-size: 0.66rem; opacity: 0.9; }
 .streak-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 4px; }
@@ -203,10 +208,12 @@ body.is-clogged #flush-btn { background: radial-gradient(circle at 35% 30%, #ff7
 body[data-view="bucket"] #hud-left,
 body[data-view="bucket"] #flush-btn,
 body[data-view="bucket"] #combo-display,
-body[data-view="bucket"] #btn-camera,
-body[data-view="bucket"] #camera-menu,
 body[data-view="bucket"] #btn-bucket { display: none; }
-body[data-view="bucket"] #btn-back { display: inline-flex; }
+/* Elke close-up (emmer, pot): "Terug" op de plek van de cameraknop. In de pot blijven spoelknop en
+   gereedschap staan, zodat je ingezoomd kunt spoelen en ontstoppen (punt 65). */
+body[data-zoom] #btn-camera,
+body[data-zoom] #camera-menu { display: none; }
+body[data-zoom] #btn-back { display: inline-flex; }
 
 /* ──────── MELDINGEN ──────── */
 #status-msg, #clog-warning {
@@ -270,6 +277,42 @@ body[data-view="bucket"] #btn-back { display: inline-flex; }
 #credits-content a { color: #9fd8f2; word-break: break-all; }
 .credits-note { font-size: 0.74rem; opacity: 0.75; line-height: 1.4; }
 #btn-credits-close { position: absolute; top: 12px; right: 12px; --btn: 40px; background: rgba(255, 255, 255, 0.15); }
+
+/* ──────── PROFIEL ──────── */
+#profile-screen {
+  position: fixed; inset: 0; z-index: 110; background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--sat) + 12px) calc(var(--sar) + 12px) calc(var(--sab) + 12px) calc(var(--sal) + 12px);
+}
+#profile-content {
+  position: relative; width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto;
+  background: rgba(18, 46, 64, 0.98); border-radius: 20px; padding: 22px 20px 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+#profile-content h2 { font-size: 1.25rem; padding-right: 48px; }
+#profile-content h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--c-accent); margin: 18px 0 8px; }
+#profile-intro { font-size: 0.86rem; line-height: 1.45; opacity: 0.85; margin: 6px 0 14px; }
+#btn-profile-close { position: absolute; top: 12px; right: 12px; --btn: 40px; background: rgba(255, 255, 255, 0.15); }
+.profile-identity { display: flex; align-items: center; gap: 12px; }
+#profile-avatar-big { width: 68px; height: 68px; flex-shrink: 0; border-radius: 50%; background: var(--c-glass); border: 2px solid rgba(255, 255, 255, 0.3); display: inline-flex; align-items: center; justify-content: center; }
+.profile-name-label { flex: 1; display: flex; flex-direction: column; gap: 4px; font-size: 0.74rem; font-weight: 700; opacity: 0.9; }
+#profile-name { width: 100%; font: inherit; font-size: 1.05rem; font-weight: 700; color: #fff; background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.25); border-radius: 12px; padding: 10px 12px; user-select: text; -webkit-user-select: text; }
+#profile-name:focus { outline: none; border-color: var(--c-accent); }
+#profile-avatars { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 14px 0; }
+.avatar-option { aspect-ratio: 1; border-radius: 14px; background: rgba(255, 255, 255, 0.1); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; }
+.avatar-option[aria-checked="true"] { border-color: var(--c-accent); background: rgba(244, 162, 97, 0.28); }
+.primary-btn { width: 100%; height: 50px; border-radius: 25px; background: var(--c-accent); color: #fff; font-weight: 900; font-size: 1.02rem; box-shadow: var(--shadow); }
+.primary-btn:active, .auth-btn:active { transform: scale(0.98); }
+#profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#profile-stats > div { background: rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 10px 12px; }
+#profile-stats dt { font-size: 0.7rem; opacity: 0.8; }
+#profile-stats dd { font-size: 1.15rem; font-weight: 900; }
+#profile-auth { display: flex; flex-direction: column; gap: 8px; }
+.auth-btn { height: 46px; border-radius: 23px; background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.28); font-weight: 800; font-size: 0.92rem; }
+#profile-auth-note { font-size: 0.74rem; line-height: 1.4; opacity: 0.7; margin-top: 8px; }
+#profile-status { min-height: 1.3em; margin-top: 8px; font-size: 0.86rem; font-weight: 800; color: var(--c-accent); text-align: center; opacity: 0; transition: opacity 0.2s; }
+#profile-status.visible { opacity: 1; }
 
 /* ──────── WINKEL ──────── */
 #shop-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: #eef3f7; color: var(--c-text); animation: screenEnter 0.25s ease; }
@@ -353,7 +396,6 @@ body[data-view="bucket"] #btn-back { display: inline-flex; }
 @media (max-width: 370px) {
   :root { --tool: 50px; }
   #score-bubble { min-width: 0; padding-inline: 10px; }
-  .pill-btn { padding: 0 12px; }
 }
 
 /* Knop om de desktop-preview weer aan te zetten */

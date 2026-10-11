@@ -3,8 +3,13 @@
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { PLACES } from '../data/room.js';
+import { splitByTriCounts, expandByMesh } from './geometry.js';
 
 const MODEL = 'assets/models/toilet.glb';
+// Het model heeft een stopkraan met toevoerslang die links laag tegen de wand hangt. In het spel leest dat
+// als een los hendeltje naast de pot, dus die onderdelen (herkend aan hun aantal driehoeken) tonen we niet.
+const PLUMBING_TRIS = [784, 384, 320, 196, 58, 46];
+const HANDLE_PRESS = 0.6;        // radialen: hoe ver de spoelhendel omlaag gaat
 
 export async function createToilet(ctx) {
   const gltf = await new GLTFLoader().loadAsync(MODEL);
@@ -42,12 +47,23 @@ export async function createToilet(ctx) {
   const seat = model.getObjectByName('ToiletSeat');
   const handle = model.getObjectByName('ToiletFlushHandle');
 
+  // Stopkraan en slang verbergen (zie PLUMBING_TRIS).
+  const plumbing = splitByTriCounts(bowlMesh, PLUMBING_TRIS);
+  if (plumbing) plumbing.material.visible = false;
+
+  // De spoelhendel op de stortbak draait om zijn eigen bevestigingspunt, om de as die naar voren wijst.
+  const handleBase = handle.quaternion.clone();
+  const handleAxis = new THREE.Vector3(0, 0, 1).transformDirection(handle.parent.matrixWorld.clone().invert());
+  const handleTurn = new THREE.Quaternion();
   let skinId = null;
   let handleKick = 0;
+  let handleAngle = 0;
   ctx.onFrame(dt => {
-    if (handleKick <= 0 || !handle) return;
-    handleKick = Math.max(0, handleKick - dt * 3);
-    handle.position.y = -0.012 * Math.sin(handleKick * Math.PI);
+    if (handleKick <= 0 && handleAngle === 0) return;
+    handleKick = Math.max(0, handleKick - dt / 0.6);
+    handleAngle = HANDLE_PRESS * Math.sin(Math.min(1, (1 - handleKick) * 1.6) * Math.PI);
+    if (handleKick === 0) handleAngle = 0;
+    handle.quaternion.copy(handleTurn.setFromAxisAngle(handleAxis, handleAngle)).multiply(handleBase);
   });
 
   return {
@@ -66,5 +82,20 @@ export async function createToilet(ctx) {
     skinId: () => skinId,
     usesOwnTextures: () => !!material.map,
     pressHandle() { handleKick = 1; },
+    // voor tests (punt 64)
+    parts() {
+      let handles = 0;
+      model.traverse(o => { if (o.isMesh && /handle/i.test(o.parent.name) && o.visible) handles++; });
+      // zichtbare romp: steekt er nog iets links onder de stortbak uit?
+      const body = new THREE.Box3();
+      model.updateWorldMatrix(true, true);
+      expandByMesh(body, bowlMesh, plumbing ? plumbing.bodyIndexCount : Infinity);
+      const all = new THREE.Box3().setFromObject(bowlMesh);
+      return {
+        flushHandles: handles, plumbingPartsHidden: plumbing ? plumbing.found : 0,
+        bodyWidth: +(body.max.x - body.min.x).toFixed(3), widthWithPlumbing: +(all.max.x - all.min.x).toFixed(3),
+        handleAngle: +handleAngle.toFixed(3),
+      };
+    },
   };
 }

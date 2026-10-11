@@ -1,6 +1,6 @@
 // Punt 53: zes camerastanden, swipen tussen de muren, "+"-plekken in de muurstanden.
 const { test, expect } = require('@playwright/test');
-const { openGame, until, setView, cameraIdle } = require('./helpers');
+const { openGame, until, setView, cameraIdle, tapScene } = require('./helpers');
 
 const VIEWS = { overview: 'Overzicht', toilet: 'Toilet', wallBack: 'Muur boven toilet', wallLeft: 'Linkermuur', wallRight: 'Rechtermuur', bucket: 'Emmer' };
 const view = page => page.evaluate(() => window.__game.three.view());
@@ -89,4 +89,57 @@ test('"Camera terugzetten" in het menu gaat terug naar het toilet', async ({ pag
   await page.locator('#btn-menu').click();
   await page.locator('#main-menu [data-action="camera-reset"]').click();
   await until(page, () => window.__game.three.view() === 'toilet');
+});
+
+// ── Punt 67: muren aantikken ──
+test('tik op een muur gaat naar die muur; nog een tik op dezelfde muur gaat terug naar het toilet', async ({ page }) => {
+  await openGame(page);
+  const wall = i => page.evaluate(n => window.__game.three.wallScreen(n), i);
+  const go = async (i, expected) => { await tapScene(page, await wall(i)); await until(page, v => window.__game.three.view() === v, expected); await cameraIdle(page); };
+  await go(0, 'wallBack');
+  await go(0, 'toilet');
+  await go(1, 'wallLeft');
+  await go(1, 'toilet');
+  await go(2, 'wallRight');
+  await go(2, 'toilet');
+  // vanuit de ene muur direct naar de andere
+  await go(0, 'wallBack');
+  await go(1, 'wallLeft');
+  // de cameraknop blijft werken
+  await setView(page, 'toilet');
+});
+
+test('slepen, knijpen en lang vasthouden tellen niet als tik', async ({ page }) => {
+  await openGame(page);
+  const p = await page.evaluate(() => window.__game.three.wallScreen(0));
+  const fire = (type, x, y, id = 5) => page.evaluate(([t, px, py, pid]) => document.getElementById('scene-canvas-3d').dispatchEvent(new PointerEvent(t, { pointerId: pid, pointerType: 'touch', clientX: px, clientY: py, bubbles: true })), [type, x, y, id]);
+
+  // slepen (rustig, dus ook geen veeg)
+  await fire('pointerdown', p.x, p.y);
+  await fire('pointermove', p.x + 14, p.y + 12);
+  await page.waitForTimeout(750);
+  await fire('pointerup', p.x + 14, p.y + 12);
+  // lang vasthouden
+  await fire('pointerdown', p.x, p.y);
+  await page.waitForTimeout(650);
+  await fire('pointerup', p.x, p.y);
+  // knijpen met twee vingers
+  await fire('pointerdown', p.x - 30, p.y, 5); await fire('pointerdown', p.x + 30, p.y, 6);
+  await fire('pointermove', p.x - 60, p.y, 5);
+  await fire('pointerup', p.x - 60, p.y, 5); await fire('pointerup', p.x + 30, p.y, 6);
+
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.__game.three.view())).toBe('toilet');
+  // een echte korte tik op dezelfde plek doet het wel
+  await tapScene(page, p);
+  await until(page, () => window.__game.three.view() === 'wallBack');
+});
+
+test('tik op een vrije "+"-plek geeft een melding en wisselt niet van stand', async ({ page }) => {
+  await openGame(page);
+  await setView(page, 'wallBack');
+  const p = await page.evaluate(() => window.__game.three.project(0, 1.5, 0.006));
+  await tapScene(page, p);
+  await expect(page.locator('#status-msg')).toContainText('Vrije plek');
+  expect(await page.evaluate(() => window.__game.three.view())).toBe('wallBack');
 });

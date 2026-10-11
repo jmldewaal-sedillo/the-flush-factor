@@ -4,7 +4,7 @@
 // reserve); modellen, textures en iconen cache-eerst. De pagina wordt nooit vanuit hier herladen.
 
 // PRECACHE:START (gegenereerd door tools/build-sw.mjs)
-const VERSION = '5f8510dd65';
+const VERSION = '16701c3af6';
 const PRECACHE = [
   './',
   'assets/hdri/bathroom_512.hdr',
@@ -23,6 +23,7 @@ const PRECACHE = [
   'css/animations.css',
   'css/style.css',
   'index.html',
+  'js/auth.js',
   'js/boot.js',
   'js/clog.js',
   'js/data/buckets.js',
@@ -33,6 +34,7 @@ const PRECACHE = [
   'js/data/icon-credits.js',
   'js/data/levels.js',
   'js/data/packages.js',
+  'js/data/profile.js',
   'js/data/room.js',
   'js/data/shop.js',
   'js/data/texts.js',
@@ -50,6 +52,7 @@ const PRECACHE = [
   'js/three/context.js',
   'js/three/decor.js',
   'js/three/effects.js',
+  'js/three/geometry.js',
   'js/three/patterns.js',
   'js/three/props.js',
   'js/three/room.js',
@@ -58,6 +61,7 @@ const PRECACHE = [
   'js/ui/chaos.js',
   'js/ui/hud.js',
   'js/ui/icons.js',
+  'js/ui/profile.js',
   'js/utils/BufferGeometryUtils.js',
   'js/vendor/GLTFLoader.js',
   'js/vendor/RGBELoader.js',

@@ -4,6 +4,7 @@ import { BUCKETS, DEFAULT_BUCKET, LEGACY_BUCKET_IDS } from './data/buckets.js';
 import { CLOG_PROPS } from './data/clog-props.js';
 import { DECORATIONS, DEFAULT_COSMETICS, COSMETIC_LISTS } from './data/cosmetics.js';
 import { STARTING_TOOLS, TOOLS } from './data/tools.js';
+import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from './data/profile.js';
 
 export function createState() {
   return {
@@ -15,7 +16,8 @@ export function createState() {
     purchased: new Set(),
     ownedTools: STARTING_TOOLS.map(t => t.id),
     toolDiscovery: {},                  // { toolId: 'working' | 'chaos' }
-    stats: { totalFlushes: 0, totalClogs: 0, totalOverflows: 0, toolsUsed: 0 },
+    stats: { totalFlushes: 0, totalClogs: 0, totalUnclogs: 0, totalLiters: 0, totalOverflows: 0, toolsUsed: 0 },
+    profile: null,                      // { name, avatar, mode: 'guest', createdAt } — null = eerste start
     // niet opgeslagen:
     lastFlushTime: 0, isFlushing: false, currentProp: null,
   };
@@ -32,7 +34,7 @@ export function saveState(state) {
     bucketId: state.bucketId, bucketItems: state.bucketItems,
     cosmetics: state.cosmetics, decor: state.decor,
     purchased: [...state.purchased], ownedTools: state.ownedTools,
-    toolDiscovery: state.toolDiscovery, stats: state.stats,
+    toolDiscovery: state.toolDiscovery, stats: state.stats, profile: state.profile,
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* opslag vol of geblokkeerd */ }
 }
@@ -88,5 +90,13 @@ export function loadState(state) {
   state.ownedTools = owned.length ? owned : STARTING_TOOLS.map(t => t.id);
   state.toolDiscovery = data.toolDiscovery || {};
   state.stats = { ...state.stats, ...(data.stats || {}) };
+  if (data.profile && typeof data.profile === 'object') {
+    state.profile = {
+      name: String(data.profile.name || DEFAULT_PROFILE.name).slice(0, NAME_MAX),
+      avatar: AVATARS.includes(data.profile.avatar) ? data.profile.avatar : DEFAULT_PROFILE.avatar,
+      mode: 'guest',
+      createdAt: data.profile.createdAt || null,
+    };
+  }
   return state;
 }

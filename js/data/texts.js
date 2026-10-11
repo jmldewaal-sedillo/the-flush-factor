@@ -35,6 +35,23 @@ export const T = {
     decoPlaced: name => `${name} geplaatst.`,
     decoRemoved: name => `${name} weggehaald.`,
   },
+  profile: {
+    welcomeTitle: 'Welkom bij The Flush Factor',
+    welcomeIntro: 'Kies een naam en een avatar en begin meteen. Je voortgang wordt op dit toestel bewaard.',
+    title: 'Jouw profiel',
+    intro: 'Je speelt als gast. Alles wordt op dit toestel bewaard.',
+    playAsGuest: 'Spelen als gast',
+    save: 'Opslaan',
+    saved: 'Profiel opgeslagen.',
+    orSignIn: 'Of log in',
+    linkAccount: 'Account koppelen',
+    authNote: 'Met een account bewaar je je voortgang straks op meerdere toestellen. Je gastvoortgang blijft dan behouden.',
+    authSoon: 'Binnenkort beschikbaar',
+    stats: {
+      flushes: 'Totaal gespoeld', bestStreak: 'Langste reeks', unclogs: 'Ontstoppingen', liters: 'Verzamelde troep',
+      litersValue: n => `${n.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} L`,
+    },
+  },
   noWebGL: {
     title: 'WebGL niet beschikbaar',
     body: 'The Flush Factor heeft 3D-beeld (WebGL) nodig en dat staat op dit apparaat of in deze browser uit. Probeer een andere browser of zet hardwareversnelling aan.',

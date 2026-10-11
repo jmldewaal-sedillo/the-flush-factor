@@ -33,11 +33,15 @@ export const CAMERA_VIEWS = {
   wallBack:  { label: 'Muur boven toilet', icon: 'layout-grid',   target: [0, 1.58, 0],    dir: [0, 0.06, 1],     frame: { w: 1.25, h: 1.5 }, fit: 'height', clampTop: true, anchors: true },
   wallLeft:  { label: 'Linkermuur',        icon: 'arrow-left',    target: [-W, 1.3, 1.0],  dir: [1, 0.05, 0.18],  frame: { w: 2.0,  h: 1.9 }, fill: true, clampTop: true, anchors: true },
   wallRight: { label: 'Rechtermuur',       icon: 'arrow-left',    target: [W, 1.3, 1.0],   dir: [-1, 0.05, 0.18], frame: { w: 2.0,  h: 1.9 }, fill: true, clampTop: true, anchors: true, flipIcon: true },
-  bucket:    { label: 'Emmer',             icon: 'bucket-wood',   target: 'bucket',        dir: [0, 1, 0.42],     frame: { w: 0.62, h: 0.62 } },
+  bucket:    { label: 'Emmer',             icon: 'bucket-wood',   target: 'bucket',        dir: [0, 1, 0.42],     frame: { w: 0.62, h: 0.62 }, zoom: true },
+  // In de pot kijken (punt 65): tik op het toilet, of automatisch bij een verstopping. Niet in het cameramenu.
+  bowl:      { label: 'In de pot',         icon: 'toilet',        target: [0.03, 0.40, 0.44], dir: [0, 1, 0.5],   frame: { w: 0.72, h: 0.66 }, zoom: true, menu: false },
 };
-// Automatische close-up bij een verstopping (geen knop).
-export const CLOG_VIEW = { target: [0.03, 0.42, 0.42], dir: [0, 0.8, 0.75], frame: { w: 0.85, h: 0.75 } };
+// zoom: true = close-up; één tik in de scène (of "Terug") gaat terug naar het vorige standpunt (punt 66).
 
+// Tik op een muur gaat naar deze stand; nog een tik op dezelfde muur gaat terug naar het toilet (punt 67).
+// Volgorde = volgorde van de wanden in three/room.js: achter, links, rechts.
+export const WALL_VIEWS = ['wallBack', 'wallLeft', 'wallRight'];
 export const DEFAULT_VIEW = 'toilet';
 // Swipen wisselt tussen deze standen (links <-> midden <-> rechts).
 export const SWIPE_RING = ['wallLeft', 'toilet', 'wallRight'];

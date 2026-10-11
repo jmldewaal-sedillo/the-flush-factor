@@ -2,7 +2,7 @@
 const { test, expect } = require('@playwright/test');
 const { execFileSync } = require('child_process');
 const path = require('path');
-const { ready } = require('./helpers');
+const { ready, PROFILE } = require('./helpers');
 
 test.use({ serviceWorkers: 'allow' });
 
@@ -18,7 +18,8 @@ test('installeert, cachet alle bestanden, herlaadt de pagina niet en werkt offli
   const failed = [];
   page.on('response', r => { if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`); });
 
-  await page.goto('./?sw=on&clogs=off&quality=low');
+  await page.addInitScript(profile => { if (!localStorage.getItem('flushfactor_v1')) localStorage.setItem('flushfactor_v1', JSON.stringify({ version: 2, profile })); }, PROFILE);
+  await page.goto('./?sw=on&clogs=off&quality=low&pixelratio=0.3');
   await ready(page);
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
 

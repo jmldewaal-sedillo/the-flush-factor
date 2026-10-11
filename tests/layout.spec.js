@@ -116,3 +116,24 @@ test('draaien en formaat wisselen: scène en knoppen passen zich aan', async ({ 
     expect(await page.evaluate(() => window.__game.three.topCovered())).toBe(true);
   }
 });
+
+// ── Punt 70: knoppen zonder tekst, mét toegankelijke naam ──
+test('winkelknop en "Legen" zijn alleen een icoon, rond, met aria-label', async ({ page }) => {
+  await openGame(page, { save: { bucketItems: [{ id: 'duck', liters: 1 }] } });
+  for (const [sel, label, iconId] of [['#btn-shop', 'Winkel', 'shopping-cart'], ['#btn-bucket-empty', 'Emmer legen', 'trash-2']]) {
+    const btn = page.locator(sel);
+    await expect(btn).toBeVisible();
+    await expect(btn).toHaveAttribute('aria-label', label);
+    expect((await btn.innerText()).trim(), `${sel} heeft geen zichtbare tekst`).toBe('');
+    await expect(btn.locator('svg use')).toHaveAttribute('href', new RegExp(`#${iconId}$`));
+    const box = await btn.boundingBox();
+    expect(Math.abs(box.width - box.height), `${sel} is rond`).toBeLessThan(1);
+    expect(box.width, `${sel} is groot genoeg om te tikken`).toBeGreaterThanOrEqual(44);
+    expect(await btn.evaluate(el => getComputedStyle(el).borderRadius)).toBe('50%');
+  }
+  // ze doen nog wat ze moeten doen
+  await page.locator('#btn-bucket-empty').click();
+  await expect(page.locator('#bucket-liters')).toHaveText('0,0 / 20 L');
+  await page.locator('#btn-shop').click();
+  await expect(page.locator('#shop-screen')).toBeVisible();
+});

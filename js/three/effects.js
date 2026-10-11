@@ -59,6 +59,7 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
   let level = 0;
   let chaosShake = 0;
   let sloshTimer = 0;
+  let unfocusTimer = 0;
 
   function removeProp() { if (prop) { scene.remove(prop.obj); prop = null; } }
 
@@ -159,6 +160,7 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
       obj.scale.setScalar(Math.min(1, water.fit.restRx / 0.07));
       scene.add(obj);
       prop = { obj, phase: 'drop', t: 0 };
+      clearTimeout(unfocusTimer);
       rig.focusClog(true);
     },
     // intoBucket: past het voorwerp nog in de emmer? Anders stuitert het ernaast weg.
@@ -173,7 +175,7 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
         prop.to = intoBucket ? bucket.mouth() : bucket.mouth().add(new THREE.Vector3(0.25, -bucket.height(), 0.2));
         prop.obj.scale.setScalar(1);
       }
-      setTimeout(() => rig.focusClog(false), 650);
+      unfocusTimer = setTimeout(() => rig.focusClog(false), 650);
     },
     chaos() { chaosShake = 1; rig.shake(0.35); splash(water.surface(tmp), 5, 0.7); },
     overflow() {

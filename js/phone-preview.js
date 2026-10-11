@@ -62,7 +62,7 @@
     var style = document.createElement('style');
     style.textContent =
       'body.pv-active{overflow:hidden!important;background:#14141f!important}' +
-      '#game-screen,#shop-screen,#credits-modal,#fatal{display:none!important}' +
+      '#game-screen,#shop-screen,#credits-modal,#profile-screen,#fatal{display:none!important}' +
       '#pv-root{position:fixed;inset:0;display:flex;flex-direction:column;background:#14141f;font-family:system-ui,sans-serif;color:#eee;z-index:9999}' +
       '#pv-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,0,0,.45);flex-shrink:0;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.1)}' +
       '.pv-lbl{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;color:#9a9ab0;white-space:nowrap}' +

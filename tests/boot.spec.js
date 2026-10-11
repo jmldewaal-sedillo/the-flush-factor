@@ -60,7 +60,10 @@ test('opslag van de oude versie (manden, iconen, één decoratie) wordt overgeno
     sessionStorage.setItem('__seeded', '1');
     localStorage.setItem('flushfactor_v1', JSON.stringify(data));
   }, old);
-  const problems = await openGame(page);
+  const problems = await openGame(page, { firstStart: true });   // de eigen opslag hierboven blijft staan
+  // Oude spelers hebben nog geen profiel: zij zien één keer het welkomstscherm en houden hun voortgang.
+  await expect(page.locator('#profile-screen')).toBeVisible();
+  await page.locator('#profile-submit').click();
   const s = await page.evaluate(() => window.__game.snapshot());
   expect(s).toMatchObject({
     score: 777, level: 2, bucketId: 'bucket-plastic', bucketItems: ['duck', 'sock', 'brick'],

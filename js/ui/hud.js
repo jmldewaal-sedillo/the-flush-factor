@@ -27,6 +27,10 @@ export const hud = {
     $('streak-best').innerHTML = `${icon('trophy', 12)} ${best}`;
   },
   level(n) { $('level-display').textContent = T.level(n); },
+  profile(profile) {
+    $('profile-avatar').innerHTML = profile ? icon(profile.avatar, 22) : '';
+    $('score-bubble').setAttribute('aria-label', profile ? `Profiel van ${profile.name}` : 'Profiel en statistieken');
+  },
 
   message(text) {
     $('status-msg').textContent = text;
@@ -114,6 +118,7 @@ export const hud = {
     const menu = $('camera-menu');
     menu.textContent = '';
     for (const [id, v] of Object.entries(CAMERA_VIEWS)) {
+      if (v.menu === false) continue;
       const b = document.createElement('button');
       b.className = 'menu-item';
       b.dataset.view = id;
@@ -125,6 +130,7 @@ export const hud = {
   },
   view(id) {
     document.body.dataset.view = id;
+    document.body.toggleAttribute('data-zoom', !!CAMERA_VIEWS[id].zoom);
     document.querySelectorAll('#camera-menu .menu-item').forEach(b => b.setAttribute('aria-checked', String(b.dataset.view === id)));
   },
 

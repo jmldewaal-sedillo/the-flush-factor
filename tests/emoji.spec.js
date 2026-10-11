@@ -41,6 +41,9 @@ test('geen emoji in de interface, in geen enkele toestand', async ({ page }) => 
   await page.locator('#btn-credits-close').click();
   await page.locator('#btn-camera').click(); await scan('cameramenu');
   await page.locator('#btn-camera').click();
+  await page.locator('#score-bubble').click(); await scan('profiel');
+  await page.locator('#profile-auth [data-provider="google"]').click(); await scan('profiel inlogmelding');
+  await page.locator('#btn-profile-close').click();
 
   // spoelen (melding + level-up-banner bij 200 punten), verstopping, alle chaos-effecten, ontstoppen
   await page.locator('#flush-btn').click(); await scan('spoelen + level-up');
@@ -83,4 +86,10 @@ test('elk icoon in de interface bestaat in de sprite', async ({ page }) => {
   expect(used.length).toBeGreaterThan(60);
   const missing = used.filter(h => !h.startsWith('assets/icons/sprite.svg#') || !ids.has(h.split('#')[1]));
   expect(missing).toEqual([]);
+});
+
+test('geen emoji op het welkomstscherm (eerste start)', async ({ page }) => {
+  await openGame(page, { firstStart: true });
+  await expect(page.locator('#profile-screen')).toBeVisible();
+  expect(emojiIn(await domText(page))).toEqual([]);
 });

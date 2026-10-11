@@ -247,7 +247,7 @@ Ook in deze sprint (uit de audit): code opgesplitst in data (`js/data/`), logica
 ## Toekomst (alleen vastgelegd, nog niet bouwen)
 
 - [ ] **58. Geluiden** — Spoelen, gorgelen, plop bij ontstoppen, chaos-geluiden, kassa, level-up (CC0-bronnen); volume en aan/uit in het menu.
-- [ ] **59. Profiel** — Via een tik op de scorebubbel: naam, avatar, statistieken. Eerst lokaal als gast, later koppelen met Google/Facebook/e-mail om te synchroniseren; gastvoortgang overzetten; account verwijderen mogelijk. *(Vervangt punt 40.)*
+- [ ] **59. Profiel** — *Fase 1 (lokaal gastprofiel, naam, avatar, statistieken) is gedaan in punt 69.* Nog te doen: echt koppelen met Google/Facebook/e-mail om te synchroniseren, gastvoortgang overzetten, account verwijderen. Zie het stappenplan bij Sprint 8. *(Vervangt punt 40.)*
 - [ ] **60. Echte betaling voor punten** — Google Play Billing (Digital Goods API + Payment Request API in de TWA), via `purchaseService.buy()` in `js/purchases.js`, server-side gecontroleerd. *(Vervangt punt 41.)*
 - [ ] **61. Logische puntenbalans** — Eén doordacht systeem voor punten per spoelbeurt/combo/ontstopping/level en prijzen, met een overzicht "hoeveel minuten spelen voor item X"; straffen in verhouding. Alle getallen staan al bij elkaar in `js/data/`.
 - [ ] **62. Meerdere talen** — Alle teksten naar taalbestanden (nl, en), taalkeuze in het menu, standaard de toesteltaal. Voorbereid: teksten uit JavaScript staan in `js/data/texts.js`.
@@ -255,4 +255,132 @@ Ook in deze sprint (uit de audit): code opgesplitst in data (`js/data/`), logica
 
 ---
 
-*Bijgewerkt: Sprint 7 (rebuild) — punten 50–57 uitgevoerd; 58–63 vastgelegd voor later.*
+## Sprint 8 (punten 64–71)
+
+Gemerged naar `main` als `v0.2-rebuild`; daarna op `main` verder gewerkt.
+
+- [x] **64. Losse hendel onder het toilet (fout)** — Uitgezocht: het was geen tweede spoelhendel maar een **stopkraan met toevoerslang** die in het model aan de toiletromp vastzit (zes losse onderdelen binnen de mesh `Toilet`: kraan, wandplaat, slang en koppelingen) en links laag tegen de achterwand hing. Die onderdelen worden nu niet meer getoond. Er is één spoelhendel (`ToiletFlushHandle`), op de stortbak, en die draait bij het spoelen om zijn eigen bevestigingspunt. Test + screenshot van dichtbij (`01b-toilet-dichtbij.png`).
+- [x] **65. Inzoomen op het toilet door te tikken** — Tik op het toilet: de camera gaat soepel boven de pot hangen en je kijkt in het water. Kan altijd; bij een verstopping gebeurt het vanzelf. Spoelknop en gereedschap blijven staan, dus je kunt ingezoomd spoelen en ontstoppen.
+- [x] **66. Eén tik in, één tik uit** — Emmer en toilet: één tik zoomt in, nog een tik (op het voorwerp of ergens in de scène) gaat terug naar het **vorige standpunt**. "Terug" en Esc werken ook.
+- [x] **67. Muren aantikken voor camerastand** — Tik op de muur boven het toilet, de linker- of de rechtermuur: de camera gaat erheen; nog een tik op dezelfde muur: terug naar het toiletbeeld. De cameraknop blijft. Alleen een korte tik zonder beweging telt (niet slepen, knijpen of lang vasthouden).
+- [x] **68. Zichtbare waterstroom bij spoelen** — Watergordijn met stromende strepen langs de binnenwand van de pot (de vorm is op het model afgetast), draaiende kolk op het wateroppervlak, het peil zakt weg in de afvoer en de pot loopt weer vol; plus de bestaande spetters. Duur 1,8 s. Bij kwaliteit "laag" minder detail in het gordijn, maar het is er altijd. Test vergelijkt het beeld in rust met het beeld tijdens het spoelen; screenshotreeks `01d-spoelen-1…4.png`.
+- [x] **69. Profiel en eerste start** — Welkomstscherm bij de allereerste start, daarna via een tik op de scorebubbel. "Spelen als gast" werkt volledig offline (naam, avatar, lokaal bewaard). "Inloggen met Google/Facebook" lopen via één koppelpunt (`authService.signIn()` in `js/auth.js`) en tonen "Binnenkort beschikbaar"; er is geen inlogscherm nagemaakt. Profielscherm: naam, avatar, statistieken (totaal gespoeld, langste reeks, ontstoppingen, verzamelde liters troep) en "Account koppelen". Stappenplan voor de echte koppeling: zie hieronder.
+- [x] **70. Knop "Legen" en winkelknop alleen icoon** — Beide rond, zonder tekst, met `aria-label` ("Emmer legen", "Winkel").
+- [x] **71. Tests** — `tests/toilet.spec.js`, `tests/profile.spec.js` en uitbreidingen in `camera.spec.js`, `layout.spec.js`, `emoji.spec.js` en `screenshots.spec.js`.
+
+### Stappenplan: echte Google- en Facebook-login (voor punt 69)
+
+Dit moet jij zelf aanmaken, omdat het aan jouw accounts hangt. Daarna kan de koppeling in `js/auth.js` gebouwd worden.
+Voorstel: **Firebase Authentication** (inloggen) + **Cloud Firestore** (voortgang bewaren). Gratis voor dit gebruik.
+
+**A. Vooraf (nodig voor alles hierna)**
+
+1. **Privacyverklaring** op een openbare URL (bijvoorbeeld `privacy.html` in deze repo, dan staat hij op
+   `https://jmldewaal-sedillo.github.io/the-flush-factor/privacy.html`). Erin: welke gegevens (naam, e-mailadres,
+   profielfoto van de aanbieder, spelvoortgang), waarvoor, hoe lang, en hoe je ze laat verwijderen. Zie punt 73.
+2. **Pagina "account verwijderen"** (mag in dezelfde verklaring): uitleg hoe een speler zijn account en gegevens laat
+   wissen. Google Play en Facebook eisen allebei zo'n URL.
+3. Beslis welk **e-mailadres** spelers te zien krijgen als contact.
+
+**B. Firebase**
+
+4. Ga naar https://console.firebase.google.com → **Project toevoegen** (naam bv. `the-flush-factor`). Google Analytics mag uit.
+5. In het project: **Build → Authentication → Aan de slag**.
+6. **Project-instellingen → Jouw apps → Web-app (`</>`) toevoegen**. Je krijgt een blokje `firebaseConfig`
+   (apiKey, authDomain, projectId, …). **Dat blokje heb ik nodig.** Het is geen geheim, het mag in de code.
+7. **Authentication → Instellingen → Geautoriseerde domeinen**: voeg `jmldewaal-sedillo.github.io` toe
+   (`localhost` staat er al).
+8. **Build → Firestore Database → Database maken**, locatie `europe-west` (eur3), start in **productiemodus**.
+   De beveiligingsregels (elke speler alleen bij zijn eigen gegevens) lever ik aan.
+
+**C. Google-login**
+
+9. **Authentication → Inlogmethode → Google → Inschakelen.** Kies een openbare projectnaam en je contactadres. Opslaan.
+10. Controleer in https://console.cloud.google.com → **API's en services → OAuth-toestemmingsscherm** (zelfde project):
+    app-naam, logo (optioneel), link naar de privacyverklaring, en zet de status op **In productie**
+    (anders kunnen alleen testgebruikers inloggen). Voor alleen naam/e-mail/profielfoto is geen Google-verificatie nodig.
+
+**D. Facebook-login**
+
+11. Ga naar https://developers.facebook.com → registreer als ontwikkelaar → **Mijn apps → App maken**, type
+    "Consumenten" → product **Facebook Login** toevoegen.
+12. **App-instellingen → Basis**: noteer **App-ID** en **App-geheim**; vul de URL van de privacyverklaring en de URL voor
+    het verwijderen van gegevens in; kies een categorie (Games).
+13. In Firebase: **Authentication → Inlogmethode → Facebook → Inschakelen**, plak App-ID en App-geheim.
+    Firebase toont dan een **OAuth-omleidings-URI** (`https://<project>.firebaseapp.com/__/auth/handler`).
+14. Terug bij Facebook: **Facebook Login → Instellingen → Geldige OAuth-omleidings-URI's**: plak die URI.
+15. Zet de Facebook-app op **Live** (schakelaar bovenin). Voor `public_profile` en `email` is geen app-review nodig;
+    Facebook kan wel om **bedrijfs- of identiteitsverificatie** vragen.
+
+**E. Wat ik daarna bouw (als A t/m D klaar zijn)**
+
+16. Firebase-SDK lokaal in de repo (geen CDN, in verband met offline) en de echte `signIn`/`linkAccount`/`signOut` in `js/auth.js`.
+17. Gastvoortgang koppelen aan het account (`linkWithPopup`), synchroniseren met Firestore, en een regel voor wat er
+    gebeurt als er op twee toestellen verschillende voortgang staat (voorstel: hoogste score wint, aankopen samenvoegen).
+18. "Uitloggen" en "Account verwijderen" in het profielscherm.
+19. Tests met de Firebase-emulator, zodat er in de tests nooit echt wordt ingelogd.
+
+Wat ik van je nodig heb om te beginnen: **het `firebaseConfig`-blokje (stap 6)** en de bevestiging dat stap 9 t/m 15 gedaan zijn.
+Het Facebook App-geheim hoef je mij niet te geven; dat vul je zelf in bij Firebase (stap 13).
+
+---
+
+## Toekomst (vastgelegd, nog niet bouwen) — punten 72–77
+
+- [ ] **72. Play Store-beleid nakijken**
+  - Inhoudsclassificatie: IARC-vragenlijst in de Play Console invullen; let op "grove humor" (wc-humor) en op
+    gesimuleerd gokken (hebben we niet). Verwachting: PEGI 3 of 7; pas vaststellen na de vragenlijst.
+  - Privacyverklaring: verplicht zodra er accounts, aankopen of advertenties zijn; URL in de Play Console én in de app.
+  - Formulier **Gegevensveiligheid (Data safety)**: per soort gegevens (naam, e-mail, gebruikers-ID's, aankoopgeschiedenis,
+    app-activiteit) aangeven of ze verzameld/gedeeld worden, of ze versleuteld onderweg zijn en of verwijderen kan.
+  - **Account verwijderen**: verplicht als je accounts kunt aanmaken: in de app én via een web-URL (zie stappenplan, stap 2).
+  - **In-app aankopen**: digitale items alleen via Google Play Billing (punt 60); prijzen duidelijk, geen aankoop zonder bevestiging.
+  - **Advertenties** (alleen als ze komen): aangeven in de Play Console, advertentie-ID declareren, geen misleidende plaatsing.
+  - **Doelgroep**: in "Doelgroep en content" kiezen voor 13+ of 16+ en aangeven dat de app niet op kinderen gericht is;
+    anders gelden de strengere regels van het Families-beleid.
+  - Uitkomst vastleggen als afvinklijst in `docs/play-store.md`.
+
+- [ ] **73. Regels nakijken**
+  - **AVG/privacy**: welke gegevens (nu: niets buiten het toestel; straks naam, e-mail, voortgang), grondslag
+    (uitvoering van de dienst / toestemming), bewaartermijn, rechten van spelers (inzage, verwijderen), verwerkers
+    (Google/Firebase, Meta) en waar de gegevens staan (EU-regio). Geen analytics of advertenties zonder toestemming.
+  - **Consumentenrecht** bij echt geld: prijzen inclusief btw, duidelijk wat je krijgt, geen misleidende "populair"-labels,
+    geen druk op kinderen, herroepingsrecht bij digitale inhoud (vervalt pas na uitdrukkelijke instemming), bestelknop met
+    betalingsverplichting. De labels bij de puntenpakketten nalopen.
+  - **Licenties**: alle assets en hun naamsvermelding nalopen tegen `CREDITS.md` (CC BY, CC BY-SA van de houten emmer,
+    ISC, MIT); maker van "Old Rusted Bucket" bevestigen.
+  - **Spelregels / tutorial** bij de eerste start, na het welkomstscherm: in drie of vier stappen uitleggen hoe je spoelt,
+    wat een verstopping is, het verschil tussen werkend en chaos-gereedschap, en de emmer legen. Overslaan moet kunnen;
+    later terug te vinden in het menu.
+
+- [ ] **74. Assets nakijken en uitbreiden**
+  - Overzicht (tabel in `docs/assets.md`, gegenereerd door een script): elk model, elke texture en elk icoon met licentie,
+    grootte, waar het gebruikt wordt, en of het in de eerste laadbeurt zit.
+  - Kwaliteit: de zelfgemaakte troep-voorwerpen en de plant zijn eenvoudig; kijken waar een CC0-model (Poly Haven, Kenney,
+    Quaternius) beter is. Dweilemmer-bestand bevat nog een tweede, ongebruikte emmer (kan kleiner).
+  - Wat ontbreekt: meer troep-voorwerpen, meer decoratie, echte andere toiletten voor de winkel (nu alleen andere kleuren),
+    schoonmaakspullen (punt 76).
+  - Wat weg kan: `assets/_unused/` verhuizen naar een aparte branch of release-bijlage, zodat de repo klein blijft.
+
+- [ ] **75. Ander spoelicoon**
+  - Nieuw ontwerp voor de spoelknop (de draaikolk vervangen). Drie tot vijf varianten laten zien, naast elkaar op de echte
+    knop in blauw en in rood (verstopt): bijvoorbeeld een spoelhendel, een druppel met kolk, een stortbak met pijl,
+    een drukknop met twee standen. Bestaand icoon uit een vrije set of zelf getekend (dan zonder andermans naam erbij).
+  - Pas na jouw keuze doorvoeren in `tools/icons.config.json`.
+
+- [ ] **76. Troep op de muren + schoonmaken**
+  - Als een verstopping **3 keer achter elkaar** overloopt, vliegt er troep tegen de muren en op de vloer: vlekken en
+    spetters (decals op de wanden), voorwerpen die blijven plakken. De teller staat in de spelstand; hij gaat terug naar
+    nul na een schone ontstopping.
+  - Schoonmaken met spullen uit een nieuwe winkelcategorie **"Schoonmaak"**: spons (langzaam, gratis), schoonmaakspray,
+    mop, hogedrukreiniger, schoonmaakrobot (doet het vanzelf, duur). Elk met eigen snelheid en bereik. Data in
+    `js/data/cleaning.js`; vlekken als lijst met positie, grootte en "hoe vies" in de spelstand.
+  - Zolang het vies is: minder punten per spoelbeurt (bv. −10% per vlek, maximaal −50%), zichtbaar bij de score.
+    Afstemmen met de puntenbalans (punt 61).
+  - Bediening: in de muurstanden (punt 67) over een vlek vegen om te poetsen.
+
+- [ ] **77.** *(gereserveerd voor latere punten)*
+
+---
+
+*Bijgewerkt: Sprint 8 — punten 64–71 uitgevoerd; 58–63 en 72–77 vastgelegd voor later.*

@@ -8,3 +8,20 @@
   var s = document.documentElement.style;
   ['--sat', '--sar', '--sab', '--sal'].forEach(function (name, i) { s.setProperty(name, (v[i] || 0) + 'px'); });
 })();
+
+// Vangnet: gaat er iets mis vóórdat het spel klaar is (script laadt niet, fout in een module), toon dan
+// een melding in plaats van eeuwig "Laden…".
+(function () {
+  function fail() {
+    if (window.__game && window.__game.ready) return;
+    var fatal = document.getElementById('fatal');
+    if (!fatal || !fatal.hidden) return;
+    document.getElementById('fatal-title').textContent = 'Het spel kon niet starten';
+    document.getElementById('fatal-body').textContent = 'Er ging iets mis bij het laden. Controleer je verbinding en herlaad de pagina.';
+    var loading = document.getElementById('loading');
+    if (loading) loading.hidden = true;
+    fatal.hidden = false;
+  }
+  window.addEventListener('error', function (e) { if (!e.target || e.target === window || e.target.tagName === 'SCRIPT') fail(); }, true);
+  window.addEventListener('unhandledrejection', fail);
+})();

@@ -2,7 +2,9 @@
 <style>html,body{margin:0;background:#8899aa}canvas{display:block}</style>
 <script type="importmap">{"imports":{"three":"../js/vendor/three.module.min.js"}}</script>
 <script type="module">
-// Ontwikkelhulp: toont één GLB. ?model=pad&view=front|top|side|q
+// Ontwikkelhulp: toont één GLB.
+//   ?model=pad  &view=front|back|top|side|q  &only=NodeNaam (toon alleen die node)  &hide=NodeNaam
+// window.__info bevat daarna de maten van het geheel en van elke benoemde node.
 import * as THREE from 'three';
 import { GLTFLoader } from '../js/vendor/GLTFLoader.js';
 const q = new URLSearchParams(location.search);
@@ -10,17 +12,21 @@ const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, in
 r.outputColorSpace = THREE.SRGBColorSpace;
 const s = new THREE.Scene(); s.add(new THREE.HemisphereLight(0xffffff, 0x666666, 2.2));
 const d = new THREE.DirectionalLight(0xffffff, 2); d.position.set(2, 4, 3); s.add(d);
-const c = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.01, 100000);
+const c = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.001, 100000);
+const round = v => v.toArray().map(x => +x.toFixed(3));
 new GLTFLoader().load(q.get('model'), g => {
-  const o = g.scene; s.add(o);
+  const o = g.scene; s.add(o); o.updateWorldMatrix(true, true);
+  const nodes = {};
+  o.traverse(n => { if (n.name && n.children.some(ch => ch.isMesh)) { const b = new THREE.Box3().setFromObject(n); nodes[n.name] = { min: round(b.min), max: round(b.max), pos: round(n.position), rot: n.rotation.toArray().slice(0, 3).map(x => +x.toFixed(3)) }; } });
+  if (q.get('only')) o.traverse(n => { if (n.isMesh) n.visible = n.parent.name === q.get('only'); });
+  if (q.get('hide')) o.traverse(n => { if (n.isMesh && n.parent.name === q.get('hide')) n.visible = false; });
   const b = new THREE.Box3().setFromObject(o), z = b.getSize(new THREE.Vector3()), m = b.getCenter(new THREE.Vector3());
   const R = Math.max(z.x, z.y, z.z) * 2.2;
-  const v = { front: [0, 0.15, 1], top: [0, 1, 0.001], side: [1, 0.15, 0], q: [0.6, 0.55, 0.8], back: [0, 0.15, -1] }[q.get('view') || 'q'];
+  const v = { front: [0, 0.15, 1], top: [0, 1, 0.001], side: [1, 0.15, 0], left: [-1, 0.15, 0.3], q: [0.6, 0.55, 0.8], back: [0, 0.15, -1] }[q.get('view') || 'q'];
   c.position.set(m.x + v[0] * R, m.y + v[1] * R, m.z + v[2] * R); c.lookAt(m);
   s.add(new THREE.AxesHelper(Math.max(z.x, z.y, z.z)));
-  r.render(s, c);
   const meshes = []; o.traverse(n => n.isMesh && meshes.push(n.name + ':' + n.geometry.attributes.position.count));
-  window.__info = { size: z.toArray().map(x => +x.toFixed(3)), min: b.min.toArray().map(x => +x.toFixed(3)), max: b.max.toArray().map(x => +x.toFixed(3)), meshes };
+  window.__info = { size: round(z), min: round(b.min), max: round(b.max), meshes, nodes };
   setTimeout(() => { r.render(s, c); document.title = 'ready'; }, 600);
 });
 </script>

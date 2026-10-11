@@ -2,15 +2,16 @@
 const { expect } = require('@playwright/test');
 
 const SAVE_KEY = 'flushfactor_v1';
+const PROFILE = { name: 'Tester', avatar: 'duck', mode: 'guest', createdAt: '2026-01-01T00:00:00.000Z' };
 const EMOJI = /\p{Extended_Pictographic}/gu;
 
 /**
  * Opent het spel en wacht tot het echt klaar is (3D geladen), zonder vaste wachttijden.
  * Verzamelt intussen alles wat niet mag: console-fouten, JS-fouten, 4xx/5xx en externe verzoeken.
  * opties: query (extra URL-parameters), save (opgeslagen spelstand vooraf), clogs (willekeurige verstoppingen aan),
- *         quality en pixelRatio (renderinstellingen)
+ *         quality en pixelRatio (renderinstellingen), firstStart (helemaal lege opslag: het welkomstscherm verschijnt)
  */
-async function openGame(page, { query = '', save = null, clogs = false, quality = 'low', pixelRatio = 0.3 } = {}) {
+async function openGame(page, { query = '', save = null, clogs = false, quality = 'low', pixelRatio = 0.3, firstStart = false } = {}) {
   const problems = [];
   page.on('console', m => { if (m.type() === 'error') problems.push(`console: ${m.text()}`); });
   page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
@@ -19,13 +20,14 @@ async function openGame(page, { query = '', save = null, clogs = false, quality 
     const u = r.url();
     if (!u.startsWith('http://localhost:5000/the-flush-factor/') && !/^(data|blob):/.test(u)) problems.push(`extern of buiten submap: ${u}`);
   });
-  if (save) {
+  if (!firstStart) {
+    // Bestaande speler met een gastprofiel (anders staat het welkomstscherm ervoor).
     // Alleen bij de eerste keer laden zetten, zodat herladen de echte opslag test.
     await page.addInitScript(([key, data]) => {
       if (sessionStorage.getItem('__seeded')) return;
       sessionStorage.setItem('__seeded', '1');
       localStorage.setItem(key, JSON.stringify(data));
-    }, [SAVE_KEY, { version: 2, ...save }]);
+    }, [SAVE_KEY, { version: 2, profile: PROFILE, ...(save || {}) }]);
   }
   // Lage renderresolutie: de testbrowser heeft geen GPU. Layout en spelregels zijn daar niet van afhankelijk.
   const q = [`quality=${quality}`, `pixelratio=${pixelRatio}`, clogs ? '' : 'clogs=off', query].filter(Boolean).join('&');
@@ -71,6 +73,15 @@ async function watch(page, selector) {
 }
 const seen = (page, selector) => until(page, sel => window.__seen?.[sel] === true, selector);
 
+/** Korte tik op een punt in de 3D-scène (echte pointer-events op het canvas, zonder beweging). */
+async function tapScene(page, point) {
+  await page.evaluate(({ x, y }) => {
+    const c = document.getElementById('scene-canvas-3d');
+    const fire = type => c.dispatchEvent(new PointerEvent(type, { pointerId: 9, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true }));
+    fire('pointerdown'); fire('pointerup');
+  }, point);
+}
+
 const emojiIn = text => [...new Set([...text.matchAll(EMOJI)].map(m => m[0]))];
 
 function expectNoProblems(problems) {
@@ -84,4 +95,4 @@ const domText = page => page.evaluate(() => {
   return clone.outerHTML;
 });
 
-module.exports = { watch, seen, SAVE_KEY, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };
+module.exports = { PROFILE, tapScene, watch, seen, SAVE_KEY, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };

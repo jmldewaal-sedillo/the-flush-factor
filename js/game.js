@@ -12,6 +12,7 @@ import { Shop } from './shop.js';
 import { init3D } from './renderer3d.js';
 import { hud } from './ui/hud.js';
 import { playChaos } from './ui/chaos.js';
+import { ProfileScreen } from './ui/profile.js';
 
 const $ = id => document.getElementById(id);
 const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -20,7 +21,7 @@ const params = new URLSearchParams(location.search);
 const state = loadState(createState());
 const clog = new ClogSystem();
 const inv = new InventorySystem(state, clog);
-let shop, three = null;
+let shop, profileScreen, three = null;
 const save = () => saveState(state);
 
 // ──────── SCORE EN LEVEL ────────
@@ -89,6 +90,7 @@ clog.on('resolved', () => {
   state.currentProp = null;
   hud.clogWarning(false);
   hud.unclogBanner(rnd(MESSAGES.unclogSuccess));
+  state.stats.totalUnclogs++;
 
   const bonus = SCORING.unclogBonusPerLevel * state.level;
   addScore(bonus);
@@ -99,6 +101,7 @@ clog.on('resolved', () => {
   const fits = !!prop && bucketLiters(state) + prop.liters <= bucketDef(state).liters;
   if (prop && fits) {
     state.bucketItems.push({ id: prop.id, liters: prop.liters });
+    state.stats.totalLiters += prop.liters;
   } else if (prop) {
     losePoints(SCORING.bucketFullPenalty);
     hud.message(T.bucketFull(SCORING.bucketFullPenalty));
@@ -183,6 +186,31 @@ async function init() {
     changed() { hud.score(state.score, state.highScore); save(); },
   });
 
+  // Profiel (punt 69): welkomstscherm bij de eerste start, daarna via de scorebubbel.
+  const clogsPaused = clog.paused;
+  profileScreen = new ProfileScreen({
+    getProfile: () => state.profile,
+    getStats: () => [
+      { label: T.profile.stats.flushes, value: state.stats.totalFlushes.toLocaleString('nl-NL') },
+      { label: T.profile.stats.bestStreak, value: state.bestStreak.toLocaleString('nl-NL') },
+      { label: T.profile.stats.unclogs, value: state.stats.totalUnclogs.toLocaleString('nl-NL') },
+      { label: T.profile.stats.liters, value: T.profile.stats.litersValue(state.stats.totalLiters) },
+    ],
+    onSave(profile) {
+      const first = !state.profile;
+      state.profile = { ...profile, mode: 'guest', createdAt: state.profile?.createdAt || new Date().toISOString() };
+      hud.profile(state.profile);
+      save();
+      if (first) clog.paused = clogsPaused; else hud.message(T.profile.saved);
+    },
+  });
+  hud.profile(state.profile);
+  $('score-bubble').addEventListener('click', () => profileScreen.open());
+  if (!state.profile) {
+    clog.paused = true;              // geen verstoppingen terwijl het welkomstscherm openstaat
+    profileScreen.open({ welcome: true });
+  }
+
   // HUD
   hud.score(state.score, state.highScore);
   hud.streak(state.streak, state.bestStreak);
@@ -201,14 +229,15 @@ async function init() {
   $('btn-shop').addEventListener('click', () => shop.open());
   $('btn-shop-close').addEventListener('click', () => { shop.close(); save(); });
   $('btn-bucket').addEventListener('click', () => setView('bucket'));
-  $('btn-back').addEventListener('click', () => setView(DEFAULT_VIEW));
+  $('btn-back').addEventListener('click', () => bus.emit('view:back'));
   $('btn-bucket-empty').addEventListener('click', emptyBucket);
   $('btn-credits-close').addEventListener('click', () => { $('credits-modal').hidden = true; });
   $('credits-modal').addEventListener('click', e => { if (e.target === $('credits-modal')) $('credits-modal').hidden = true; });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (!$('credits-modal').hidden) $('credits-modal').hidden = true;
-    else if (document.body.dataset.view === 'bucket') setView(DEFAULT_VIEW);
+    if (profileScreen.isOpen()) profileScreen.close();
+    else if (!$('credits-modal').hidden) $('credits-modal').hidden = true;
+    else if (document.body.hasAttribute('data-zoom')) bus.emit('view:back');
   });
 
   $('main-menu').addEventListener('click', e => {
@@ -264,6 +293,7 @@ window.__game = {
     score: state.score, level: state.level, streak: state.streak, combo: state.combo,
     bucketId: state.bucketId, bucketItems: state.bucketItems.map(i => i.id), bucketLiters: bucketLiters(state),
     cosmetics: { ...state.cosmetics }, decor: { ...state.decor }, ownedTools: [...state.ownedTools],
+    profile: state.profile ? { ...state.profile } : null, stats: { ...state.stats, bestStreak: state.bestStreak },
     clogged: clog.isClogged, waterLevel: clog.waterLevel, overflowing: clog.isOverflowing, currentProp: state.currentProp?.id ?? null,
   }),
   forceClog(propId) { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(); },

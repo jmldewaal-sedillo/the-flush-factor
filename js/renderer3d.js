@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { bus } from './events.js';
 import { BUCKETS } from './data/buckets.js';
 import { COSMETIC_LISTS } from './data/cosmetics.js';
-import { CAMERA_VIEWS } from './data/room.js';
+import { CAMERA_VIEWS, WALL_VIEWS } from './data/room.js';
 import { detectQuality, createContext, loadEnvironment } from './three/context.js';
 import { createRoom } from './three/room.js';
 import { createToilet } from './three/toilet.js';
@@ -43,16 +43,30 @@ export async function init3D(container, snapshot) {
     bus.emit('view:changed', { id });
   }
 
-  // Tik op de emmer → emmerweergave; tik op een vrije plek → melding.
+  // Tikken in de scène (punten 65–67):
+  //  - in een close-up (emmer, pot): één tik waar dan ook gaat terug naar het vorige standpunt;
+  //  - op een vrije "+"-plek: melding;
+  //  - op de emmer of het toilet: close-up; op een muur: die muurstand (nog een tik: terug naar het toilet).
   const raycaster = new THREE.Raycaster();
+  let toiletGroup = null;
   function handleTap(x, y) {
+    const view = rig.view();
+    if (CAMERA_VIEWS[view].zoom) return rig.back();
+
     const r = ctx.canvas.getBoundingClientRect();
     raycaster.setFromCamera(new THREE.Vector2(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1), ctx.camera);
     if (decor.markersVisible()) {
-      const hit = raycaster.intersectObjects(decor.markers.children.filter(m => m.visible), false)[0];
-      if (hit) return bus.emit('anchor:tap', { id: hit.object.userData.anchorId });
+      const marker = raycaster.intersectObjects(decor.markers.children.filter(m => m.visible), false)[0];
+      if (marker) return bus.emit('anchor:tap', { id: marker.object.userData.anchorId });
     }
-    if (rig.view() !== 'bucket' && raycaster.intersectObject(bucket.group, true).length) rig.setView('bucket');
+    const targets = [bucket.group, ...room.walls, ...(toiletGroup ? [toiletGroup] : [])];
+    const hit = raycaster.intersectObjects(targets, true)[0];
+    if (!hit) return;
+    const within = root => { for (let o = hit.object; o; o = o.parent) if (o === root) return true; return false; };
+    if (within(bucket.group)) return rig.setView('bucket');
+    if (toiletGroup && within(toiletGroup)) return rig.setView('bowl');
+    const wallView = WALL_VIEWS[room.walls.indexOf(hit.object)];
+    if (wallView) rig.setView(view === wallView ? 'toilet' : wallView);
   }
 
   // Eerste beeld: kamer, toilet en de actieve emmer. De rest (HDRI, andere emmers) komt later.
@@ -62,6 +76,7 @@ export async function init3D(container, snapshot) {
     room.setFloor(find(COSMETIC_LISTS.floor, snapshot.cosmetics.floor)),
     bucket.setBucket(find(BUCKETS, snapshot.bucketId)),
   ]);
+  toiletGroup = toilet.group;
   toilet.setSkin(find(COSMETIC_LISTS.toilet, snapshot.cosmetics.toilet));
   bucket.setItems(snapshot.bucketItems);
   decor.set(snapshot.decor);
@@ -85,6 +100,7 @@ export async function init3D(container, snapshot) {
   bus.on('bucket:set', ({ id }) => bucket.setBucket(find(BUCKETS, id)).then(() => rig.view() === 'bucket' && rig.refresh()));
   bus.on('bucket:empty', () => bucket.empty());
   bus.on('view:set', ({ id }) => rig.setView(id));
+  bus.on('view:back', () => rig.back());
 
   rig.refresh();
   applyView(rig.view());
@@ -109,6 +125,7 @@ export async function init3D(container, snapshot) {
       waterLevel: () => water.level(), waterFit: () => water.fit,
       markersVisible: () => decor.markersVisible(), markerCount: () => decor.visibleMarkerCount(), decor: () => decor.placed(),
       surfaces: () => room.surfaceIds(), toiletSkin: () => toilet.skinId(), toiletOwnTextures: () => toilet.usesOwnTextures(),
+      toiletParts: () => toilet.parts(), flush: () => water.flushState(), freezeFlush: p => water.freeze(p),
       hasEnvironment: () => !!ctx.scene.environment,
       project(x, y, z) {
         const v = new THREE.Vector3(x, y, z).project(ctx.camera);
@@ -116,6 +133,9 @@ export async function init3D(container, snapshot) {
         return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height };
       },
       bucketScreen() { const p = bucket.group.position; return this.project(p.x, p.y + bucket.height() / 2, p.z); },
+      // Schermpunten om op te tikken: het toilet (stortbak) en het midden van elke muur op ooghoogte.
+      toiletScreen() { const p = toilet.group.position; return this.project(p.x, 0.55, p.z + 0.08); },
+      wallScreen(i) { const w = room.walls[i].position; return this.project(w.x, 1.75, i === 0 ? w.z : 1.5); },
     },
   };
 }

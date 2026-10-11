@@ -1,17 +1,20 @@
 // Camerastanden met soepele overgang (punt 53), rondkijken door te slepen, zoomen door te knijpen,
 // en swipen tussen linkermuur <-> midden <-> rechtermuur. Vervangt de vrije OrbitControls.
 import * as THREE from 'three';
-import { ROOM, CAMERA_VIEWS, CLOG_VIEW, DEFAULT_VIEW, SWIPE_RING } from '../data/room.js';
+import { ROOM, CAMERA_VIEWS, DEFAULT_VIEW, SWIPE_RING } from '../data/room.js';
 
 const LOOK = { yaw: 0.45, pitch: 0.18, zoomMin: 0.7, zoomMax: 1.3 };
 const FLY_SECONDS = 0.75;
 const TOP_MARGIN = 0.12;
+const TAP_MAX_MOVE = 8;       // pixels
+const TAP_MAX_MS = 500;      // langer vasthouden of bewegen is geen tik
 
 export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
   const { camera, canvas } = ctx;
   let viewId = DEFAULT_VIEW;
   let centerView = DEFAULT_VIEW;       // waar "midden" in de swipe-ring naartoe gaat
-  let override = null;                 // tijdelijke close-up (verstopping)
+  let previousView = DEFAULT_VIEW;     // waar een close-up (emmer, pot) naar teruggaat
+  let autoZoom = false;                // close-up op de pot is automatisch gestart door een verstopping
   const look = { yaw: 0, pitch: 0, zoom: 1 };
   const cur = { pos: new THREE.Vector3(), target: new THREE.Vector3() };
   let fly = null;                      // { from, to, t }
@@ -64,7 +67,7 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     return maxY;
   }
 
-  const activeDef = () => override || CAMERA_VIEWS[viewId];
+  const activeDef = () => CAMERA_VIEWS[viewId];
 
   function go(instant = false) {
     const to = pose(activeDef());
@@ -75,9 +78,11 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
   function setView(id, { instant = false } = {}) {
     if (!CAMERA_VIEWS[id]) return;
     const changed = id !== viewId;
+    // Vanuit een gewoon standpunt een close-up in: onthoud waar we vandaan komen.
+    if (CAMERA_VIEWS[id].zoom && !CAMERA_VIEWS[viewId].zoom) previousView = viewId;
     viewId = id;
     if (id === 'toilet' || id === 'wallBack') centerView = id;
-    override = null;
+    autoZoom = false;
     look.yaw = look.pitch = 0; look.zoom = 1;
     go(instant);
     if (changed) onViewChange(id);
@@ -109,7 +114,8 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     try { canvas.setPointerCapture(e.pointerId); } catch { /* geen echte aanwijzer (bv. nagebootst gebaar) */ }
     if (pointers.size === 1) gesture = { x0: e.clientX, y0: e.clientY, t0: performance.now(), moved: 0, yaw0: look.yaw, pitch0: look.pitch };
-    if (pointers.size === 2) { gesture.pinch0 = pinchDistance(); gesture.zoom0 = look.zoom; gesture.moved = 99; }
+    // Tweede vinger erbij: dit is knijpen. Zo'n gebaar is daarna nooit meer een tik of een veeg.
+    if (pointers.size === 2) { gesture.pinch0 = pinchDistance(); gesture.zoom0 = look.zoom; gesture.multi = true; }
   });
   canvas.addEventListener('pointermove', e => {
     if (!pointers.has(e.pointerId) || !gesture) return;
@@ -117,10 +123,10 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     gesture.trail = [...(gesture.trail || []).slice(-6), { x: e.clientX, t: performance.now() }];
     if (pointers.size === 2 && gesture.pinch0) {
       look.zoom = THREE.MathUtils.clamp(gesture.zoom0 * gesture.pinch0 / pinchDistance(), LOOK.zoomMin, LOOK.zoomMax);
-    } else if (pointers.size === 1) {
+    } else if (pointers.size === 1 && !gesture.multi) {
       const dx = e.clientX - gesture.x0, dy = e.clientY - gesture.y0;
       gesture.moved = Math.max(gesture.moved, Math.hypot(dx, dy));
-      if (gesture.moved < 8 || override) return;
+      if (gesture.moved < TAP_MAX_MOVE) return;
       look.yaw = THREE.MathUtils.clamp(gesture.yaw0 - dx * 0.004, -LOOK.yaw, LOOK.yaw);
       look.pitch = THREE.MathUtils.clamp(gesture.pitch0 + dy * 0.003, -LOOK.pitch, LOOK.pitch);
     }
@@ -132,8 +138,8 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     if (pointers.size || !gesture) return;
     const g = gesture; gesture = null;
     const dx = e.clientX - g.x0, dy = e.clientY - g.y0, ms = performance.now() - g.t0;
-    if (e.type === 'pointercancel') return;
-    if (g.moved < 8) return onTap(e.clientX, e.clientY);
+    if (e.type === 'pointercancel' || g.multi) return;
+    if (g.moved < TAP_MAX_MOVE) { if (ms <= TAP_MAX_MS) onTap(e.clientX, e.clientY); return; }
     // Veeg = kort gebaar, of een langer gebaar dat snel eindigt. Rustig slepen is rondkijken.
     const now = performance.now();
     const past = (g.trail || []).find(p => now - p.t <= 160) || { x: g.x0, t: g.t0 };
@@ -168,13 +174,18 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     idle: () => !fly,
     refresh: () => go(true),
     shake(amount = 1) { shake = Math.max(shake, amount); },
-    // Close-up op de pot bij een verstopping; alleen vanuit de toiletstand, anders blijft de speler waar hij is.
+    // Terug uit een close-up naar het vorige standpunt.
+    back() { setView(CAMERA_VIEWS[viewId].zoom ? previousView : DEFAULT_VIEW); },
+    // Automatische close-up op de pot bij een verstopping: alleen vanuit de toiletstand, en na het
+    // ontstoppen alleen terug als de speler intussen niet zelf een ander standpunt koos.
     focusClog(on) {
-      if (on && viewId !== 'toilet') return;
-      if (!on && !override) return;
-      override = on ? CLOG_VIEW : null;
-      look.yaw = look.pitch = 0; look.zoom = 1;
-      go();
+      if (on) {
+        if (viewId !== 'toilet') return;
+        setView('bowl');
+        autoZoom = true;
+      } else if (autoZoom && viewId === 'bowl') {
+        setView(previousView);
+      }
     },
     // Blijft de bovenrand van het beeld binnen de wand? (test voor punt 55)
     topCovered() {

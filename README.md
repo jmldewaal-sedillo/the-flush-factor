@@ -48,13 +48,14 @@ js/
   inventory.js        Gereedschap: bezit, cooldown, gebruik              (geen DOM, geen 3D)
   shop.js             Winkel met uitklapbare categorieën
   purchases.js        Koppelpunt voor echte aankopen (nu een stub)
+  auth.js             Koppelpunt voor inloggen met Google/Facebook (nu een stub)
   events.js           Eventbus tussen logica en weergave
   renderer3d.js       Bouwt de 3D-scène en luistert naar de eventbus
   boot.js             Gesimuleerde safe-area (?safe=…)
   phone-preview.js    Preview op laptop/desktop
   data/               ALLE inhoud en instellingen (zie hieronder)
-  three/              3D-modules: context, room, toilet, water, bucket, props, decor, camera, effects, patterns
-  ui/                 hud.js (knoppen, meldingen), chaos.js (chaos-effecten), icons.js
+  three/              3D-modules: context, room, toilet, water, bucket, props, decor, camera, effects, patterns, geometry
+  ui/                 hud.js (knoppen, meldingen), profile.js (welkom + profiel), chaos.js, icons.js
   vendor/, utils/     three.js r170 (MIT)
 assets/
   models/             toilet.glb + buckets/*.glb (gecomprimeerd)
@@ -81,10 +82,25 @@ Alles staat in `js/data/`:
 | Toiletten, tegels, vloeren, decoratie | `cosmetics.js` | een regel (decoratie: + bouwfunctie in `three/decor.js`) |
 | Decoratie-ankerpunten, camerastanden, maten van het hokje | `room.js` | een regel |
 | Puntenpakketten | `packages.js` | een regel |
+| Avatars | `profile.js` | een icoonnaam |
 | Winkelcategorieën | `shop.js` | een regel |
 | Teksten | `texts.js` | — |
 | Punten, straffen, waterfases, effect-intensiteit | `config.js` | — |
 | Iconen | `tools/icons.config.json` | naam toevoegen en `npm run icons` |
+
+## Bediening in de scène
+
+| Gebaar | Wat er gebeurt |
+|---|---|
+| Tik op het toilet | In de pot kijken; spoelen en ontstoppen kan daar ook |
+| Tik op de emmer | Emmerweergave |
+| Nog een tik (in een close-up, waar dan ook) | Terug naar het vorige standpunt |
+| Tik op een muur | Naar die muur; nog een tik op dezelfde muur: terug naar het toilet |
+| Vegen naar links/rechts | Linkermuur, midden, rechtermuur |
+| Rustig slepen / knijpen | Rondkijken / zoomen |
+| Tik op de scorebubbel | Profiel en statistieken |
+
+De tests maken een bestaande speler aan; met een lege opslag (eerste start) verschijnt eerst het welkomstscherm.
 
 ## Bouwen
 
@@ -112,7 +128,9 @@ npx playwright test shop          # één onderwerp
 | `emoji.spec.js` | geen emoji in broncode, manifest, preview en interface (alle toestanden); elk icoon bestaat |
 | `shop.spec.js` | zeven categorieën, uitklappen, bewaren, kopen, activeren, effect in 3D |
 | `bucket.spec.js` | vullen, legen, herladen; volle emmer; emmerweergave; alle vijf emmers en hun hengsel |
-| `camera.spec.js` | zes camerastanden, swipen, "+"-plekken |
+| `camera.spec.js` | zes camerastanden, swipen, "+"-plekken, muren aantikken, tik tegenover slepen |
+| `toilet.spec.js` | geen los hendeltje, in de pot kijken, tik in / tik uit, waterstroom bij spoelen |
+| `profile.spec.js` | welkomstscherm bij eerste start, gastprofiel, statistieken, inlog-koppelpunt |
 | `clog.spec.js` | verstopping, waterfases, chaos, ontstoppen, overlopen met plas |
 | `layout.spec.js` | alle knoppen in beeld en zonder overlap, met notch- en punch-hole-profiel; scène tot achter de notch |
 | `sw.spec.js` | service worker in een submap, volledige cache, offline, geen herlaad; manifest |

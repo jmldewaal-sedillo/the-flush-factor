@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { PLACES } from '../data/room.js';
 import { buildProp } from './props.js';
+import { splitByTriCounts, expandByMesh } from './geometry.js';
 
 const MAX_VISIBLE_ITEMS = 28;
 
@@ -48,7 +49,7 @@ export function createBucket(ctx) {
     const bodyBox = new THREE.Box3();
     model.traverse(o => {
       if (!o.isMesh || handleNodes.has(o)) return;
-      const split = m.handleTris ? splitHandle(o, m.handleTris) : null;
+      const split = m.handleTris ? splitByTriCounts(o, m.handleTris) : null;
       if (split) handles.push(v => { split.material.visible = v; });
       expandByMesh(bodyBox, o, split ? split.bodyIndexCount : Infinity);
     });
@@ -150,51 +151,4 @@ export function createBucket(ctx) {
     handleVisible: () => handleVisible,
   };
   return api;
-}
-
-// Splits losse onderdelen (touw, knopen, beugel) af binnen één mesh, herkend aan hun aantal driehoeken.
-// Het hengsel krijgt een eigen materiaalgroep, zodat het apart onzichtbaar gemaakt kan worden.
-function splitHandle(mesh, handleTris) {
-  const geo = mesh.geometry;
-  const pos = geo.attributes.position, index = geo.index;
-  if (!index) return null;
-  const ids = new Map(), rep = new Uint32Array(pos.count);
-  for (let i = 0; i < pos.count; i++) {
-    const key = `${pos.getX(i).toFixed(4)},${pos.getY(i).toFixed(4)},${pos.getZ(i).toFixed(4)}`;
-    if (!ids.has(key)) ids.set(key, ids.size);
-    rep[i] = ids.get(key);
-  }
-  const parent = Uint32Array.from({ length: ids.size }, (_, i) => i);
-  const find = x => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
-  const tris = index.count / 3;
-  for (let t = 0; t < tris; t++) {
-    const a = find(rep[index.getX(t * 3)]), b = find(rep[index.getX(t * 3 + 1)]), c = find(rep[index.getX(t * 3 + 2)]);
-    parent[a] = b; parent[find(b)] = find(c);
-  }
-  const counts = new Map();
-  for (let t = 0; t < tris; t++) { const r = find(rep[index.getX(t * 3)]); counts.set(r, (counts.get(r) || 0) + 1); }
-  const wanted = handleTris.slice();
-  const handleRoots = new Set();
-  for (const [root, n] of counts) { const i = wanted.indexOf(n); if (i >= 0) { wanted.splice(i, 1); handleRoots.add(root); } }
-  if (!handleRoots.size) return null;
-
-  const body = [], handle = [];
-  for (let t = 0; t < tris; t++) {
-    const tri = [index.getX(t * 3), index.getX(t * 3 + 1), index.getX(t * 3 + 2)];
-    (handleRoots.has(find(rep[tri[0]])) ? handle : body).push(...tri);
-  }
-  geo.setIndex([...body, ...handle]);
-  geo.clearGroups();
-  geo.addGroup(0, body.length, 0);
-  geo.addGroup(body.length, handle.length, 1);
-  const material = mesh.material.clone();
-  mesh.material = [mesh.material, material];
-  return { material, bodyIndexCount: body.length };
-}
-
-function expandByMesh(box, mesh, indexCount) {
-  const pos = mesh.geometry.attributes.position, index = mesh.geometry.index;
-  const v = new THREE.Vector3();
-  const n = Math.min(indexCount, index ? index.count : pos.count);
-  for (let i = 0; i < n; i++) box.expandByPoint(v.fromBufferAttribute(pos, index ? index.getX(i) : i).applyMatrix4(mesh.matrixWorld));
 }

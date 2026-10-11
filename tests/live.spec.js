@@ -13,6 +13,10 @@ test('LIVE: winkel toont alle categorieën en ze klappen uit', async ({ page }, 
   page.on('response', r => { if (r.status() >= 400 && r.url().startsWith(LIVE)) errors.push(`${r.status()} ${r.url()}`); });
 
   await page.goto(`${LIVE}?preview=off`);
+  // Schoon profiel = eerste start: eerst het welkomstscherm (als de live versie dat al heeft).
+  const guest = page.locator('#profile-submit');
+  await page.locator('#btn-shop').waitFor();
+  if (await guest.isVisible().catch(() => false)) await guest.click();
   await page.locator('#btn-shop').click();
   const labels = page.locator('.shop-category-label');
   await expect(labels).toHaveCount(7);
