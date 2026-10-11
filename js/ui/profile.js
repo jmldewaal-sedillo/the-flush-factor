@@ -24,7 +24,7 @@ export class ProfileScreen {
       if (btn) this._pick(btn.dataset.avatar);
     });
     $('profile-auth').innerHTML = AUTH_PROVIDERS.map(p =>
-      `<button type="button" class="auth-btn" data-provider="${p.id}">${p.label}</button>`).join('');
+      `<button type="button" class="auth-btn" data-provider="${p.id}" aria-describedby="profile-auth-note"><span>${p.label}</span><span class="soon">${T.profile.soon}</span></button>`).join('');
     $('profile-auth').addEventListener('click', async e => {
       const btn = e.target.closest('[data-provider]');
       if (!btn) return;

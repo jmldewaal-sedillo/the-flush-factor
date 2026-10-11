@@ -1,9 +1,10 @@
-// Punt 51: alle zeven winkelcategorieën zichtbaar en uitklapbaar, met werkende aankopen.
+// Punt 51: alle winkelcategorieën zichtbaar en uitklapbaar, met werkende aankopen.
+// (Sinds Sprint 9 zijn het er acht: "Schoonmaak & Reparatie" is erbij gekomen.)
 const { test, expect } = require('@playwright/test');
 const { openGame, until, expectNoProblems, watch, seen } = require('./helpers');
 
-const CATEGORIES = ['Punten kopen', 'Gereedschap', 'Toiletmodellen', 'Tegelpatronen', 'Vloeren', 'Decoratie', 'Emmers'];
-const MIN_ITEMS = { buy: 4, tools: 8, toilets: 4, tiles: 4, floors: 4, decoration: 6, buckets: 5 };
+const CATEGORIES = ['Punten kopen', 'Gereedschap', 'Schoonmaak & Reparatie', 'Toiletmodellen', 'Tegelpatronen', 'Vloeren', 'Decoratie', 'Emmers'];
+const MIN_ITEMS = { buy: 4, tools: 12, care: 10, toilets: 4, tiles: 5, floors: 5, decoration: 6, buckets: 5 };
 
 async function openShop(page, save = { score: 50000, level: 5 }) {
   const problems = await openGame(page, { save });
@@ -18,7 +19,7 @@ const openCat = async (page, id) => {
   await expect(cat(page, id).locator('.shop-card').first()).toBeVisible();
 };
 
-test('alle 7 categorieën staan er, in volgorde, en zijn ingeklapt echt dicht', async ({ page }) => {
+test('alle 8 categorieën staan er, in volgorde, en zijn ingeklapt echt dicht', async ({ page }) => {
   const problems = await openShop(page);
   await expect(page.locator('.shop-category-label')).toHaveText(CATEGORIES);
   for (const head of await page.locator('.shop-category-header').all()) {
@@ -74,11 +75,11 @@ test('punten kopen: melding bij élke tik, saldo verandert niet', async ({ page 
 });
 
 test('gereedschap kopen: punten eraf, knop erbij; te duur of te laag level kan niet', async ({ page }) => {
-  await openShop(page, { score: 400, level: 1 });
+  await openShop(page, { score: 400, level: 3 });
   await openCat(page, 'tools');
   const tools = cat(page, 'tools');
   await expect(tools.locator('[data-id="robot-arm"]')).toBeDisabled();           // level 5 nodig
-  await tools.locator('[data-id="super-plunger"]').click();                       // 500 > 400
+  await tools.locator('[data-id="super-plunger"]').click();                       // 600 > 400
   await expect(page.locator('#shop-message')).toContainText('Niet genoeg punten');
   await tools.locator('[data-id="magic-wand"]').click();                          // 200
   await expect(tools.locator('[data-id="magic-wand"] .badge-owned')).toBeVisible();
@@ -106,7 +107,7 @@ test('cosmetica, decoratie en emmers veranderen de 3D-scène en blijven bewaard'
   expect(t.skin).toBe('toilet-golden');
   expect(Object.keys(t.decor).sort()).toEqual(['floorLeft', 'wallBack', 'wallBackHigh', 'wallLeft', 'wallLeftLow', 'wallRight']);
   await expect(cat(page, 'buckets').locator('[data-id="bucket-metal"] .badge-active')).toBeVisible();
-  await expect(cat(page, 'buckets').locator('.shop-category-count')).toHaveText('2/5');
+  await expect(cat(page, 'buckets').locator('.shop-category-count')).toHaveText('3 van 5');     // roestig, hout, zink
 
   // decoratie weer weghalen door nog eens te tikken
   await cat(page, 'decoration').locator('[data-id="deco-mirror"]').click();

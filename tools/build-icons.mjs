@@ -42,7 +42,7 @@ if (new Set(symbols.map(s => s.match(/id="([^"]+)"/)[1])).size !== symbols.lengt
 await writeFile(join(ROOT, 'assets/icons/sprite.svg'),
   `<svg xmlns="http://www.w3.org/2000/svg" style="display:none">\n<!-- Gegenereerd door tools/build-icons.mjs. Lucide (ISC) + game-icons.net (CC BY 3.0); zie CREDITS.md -->\n${symbols.join('\n')}\n</svg>\n`);
 
-const AUTHOR_NAMES = { delapouite: 'Delapouite', lorc: 'Lorc', sbed: 'sbed' };
+const AUTHOR_NAMES = { delapouite: 'Delapouite', lorc: 'Lorc', sbed: 'sbed', 'caro-asercion': 'Caro Asercion' };
 const credits = Object.entries(byAuthor).sort().map(([a, files]) => ({ author: AUTHOR_NAMES[a] || a, url: `https://game-icons.net/1x1/${a}/`, icons: files.sort() }));
 await writeFile(join(ROOT, 'js/data/icon-credits.js'),
   `// GEGENEREERD door tools/build-icons.mjs — niet met de hand wijzigen.\nexport const ICON_NAMES = ${JSON.stringify([...cfg.lucide, ...Object.keys(cfg.gameIcons)])};\nexport const GAME_ICON_CREDITS = ${JSON.stringify(credits, null, 2)};\n`);

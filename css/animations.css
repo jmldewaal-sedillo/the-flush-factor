@@ -18,7 +18,7 @@
 @keyframes comboPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 .combo-pop { animation: comboPop 0.4s ease; }
 
-@keyframes usablePulse { from { box-shadow: 0 0 6px rgba(125, 255, 207, 0.4); } to { box-shadow: 0 0 16px rgba(125, 255, 207, 0.95); } }
+@keyframes usablePulse { from { box-shadow: 2px 2px 0 var(--ink), 0 0 0 0 rgba(43, 182, 115, 0.9); } to { box-shadow: 2px 2px 0 var(--ink), 0 0 0 7px rgba(43, 182, 115, 0.55); } }
 @keyframes dangerPulse { from { opacity: 0.75; } to { opacity: 1; } }
 @keyframes bucketFull { from { transform: scale(1) rotate(-4deg); } to { transform: scale(1.07) rotate(4deg); } }
 @keyframes clogWarningPulse { from { opacity: 0.8; transform: translateX(-50%) scale(0.97); } to { opacity: 1; transform: translateX(-50%) scale(1.04); } }
@@ -58,6 +58,13 @@
   75%  { background: rgba(0, 255, 100, 0.18); }
   100% { background: rgba(200, 0, 255, 0.18); }
 }
+
+/* Schoon! en winkel */
+@keyframes sparklePop { 0% { opacity: 0; transform: scale(0.2) rotate(-20deg); } 30% { opacity: 1; transform: scale(1.2) rotate(8deg); } 100% { opacity: 0; transform: scale(0.7) translateY(-26px) rotate(20deg); } }
+@keyframes confettiBurst { 0% { opacity: 1; transform: translate(0, 0) rotate(0deg); } 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 90px)) rotate(var(--rot)); } }
+@keyframes coinFly { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.5); } }
+@keyframes scoreBump { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.25) rotate(-4deg); } }
+@keyframes spotlight { 0%, 100% { box-shadow: var(--shadow); } 50% { box-shadow: var(--shadow), 0 0 0 6px var(--duck); } }
 
 /* Minder beweging als het toestel daarom vraagt */
 @media (prefers-reduced-motion: reduce) {

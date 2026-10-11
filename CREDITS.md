@@ -42,7 +42,7 @@ Alle iconen staan als losse, ongewijzigde SVG-bestanden in `assets/icons/` en wo
 
 - Bron: https://lucide.dev (pakket `lucide-static` 1.53.0)
 - Licentie: ISC — zie `assets/icons/lucide/LICENSE`
-- Gebruikt (31): menu, arrow-left, shopping-cart, trash-2, volume-2, info, maximize, switch-camera, x, chevron-down, lock, coins, trophy, check, circle-check, zap, flame, sparkles, wrench, plus, layout-grid, layers, toilet, smartphone, tablet, rotate-cw, triangle-alert, paintbrush, eye, droplets, scan-eye
+- Gebruikt (39): menu, arrow-left, shopping-cart, trash-2, volume-2, info, maximize, switch-camera, x, chevron-down, lock, coins, trophy, check, circle-check, zap, flame, sparkles, wrench, plus, layout-grid, layers, toilet, smartphone, tablet, rotate-cw, triangle-alert, paintbrush, eye, droplets, scan-eye, chevron-left, chevron-right, star, gift, target, hammer, euro, arrow-up
 
 ### game-icons.net — spelvoorwerpen
 
@@ -91,6 +91,34 @@ Alle iconen staan als losse, ongewijzigde SVG-bestanden in `assets/icons/` en wo
 | `bucket-mop` | [paint-bucket](https://game-icons.net/1x1/delapouite/paint-bucket.html) | Delapouite |
 | `water-drops` | [droplets](https://game-icons.net/1x1/lorc/droplets.html) | Lorc |
 | `music` | [musical-notes](https://game-icons.net/1x1/delapouite/musical-notes.html) | Delapouite |
+| `care` | [bubbles](https://game-icons.net/1x1/lorc/bubbles.html) | Lorc |
+| `repair-kit` | [sticking-plaster](https://game-icons.net/1x1/lorc/sticking-plaster.html) | Lorc |
+| `new-seat` | [auto-repair](https://game-icons.net/1x1/lorc/auto-repair.html) | Lorc |
+| `new-lid` | [toolbox](https://game-icons.net/1x1/delapouite/toolbox.html) | Delapouite |
+| `toilet-brush` | [toothbrush](https://game-icons.net/1x1/caro-asercion/toothbrush.html) | Caro Asercion |
+| `toilet-cleaner` | [liquid-soap](https://game-icons.net/1x1/delapouite/liquid-soap.html) | Delapouite |
+| `mop` | [broom](https://game-icons.net/1x1/delapouite/broom.html) | Delapouite |
+| `scrubber` | [floor-polisher](https://game-icons.net/1x1/delapouite/floor-polisher.html) | Delapouite |
+| `sponge` | [soap](https://game-icons.net/1x1/delapouite/soap.html) | Delapouite |
+| `pressure-washer` | [splashy-stream](https://game-icons.net/1x1/lorc/splashy-stream.html) | Lorc |
+| `spray` | [spray](https://game-icons.net/1x1/lorc/spray.html) | Lorc |
+| `stain` | [goo-explosion](https://game-icons.net/1x1/lorc/goo-explosion.html) | Lorc |
+| `medal` | [star-medal](https://game-icons.net/1x1/delapouite/star-medal.html) | Delapouite |
+| `bare-wall` | [broken-wall](https://game-icons.net/1x1/delapouite/broken-wall.html) | Delapouite |
+| `dirt-floor` | [earth-crack](https://game-icons.net/1x1/lorc/earth-crack.html) | Lorc |
+| `wood-floor` | [wood-beam](https://game-icons.net/1x1/delapouite/wood-beam.html) | Delapouite |
+
+## Lettertypen
+
+Lokaal meegeleverd in `assets/fonts/`, elk met zijn licentietekst (`OFL.txt`). Alleen de Latijnse tekenset, als WOFF2.
+
+| Lettertype | Gebruik | Makers | Licentie | Bron |
+|---|---|---|---|---|
+| **Lilita One** | koppen, knoppen, score (stijl "Sticker") | Juan Montoreano | [SIL Open Font License 1.1](https://openfontlicense.org) | https://fonts.google.com/specimen/Lilita+One |
+| **Nunito** (600, 800) | lopende tekst | The Nunito Project Authors (Vernon Adams e.a.) | SIL Open Font License 1.1 | https://fonts.google.com/specimen/Nunito |
+| Bungee, Rubik, Bangers, Comic Neue | alleen op de stijlvoorbeeldpagina `style-preview.html` (richtingen B en C); het spel laadt ze niet | The Bungee / Rubik / Bangers / Comic Neue Project Authors | SIL Open Font License 1.1 | https://fonts.google.com |
+
+De bestanden komen ongewijzigd van Fontsource (https://fontsource.org), dat de Google Fonts-versies verpakt.
 
 ## Code van anderen
 
@@ -101,7 +129,8 @@ Alle iconen staan als losse, ongewijzigde SVG-bestanden in `assets/icons/` en wo
 ## Zelf gemaakt
 
 Wanden, vloer, plinten, wc-rolhouder, decoratie (spiegel, schilderij, poster, plank, kastje, plant),
-de kleine voorwerpen die het toilet verstoppen, tegel- en vloerpatronen, water en effecten, en het app-icoon
+de kleine voorwerpen die het toilet verstoppen, tegel- en vloerpatronen (ook de kale muur en de vieze vloer),
+de vuillaag, barst en kalkrand van het toilet, vlekken en plassen, water en effecten, en het app-icoon
 (Lucide-icoon "toilet" op een blauw vlak). Zie `AUDIT.md` voor de afweging per onderdeel.
 
 ## Niet in het spel

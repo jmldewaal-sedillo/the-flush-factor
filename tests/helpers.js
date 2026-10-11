@@ -95,4 +95,7 @@ const domText = page => page.evaluate(() => {
   return clone.outerHTML;
 });
 
-module.exports = { PROFILE, tapScene, watch, seen, SAVE_KEY, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };
+// Een nieuwe speler (Sprint 9: armoedige start) die het welkomstscherm al gehad heeft. Vul aan met score, level, …
+const NEW_PLAYER = { version: 3, toilet: { defects: { seat: true, lid: true, chip: true }, dirt: 1 } };
+
+module.exports = { NEW_PLAYER, PROFILE, tapScene, watch, seen, SAVE_KEY, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };

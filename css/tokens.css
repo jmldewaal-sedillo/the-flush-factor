@@ -1,0 +1,52 @@
+/* ============================================================
+   THE FLUSH FACTOR — tokens.css  (ROADMAP punt 78)
+   Het designbestand: de stijl "Sticker". Alles in het spel gebruikt deze variabelen;
+   kleuren, lettertypen, randen en schaduwen staan nergens anders.
+   Dikke donkere omlijning, harde schaduw, ronde knoppen, alles een tikje scheef.
+   ============================================================ */
+
+/* Lettertypen: SIL Open Font License, lokaal meegeleverd (zie CREDITS.md). */
+@font-face { font-family: 'Lilita One'; font-weight: 400; src: url('../assets/fonts/lilita-one/lilita-one-400.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'Nunito'; font-weight: 600; src: url('../assets/fonts/nunito/nunito-600.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'Nunito'; font-weight: 800; src: url('../assets/fonts/nunito/nunito-800.woff2') format('woff2'); font-display: swap; }
+
+:root {
+  /* ── kleur ── */
+  --ink: #1d1b3a;            /* omlijning, tekst op licht */
+  --paper: #fff8e7;          /* crème: panelen, kaarten, knoppen */
+  --paper-2: #ffffff;        /* invoervelden, vakjes */
+  --duck: #ffd23f;           /* badeend-geel: hoofdactie */
+  --plunger: #ef3e36;        /* ontstopper-rood: gevaar, verstopt, weggooien */
+  --mint: #7be0c3;           /* achtergrond van schermen */
+  --mint-light: #9fe6d0;
+  --blue: #3d9be9;           /* toiletblauw: scorebubbel, spoelen, winkel */
+  --ok: #2bb673;             /* gelukt, werkt, in bezit */
+  --muted: #6b6788;          /* bijschriften */
+  --soft-ok: #d8f5e6;        /* lichte tinten voor vlakken */
+  --soft-bad: #ffe1df;
+  --on-color: #ffffff;       /* tekst op blauw/rood/groen */
+
+  /* ── letter ── */
+  --font-display: 'Lilita One', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* ── vorm ── */
+  --line: 3px;                                   /* dikte van de omlijning */
+  --border: var(--line) solid var(--ink);
+  --border-thin: 2px solid var(--ink);
+  --radius: 18px;                                /* panelen en kaarten */
+  --radius-sm: 10px;                             /* vakjes, labels */
+  --radius-pill: 999px;                          /* knoppen */
+  --shadow: 4px 4px 0 var(--ink);                /* harde schaduw */
+  --shadow-sm: 2px 2px 0 var(--ink);
+  --shadow-press: 1px 1px 0 var(--ink);          /* ingedrukt */
+  --press: translate(3px, 3px);
+  --tilt: -1.5deg;                               /* scheve hoekjes */
+  --tilt-alt: 1.2deg;
+
+  /* tegelmotief als achtergrond van schermen */
+  --tile-line: rgba(29, 27, 58, 0.10);
+  --tiles: linear-gradient(var(--tile-line) 2px, transparent 2px) 0 0 / 34px 34px,
+           linear-gradient(90deg, var(--tile-line) 2px, transparent 2px) 0 0 / 34px 34px,
+           var(--mint-light);
+}

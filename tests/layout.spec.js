@@ -8,7 +8,7 @@ const PROFILES = {
   notch:             { portrait: [47, 0, 34, 0], landscape: [0, 0, 21, 47] },
   'punch-hole':      { portrait: [36, 0, 20, 0], landscape: [0, 0, 20, 36] },
 };
-const CONTROLS = ['#btn-camera', '#btn-menu', '#score-bubble', '#btn-shop', '#flush-btn', '#btn-bucket', '#bucket-liters', '.water-bar'];
+const CONTROLS = ['#btn-camera', '#btn-menu', '#score-bubble', '#btn-shop', '#flush-btn', '#btn-bucket', '#bucket-liters', '.water-bar', '#btn-tools-toggle', '#inventory-bar'];
 const MARGIN = 6;
 const overlap = (a, b) => a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.5 && a.y < b.y + b.height - 0.5 && b.y < a.y + a.height - 0.5;
 
@@ -47,10 +47,13 @@ for (const [profile, safes] of Object.entries(PROFILES)) {
     // 16 gereedschappen: het zwaarste geval voor de linkerkolom
     await openGame(page, { query: `safe=${safe.join(',')}`, save: { level: 5, ownedTools: ['plunger', 'toilet-snake', 'drain-cleaner', 'hot-water', 'rubber-duck', 'confetti-cannon', 'flamingo', 'disco-ball', 'magic-wand', 'tiny-elephant', 'ninja-unclogger', 'super-plunger', 'megaphone', 'electric-plunger', 'hydro-jet', 'robot-arm'], bucketItems: [{ id: 'duck', liters: 1 }] } });
 
-    const b = await boxes(page, [...CONTROLS, '.tool-btn', '#btn-bucket-empty']);
-    expect(Object.keys(b).filter(k => k.startsWith('.tool-btn'))).toHaveLength(16);
+    // Het gereedschap staat in één kolom die scrollt (punt 82): de kolom zelf moet binnen beeld blijven
+    // en nergens overheen vallen; de knoppen erin mogen elkaar niet raken.
+    const b = await boxes(page, [...CONTROLS, '#btn-bucket-empty']);
+    await expect(page.locator('.tool-btn')).toHaveCount(16);
     expectInside(b, vp, safe, profile);
     expectNoOverlap(b, profile);
+    expectNoOverlap(await boxes(page, ['.tool-btn']), `${profile} gereedschap onderling`);
 
     // menu's blijven binnen beeld
     for (const [btn, menu] of [['#btn-menu', '#main-menu'], ['#btn-camera', '#camera-menu']]) {
@@ -106,7 +109,7 @@ test('draaien en formaat wisselen: scène en knoppen passen zich aan', async ({ 
   for (const size of [{ width: 844, height: 390 }, { width: 390, height: 844 }, { width: 1024, height: 768 }, { width: 360, height: 740 }, { width: 320, height: 640 }]) {
     await page.setViewportSize(size);
     await until(page, s => { const c = document.getElementById('scene-canvas-3d').getBoundingClientRect(); return c.width === s.width && c.height === s.height; }, size);
-    const b = await boxes(page, [...CONTROLS, '.tool-btn']);
+    const b = await boxes(page, CONTROLS);
     // Ook met een breder systeemlettertype en een groot getal mag niets overlappen.
     await page.evaluate(() => { document.body.style.fontFamily = 'Verdana, DejaVu Sans, sans-serif'; document.getElementById('score-value').textContent = '99,9k'; });
     expectNoOverlap(await boxes(page, CONTROLS), `${size.width}x${size.height} breed lettertype`);

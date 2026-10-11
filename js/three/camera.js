@@ -19,6 +19,7 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
   const cur = { pos: new THREE.Vector3(), target: new THREE.Vector3() };
   let fly = null;                      // { from, to, t }
   let shake = 0;
+  let scrub = null;                    // schoonmaakstand: functie die elke aanraking krijgt (x, y)
 
   function pose(def) {
     const target = def.target === 'bucket' ? bucketTarget() : new THREE.Vector3(...def.target);
@@ -113,7 +114,9 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
   canvas.addEventListener('pointerdown', e => {
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     try { canvas.setPointerCapture(e.pointerId); } catch { /* geen echte aanwijzer (bv. nagebootst gebaar) */ }
-    if (pointers.size === 1) gesture = { x0: e.clientX, y0: e.clientY, t0: performance.now(), moved: 0, yaw0: look.yaw, pitch0: look.pitch };
+    if (pointers.size === 1) gesture = { x0: e.clientX, y0: e.clientY, t0: performance.now(), moved: 0, yaw0: look.yaw, pitch0: look.pitch, scrub: !!scrub };
+    // Begonnen in de schoonmaakstand: het hele gebaar is boenen, ook als de vlek halverwege al weg is.
+    if (pointers.size === 1 && gesture.scrub) scrub?.(e.clientX, e.clientY);
     // Tweede vinger erbij: dit is knijpen. Zo'n gebaar is daarna nooit meer een tik of een veeg.
     if (pointers.size === 2) { gesture.pinch0 = pinchDistance(); gesture.zoom0 = look.zoom; gesture.multi = true; }
   });
@@ -126,6 +129,8 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     } else if (pointers.size === 1 && !gesture.multi) {
       const dx = e.clientX - gesture.x0, dy = e.clientY - gesture.y0;
       gesture.moved = Math.max(gesture.moved, Math.hypot(dx, dy));
+      // schoonmaakstand: vegen is boenen, niet rondkijken
+      if (gesture.scrub) return scrub?.(e.clientX, e.clientY);
       if (gesture.moved < TAP_MAX_MOVE) return;
       look.yaw = THREE.MathUtils.clamp(gesture.yaw0 - dx * 0.004, -LOOK.yaw, LOOK.yaw);
       look.pitch = THREE.MathUtils.clamp(gesture.pitch0 + dy * 0.003, -LOOK.pitch, LOOK.pitch);
@@ -138,7 +143,7 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     if (pointers.size || !gesture) return;
     const g = gesture; gesture = null;
     const dx = e.clientX - g.x0, dy = e.clientY - g.y0, ms = performance.now() - g.t0;
-    if (e.type === 'pointercancel' || g.multi) return;
+    if (e.type === 'pointercancel' || g.multi || g.scrub) return;
     if (g.moved < TAP_MAX_MOVE) { if (ms <= TAP_MAX_MS) onTap(e.clientX, e.clientY); return; }
     // Veeg = kort gebaar, of een langer gebaar dat snel eindigt. Rustig slepen is rondkijken.
     const now = performance.now();
@@ -174,6 +179,8 @@ export function createCameraRig(ctx, { bucketTarget, onViewChange, onTap }) {
     idle: () => !fly,
     refresh: () => go(true),
     shake(amount = 1) { shake = Math.max(shake, amount); },
+    // fn(x, y) krijgt elke aanraking en veeg; null zet de gewone bediening terug.
+    setScrub(fn) { scrub = fn; },
     // Terug uit een close-up naar het vorige standpunt.
     back() { setView(CAMERA_VIEWS[viewId].zoom ? previousView : DEFAULT_VIEW); },
     // Automatische close-up op de pot bij een verstopping: alleen vanuit de toiletstand, en na het

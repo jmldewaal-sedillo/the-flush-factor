@@ -117,6 +117,7 @@ export function buildProp(propId, ctx) {
   const g = new THREE.Group();
   g.name = `prop:${def.id}`;
   g.userData.propId = def.id;
+  g.userData.liters = def.liters;
   g.add(...(builders[def.model] || builders.paperWad)());
   ctx?.setShadow(g, true, false);
   return g;

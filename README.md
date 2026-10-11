@@ -40,11 +40,13 @@ Via GitHub Pages (branch `main`). Een andere branch testen: zie "Een branch test
 ```
 index.html            Pagina: 3D-scène, zwevende knoppen, winkel, credits
 manifest.json, sw.js  PWA: installeerbaar en offline speelbaar
-css/                  style.css (layout, safe-area), animations.css
+css/                  tokens.css (HET designbestand: kleuren, letters, randen, schaduwen), style.css, animations.css
+style-preview.html    Stijlvoorbeelden (drie richtingen; gekozen: A · Sticker). Hoort niet bij het spel.
 js/
   game.js             Coördinator: spelregels, game-loop, koppeling logica ↔ weergave
   state.js            Spelstand, opslaan/laden, migratie van oude opslag
   clog.js             Verstoppingen: kans, waterstand, overloop          (geen DOM, geen 3D)
+  care.js             Schoonmaak en reparatie: toiletstaat, vlekken, straf (geen DOM, geen 3D)
   inventory.js        Gereedschap: bezit, cooldown, gebruik              (geen DOM, geen 3D)
   shop.js             Winkel met uitklapbare categorieën
   purchases.js        Koppelpunt voor echte aankopen (nu een stub)
@@ -54,13 +56,14 @@ js/
   boot.js             Gesimuleerde safe-area (?safe=…)
   phone-preview.js    Preview op laptop/desktop
   data/               ALLE inhoud en instellingen (zie hieronder)
-  three/              3D-modules: context, room, toilet, water, bucket, props, decor, camera, effects, patterns, geometry
+  three/              3D-modules: context, room, toilet, water, bucket, props, decor, stains, camera, effects, patterns, geometry
   ui/                 hud.js (knoppen, meldingen), profile.js (welkom + profiel), chaos.js, icons.js
   vendor/, utils/     three.js r170 (MIT)
 assets/
   models/             toilet.glb + buckets/*.glb (gecomprimeerd)
   textures/, hdri/    tegels, vloer, omgevingslicht
   icons/              lucide/, game-icons/ (bron-SVG's), sprite.svg (gegenereerd), app/ (app-iconen)
+  fonts/              Lilita One + Nunito (spel) en vier lettertypen voor de stijlvoorbeelden; elk met OFL.txt
   _unused/            originelen en niet-gebruikte modellen (worden niet geladen)
 tools/                serve, build-icons, build-sw, optimize-assets, model-viewer
 tests/                Playwright-tests per onderwerp
@@ -75,15 +78,17 @@ Alles staat in `js/data/`:
 
 | Wat | Bestand | Toevoegen = |
 |---|---|---|
-| Gereedschap | `tools.js` | een regel (effect `working` met `power`, of `chaos`) |
+| Gereedschap | `tools.js` | een regel (effect `working` met `power`, of `chaos`; `starting` of `price` + `minLevel`) |
+| Schoonmaakspullen, reparaties, straf bij vuil | `care.js` | een regel (`targets`, `power`) |
 | Levels | `levels.js` | een regel met drempel en moeilijkheid |
-| Emmers (capaciteit in liters) | `buckets.js` | een regel + GLB in `assets/models/buckets/` |
+| Emmers (capaciteit in liters, binnenmaat) | `buckets.js` | een regel + GLB in `assets/models/buckets/`; binnenmaat meten met `__game.three.bucketMeasure()` |
 | Voorwerpen in de verstopping | `clog-props.js` | een regel + bouwfunctie in `three/props.js` |
 | Toiletten, tegels, vloeren, decoratie | `cosmetics.js` | een regel (decoratie: + bouwfunctie in `three/decor.js`) |
 | Decoratie-ankerpunten, camerastanden, maten van het hokje | `room.js` | een regel |
 | Puntenpakketten | `packages.js` | een regel |
 | Avatars | `profile.js` | een icoonnaam |
-| Winkelcategorieën | `shop.js` | een regel |
+| Winkelcategorieën (met eigen kleur) | `shop.js` | een regel |
+| Kleuren, lettertypen, randen, schaduwen | `css/tokens.css` | — |
 | Teksten | `texts.js` | — |
 | Punten, straffen, waterfases, effect-intensiteit | `config.js` | — |
 | Iconen | `tools/icons.config.json` | naam toevoegen en `npm run icons` |
@@ -99,8 +104,16 @@ Alles staat in `js/data/`:
 | Vegen naar links/rechts | Linkermuur, midden, rechtermuur |
 | Rustig slepen / knijpen | Rondkijken / zoomen |
 | Tik op de scorebubbel | Profiel en statistieken |
+| Sopje linksonder (alleen als er iets vies is) | Schoonmaakmiddel kiezen; daarna over de vieze plek vegen of tikken |
+| Moersleutel linksboven | Gereedschap in- en uitklappen |
+| Gereedschap lang indrukken | Naam tonen (gebruikt het niet) |
 
-De tests maken een bestaande speler aan; met een lege opslag (eerste start) verschijnt eerst het welkomstscherm.
+De tests maken een bestaande speler aan; met een lege opslag (eerste start) verschijnt eerst het welkomstscherm
+en begin je in de armoedige start-staat: kapot en vies toilet, kale muur, vieze vloer, roestige emmer en vier
+stuks gereedschap. Wie al speelde vóór Sprint 9 houdt alles wat hij had.
+
+Om die start zelf te zien: open het spel in een privévenster, of wis de opslag in de console met
+`localStorage.clear()` en herlaad.
 
 ## Bouwen
 
@@ -127,8 +140,12 @@ npx playwright test shop          # één onderwerp
 | `boot.spec.js` | geen console-fouten, 404's of externe verzoeken; eerste laadbeurt < 4 MB; melding zonder WebGL |
 | `emoji.spec.js` | geen emoji in broncode, manifest, preview en interface (alle toestanden); elk icoon bestaat |
 | `shop.spec.js` | zeven categorieën, uitklappen, bewaren, kopen, activeren, effect in 3D |
-| `bucket.spec.js` | vullen, legen, herladen; volle emmer; emmerweergave; alle vijf emmers en hun hengsel |
+| `bucket.spec.js` | vullen, legen, herladen; volle emmer; emmerweergave; alle vijf emmers en hun hengsel; inhoud blijft binnen de emmer |
 | `camera.spec.js` | zes camerastanden, swipen, "+"-plekken, muren aantikken, tik tegenover slepen |
+| `start.spec.js` | start-staat van een nieuwe speler, vrijspelen per level, bestaande speler (level 4) houdt alles |
+| `care.spec.js` | repareren, toilet en vlekken schoonmaken, troep na drie keer overlopen, straf bij vuil |
+| `tools.spec.js` | gereedschapsmenu: één kolom, scrollen met vervaging, in- en uitklappen, naam bij lang indrukken |
+| `style.spec.js` | designbestand en lettertypen, winkel (uitgelicht, labels, feestje, eerlijkheid), welkomstscherm |
 | `toilet.spec.js` | geen los hendeltje, in de pot kijken, tik in / tik uit, waterstroom bij spoelen |
 | `profile.spec.js` | welkomstscherm bij eerste start, gastprofiel, statistieken, inlog-koppelpunt |
 | `clog.spec.js` | verstopping, waterfases, chaos, ontstoppen, overlopen met plas |

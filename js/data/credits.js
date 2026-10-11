@@ -18,6 +18,10 @@ export const CREDITS = [
     { title: 'Interface-iconen', author: 'Lucide', license: 'ISC', url: 'https://lucide.dev' },
     ...GAME_ICON_CREDITS.map(c => ({ title: `Spel-iconen (${c.icons.length})`, author: c.author, license: 'CC BY 3.0', url: c.url })),
   ] },
+  { group: 'Lettertypen', items: [
+    { title: 'Lilita One', author: 'Juan Montoreano', license: 'SIL OFL 1.1', url: 'https://fonts.google.com/specimen/Lilita+One' },
+    { title: 'Nunito', author: 'The Nunito Project Authors', license: 'SIL OFL 1.1', url: 'https://fonts.google.com/specimen/Nunito' },
+  ] },
   { group: 'Techniek', items: [
     { title: 'three.js r170', author: 'three.js authors', license: 'MIT', url: 'https://threejs.org' },
   ] },

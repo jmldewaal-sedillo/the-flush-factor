@@ -178,6 +178,9 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
       unfocusTimer = setTimeout(() => rig.focusClog(false), 650);
     },
     chaos() { chaosShake = 1; rig.shake(0.35); splash(water.surface(tmp), 5, 0.7); },
+    // Wolkje spetters op een plek (repareren, poetsen, troep tegen de muur).
+    puff(worldPos, count = 8, power = 0.6) { splash(worldPos, count, power); },
+    mess() { rig.shake(1.6); splash(water.surface(tmp), fx.splashes, 1.6); },
     overflow() {
       rig.shake(1.4);
       splash(water.surface(tmp), fx.splashes, 1.3);

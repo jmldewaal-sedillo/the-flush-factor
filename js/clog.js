@@ -11,6 +11,7 @@ export class ClogSystem {
     this.timeSinceLastClog = 0;   // ms
     this.totalPlaytime = 0;       // ms
     this.paused = false;          // testen: geen willekeurige verstoppingen
+    this.chanceFactor = 1;        // kapot toilet raakt sneller verstopt (zie care.js)
     this._listeners = {};
   }
 
@@ -47,7 +48,7 @@ export class ClogSystem {
   _chance(dtSec) {
     const minutes = this.totalPlaytime / 60000;
     const extra = Math.min(this.cfg.maxChancePerSecond - this.cfg.baseChancePerSecond, minutes * this.cfg.extraChancePerMinute);
-    return (this.cfg.baseChancePerSecond + extra) * dtSec;
+    return (this.cfg.baseChancePerSecond + extra) * dtSec * this.chanceFactor;
   }
 
   _triggerClog() {

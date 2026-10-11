@@ -24,6 +24,8 @@ const files = [
   ...await walk('css', f => f.endsWith('.css')),
   ...await walk('js', f => f.endsWith('.js')),
   'assets/icons/sprite.svg',
+  // alleen de lettertypen van de gekozen stijl (zie css/tokens.css)
+  'assets/fonts/lilita-one/lilita-one-400.woff2', 'assets/fonts/nunito/nunito-600.woff2', 'assets/fonts/nunito/nunito-800.woff2',
   ...await walk('assets/icons/app', f => f.endsWith('.png')),
   ...await walk('assets/textures', f => f.endsWith('.webp')),
   'assets/models/toilet.glb',

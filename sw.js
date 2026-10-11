@@ -4,9 +4,12 @@
 // reserve); modellen, textures en iconen cache-eerst. De pagina wordt nooit vanuit hier herladen.
 
 // PRECACHE:START (gegenereerd door tools/build-sw.mjs)
-const VERSION = 'e8366c125d';
+const VERSION = '6754b887ba';
 const PRECACHE = [
   './',
+  'assets/fonts/lilita-one/lilita-one-400.woff2',
+  'assets/fonts/nunito/nunito-600.woff2',
+  'assets/fonts/nunito/nunito-800.woff2',
   'assets/hdri/bathroom_512.hdr',
   'assets/icons/app/icon-192.png',
   'assets/icons/app/icon-512.png',
@@ -22,11 +25,15 @@ const PRECACHE = [
   'assets/textures/WoodFloor041_roughness.webp',
   'css/animations.css',
   'css/style.css',
+  'css/tokens.css',
   'index.html',
   'js/auth.js',
   'js/boot.js',
+  'js/care.js',
   'js/clog.js',
   'js/data/buckets.js',
+  'js/data/care.js',
+  'js/data/catalog.js',
   'js/data/clog-props.js',
   'js/data/config.js',
   'js/data/cosmetics.js',
@@ -56,6 +63,7 @@ const PRECACHE = [
   'js/three/patterns.js',
   'js/three/props.js',
   'js/three/room.js',
+  'js/three/stains.js',
   'js/three/toilet.js',
   'js/three/water.js',
   'js/ui/chaos.js',

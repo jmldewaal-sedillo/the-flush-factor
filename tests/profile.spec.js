@@ -13,7 +13,10 @@ test('eerste start: welkomstscherm; als gast spelen; daarna verschijnt het niet 
   await expect(page.locator('#profile-submit')).toHaveText('Spelen als gast');
   await expect(page.locator('#btn-profile-close')).toBeHidden();          // eerst kiezen
   await expect(page.locator('#profile-stats-block')).toBeHidden();
-  await expect(page.locator('#profile-auth .auth-btn')).toHaveText(['Inloggen met Google', 'Inloggen met Facebook']);
+  // punt 86: de inlogknoppen laten zelf al zien dat ze er nog niet zijn
+  await expect(page.locator('#profile-auth .auth-btn > span:first-child')).toHaveText(['Inloggen met Google', 'Inloggen met Facebook']);
+  await expect(page.locator('#profile-auth .auth-btn .soon')).toHaveText(['Binnenkort', 'Binnenkort']);
+  await expect(page.locator('#profile-auth-note')).toContainText('Inloggen kan nog niet');
   await page.keyboard.press('Escape');
   await expect(screen).toBeVisible();
   expect((await snap(page)).profile).toBeNull();
@@ -28,14 +31,14 @@ test('eerste start: welkomstscherm; als gast spelen; daarna verschijnt het niet 
   expect(p).toMatchObject({ name: 'Maggie S.', avatar: 'ninja', mode: 'guest' });   // spaties opgeschoond
   await expect(page.locator('#profile-avatar svg use')).toHaveAttribute('href', /#ninja$/);
 
-  // het spel werkt, en na herladen komt het welkomstscherm niet terug
+  // het spel werkt (een nieuwe speler heeft een vies toilet: 10% minder punten), en na herladen komt het welkomstscherm niet terug
   await page.locator('#flush-btn').click();
-  await expect(page.locator('#score-value')).toHaveText('10');
+  await expect(page.locator('#score-value')).toHaveText('9');
   await page.reload();
   await until(page, () => window.__game?.ready);
   await expect(screen).toBeHidden();
   expect((await snap(page)).profile).toMatchObject({ name: 'Maggie S.', avatar: 'ninja' });
-  await expect(page.locator('#score-value')).toHaveText('10');
+  await expect(page.locator('#score-value')).toHaveText('9');
   expectNoProblems(problems);
 });
 

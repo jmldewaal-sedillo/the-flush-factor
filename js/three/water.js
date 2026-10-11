@@ -65,6 +65,22 @@ const CURTAIN_FRAG = `
     #include <colorspace_fragment>
   }`;
 
+// Kalkrand en aanslag in de pot van een vies toilet (punt 80): band rond de waterlijn met druipsporen.
+const SCALE_FRAG = `
+  uniform float uAmount;
+  varying vec2 vUv;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
+  void main() {
+    float u = vUv.x, v = vUv.y;
+    float wob = sin(u * 6.2832 * 7.0) * 0.03 + sin(u * 6.2832 * 19.0) * 0.015;
+    float ring = smoothstep(0.62 + wob, 0.78 + wob, v);                                   // band boven het water
+    float drips = smoothstep(0.55, 1.0, sin(u * 6.2832 * 23.0 + hash(vec2(floor(u * 23.0), 1.0)) * 6.0)) * smoothstep(0.15, 0.7, v) * 0.6;
+    float speck = step(0.86, hash(floor(vUv * vec2(90.0, 30.0)))) * 0.5;
+    float a = clamp(ring * 0.8 + drips + speck * smoothstep(0.2, 0.6, v), 0.0, 0.9) * uAmount;
+    gl_FragColor = vec4(mix(vec3(0.62, 0.50, 0.22), vec3(0.42, 0.33, 0.14), ring), a);
+    #include <colorspace_fragment>
+  }`;
+
 export function createWater(ctx, toilet) {
   const fit = measureBowl(toilet, ctx.quality === 'low' ? { around: 18, down: 4 } : { around: 36, down: 8 });
   const uniforms = {
@@ -87,6 +103,17 @@ export function createWater(ctx, toilet) {
   curtain.visible = false;
   toilet.shaker.add(curtain);
 
+  const scaleU = { uAmount: { value: 0 } };
+  const scaleRing = new THREE.Mesh(fit.curtainGeometry, new THREE.ShaderMaterial({
+    vertexShader: CURTAIN_VERT, fragmentShader: SCALE_FRAG, uniforms: scaleU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+  }));
+  scaleRing.name = 'limescale';
+  scaleRing.renderOrder = 0;
+  scaleRing.visible = false;
+  scaleRing.raycast = () => {};
+  toilet.shaker.add(scaleRing);
+  let scaleWant = 0;
+
   const target = { level: 0, clogged: false, color: new THREE.Color(WATER_PHASES[0].water) };
   let level = 0;          // 0–1, vloeiend
   let flushP = -1;        // voortgang van de spoelbeurt 0–1; -1 = er wordt niet gespoeld
@@ -96,6 +123,11 @@ export function createWater(ctx, toilet) {
 
   ctx.onFrame((dt, time) => {
     uniforms.uTime.value = time;
+    if (scaleU.uAmount.value !== scaleWant) {
+      const d = scaleWant - scaleU.uAmount.value, step = dt / 0.9;
+      scaleU.uAmount.value = Math.abs(d) <= step ? scaleWant : scaleU.uAmount.value + Math.sign(d) * step;
+      scaleRing.visible = scaleU.uAmount.value > 0.01;
+    }
     level += (target.level - level) * Math.min(1, dt * 4);
     if (frozen !== null) flushP = frozen;
     else if (flushP >= 0) { flushP += dt / FLUSH_SECONDS; if (flushP >= 1) flushP = -1; }
@@ -125,6 +157,9 @@ export function createWater(ctx, toilet) {
   return {
     mesh, curtain, fit,
     flush() { flushP = 0; },
+    // Kalkrand: 0 = schoon, 1 = vies. animate: laat hem wegpoetsen.
+    setScale(amount, animate = false) { scaleWant = amount; if (!animate) { scaleU.uAmount.value = amount; scaleRing.visible = amount > 0.01; } },
+    scale: () => +scaleU.uAmount.value.toFixed(2),
     // level 0–100, phase = regel uit WATER_PHASES
     set(pct, clogged, phase) {
       target.level = clogged ? pct / 100 : 0;

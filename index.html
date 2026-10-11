@@ -11,6 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/icons/app/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icons/app/icon-192.png">
+  <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/animations.css">
   <script src="js/boot.js"></script>
@@ -50,12 +51,23 @@
           <span id="level-display" title="Huidig level">Lv.1</span>
         </span>
       </button>
-      <button id="btn-shop" class="round-btn shop-btn" aria-label="Winkel"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#shopping-cart"/></svg></button>
+      <div class="topright-row"><span id="dirt-pill" hidden></span><button id="btn-shop" class="round-btn shop-btn" aria-label="Winkel"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#shopping-cart"/></svg><span id="shop-badge" class="count-badge" hidden></span></button></div>
     </div>
 
+    <!-- Links: waterstand + gereedschap (één kolom, scrollt, in te klappen; punt 82) -->
     <div id="hud-left">
-      <div class="water-bar" title="Waterstand"><div id="water-bar-fill"></div></div>
-      <div id="inventory-bar"></div>
+      <button id="btn-tools-toggle" class="round-btn small" aria-label="Gereedschap verbergen" aria-expanded="true" aria-controls="inventory-bar"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#wrench"/></svg><svg class="ic" width="16" height="16" aria-hidden="true"><use href="assets/icons/sprite.svg#chevron-left"/></svg></button>
+      <div id="tools-row">
+        <div class="water-bar" title="Waterstand"><div id="water-bar-fill"></div></div>
+        <div id="inventory-bar"></div>
+      </div>
+    </div>
+    <div id="tool-tip" role="tooltip" hidden></div>
+
+    <!-- Linksonder: schoonmaken (alleen als er iets vies is; punt 83) -->
+    <div id="hud-clean" hidden>
+      <div id="clean-tray" hidden></div>
+      <button id="btn-clean" class="round-btn" aria-label="Schoonmaken" aria-expanded="false"><svg class="ic" width="26" height="26" aria-hidden="true"><use href="assets/icons/sprite.svg#care"/></svg><span id="clean-count" class="count-badge"></span></button>
     </div>
 
     <div id="hud-bottom">
@@ -85,7 +97,11 @@
     <h2>Winkel</h2>
     <span id="shop-score"></span>
   </header>
-  <div id="shop-items"></div>
+  <div id="shop-scroll">
+    <div id="shop-top"></div>
+    <div id="shop-items"></div>
+  </div>
+  <div id="shop-fx" aria-hidden="true"></div>
   <div id="shop-message" role="status"></div>
 </div>
 

@@ -13,6 +13,7 @@ import { createBucket } from './three/bucket.js';
 import { createDecor } from './three/decor.js';
 import { createCameraRig } from './three/camera.js';
 import { createEffects } from './three/effects.js';
+import { createStains } from './three/stains.js';
 
 const find = (list, id) => list.find(x => x.id === id) || list[0];
 
@@ -26,6 +27,7 @@ export async function init3D(container, snapshot) {
   const room = createRoom(ctx);
   const bucket = createBucket(ctx);
   const decor = createDecor(ctx);
+  const stains = createStains(ctx);
 
   const rig = createCameraRig(ctx, {
     bucketTarget: () => bucket.group.position.clone().add(new THREE.Vector3(0, bucket.height() * 0.75, 0)),
@@ -39,6 +41,7 @@ export async function init3D(container, snapshot) {
     // Bij een zijmuur kijkt de camera door de muur ertegenover heen.
     const seeThrough = { wallLeft: 'right', wallRight: 'left' }[id] || null;
     decor.hideWall(seeThrough);
+    stains.hideWall(seeThrough);
     room.paperHolder.visible = seeThrough !== 'right';
     bus.emit('view:changed', { id });
   }
@@ -80,9 +83,36 @@ export async function init3D(container, snapshot) {
   toilet.setSkin(find(COSMETIC_LISTS.toilet, snapshot.cosmetics.toilet));
   bucket.setItems(snapshot.bucketItems);
   decor.set(snapshot.decor);
+  toilet.setCondition(snapshot.toilet);
+  stains.set(snapshot.stains, { animate: false });
 
   const water = createWater(ctx, toilet);
   const effects = createEffects(ctx, { toilet, water, bucket, rig });
+  water.setScale(snapshot.toilet.dirt);
+
+  // Schoonmaakstand (punt 83): elke aanraking of veeg zoekt wat eronder zit en meldt dat aan het spel.
+  const lastScrub = new Map();
+  function scrubAt(x, y) {
+    const r = ctx.canvas.getBoundingClientRect();
+    raycaster.setFromCamera(new THREE.Vector2(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1), ctx.camera);
+    const hit = raycaster.intersectObjects([...stains.targets(), toilet.group], true)[0];
+    if (!hit) return;
+    const stainId = hit.object.userData.stainId;
+    const key = stainId || 'toilet';
+    if (ctx.time - (lastScrub.get(key) ?? -9) < 0.28) return;       // één veeg telt één keer
+    lastScrub.set(key, ctx.time);
+    effects.puff(hit.point, 5, 0.45);
+    bus.emit('scrub', stainId ? { kind: 'stain', id: stainId } : { kind: 'toilet' });
+  }
+  bus.on('scrubmode', ({ on }) => rig.setScrub(on ? scrubAt : null));
+  bus.on('stains', ({ list }) => stains.set(list));
+  bus.on('stain:scrub', ({ id, dirt }) => stains.scrub(id, dirt));
+  bus.on('mess', () => effects.mess());
+  bus.on('toilet:condition', cond => {
+    toilet.setCondition(cond, { animate: !!cond.animate });
+    water.setScale(cond.dirt, !!cond.animate);
+    if (cond.animate === 'repair') effects.puff(toilet.group.position.clone().add(new THREE.Vector3(0, 0.5, 0.35)), 12, 0.8);
+  });
 
   bus.on('flush', () => effects.flush());
   bus.on('clog', ({ propId }) => effects.clog(propId));
@@ -118,7 +148,7 @@ export async function init3D(container, snapshot) {
     view: () => rig.view(),
     // Uitleesfuncties voor de tests (en voor foutzoeken in de console via window.__game.three).
     debug: {
-      quality, frames: () => ctx.frames,
+      quality, frames: () => ctx.frames, clock: () => ctx.time,
       view: () => rig.view(), cameraIdle: () => rig.idle(), topCovered: () => rig.topCovered(),
       swipe: step => rig.swipe(step),
       bucketId: () => bucket.id(), bucketItemCount: () => bucket.itemCount(),
@@ -128,7 +158,9 @@ export async function init3D(container, snapshot) {
       waterLevel: () => water.level(), waterFit: () => water.fit,
       markersVisible: () => decor.markersVisible(), markerCount: () => decor.visibleMarkerCount(), decor: () => decor.placed(),
       surfaces: () => room.surfaceIds(), toiletSkin: () => toilet.skinId(), toiletOwnTextures: () => toilet.usesOwnTextures(),
-      toiletParts: () => toilet.parts(), flush: () => water.flushState(), freezeFlush: p => water.freeze(p),
+      toiletParts: () => toilet.parts(), toiletCondition: () => ({ ...toilet.condition(), limescale: water.scale() }),
+      stains: () => stains.ids(), stainScreen(id) { const p = stains.position(id); return p ? this.project(p.x, p.y, p.z) : null; },
+      bucketPacking: () => bucket.packing(), bucketMeasure: () => bucket.measureInner(), flush: () => water.flushState(), freezeFlush: p => water.freeze(p),
       hasEnvironment: () => !!ctx.scene.environment,
       project(x, y, z) {
         const v = new THREE.Vector3(x, y, z).project(ctx.camera);

@@ -65,6 +65,44 @@ const painters = {
       }
     }
   },
+  // Kale, groezelige stucmuur (start-staat, punt 79): geen tegels, wel vlekken en een enkele scheur.
+  plaster(g, [base, shade]) {
+    g.fillStyle = base; g.fillRect(0, 0, SIZE, SIZE);
+    const rnd = seeded(23);
+    for (let i = 0; i < 90; i++) {
+      const x = rnd() * SIZE, y = rnd() * SIZE, r = 14 + rnd() * 60;
+      const grad = g.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, shade); grad.addColorStop(1, 'rgba(0,0,0,0)');
+      g.globalAlpha = 0.05 + rnd() * 0.09; g.fillStyle = grad;
+      for (const [ox, oy] of [[0, 0], [SIZE, 0], [-SIZE, 0], [0, SIZE], [0, -SIZE]]) { g.setTransform(1, 0, 0, 1, ox, oy); g.fillRect(x - r, y - r, r * 2, r * 2); }
+      g.setTransform(1, 0, 0, 1, 0, 0);
+    }
+    g.globalAlpha = 0.35; g.strokeStyle = shade; g.lineWidth = 1.5;
+    for (let i = 0; i < 3; i++) {
+      let x = 60 + rnd() * (SIZE - 120), y = 40 + rnd() * 120;
+      g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 7; k++) { x += (rnd() - 0.5) * 34; y += 12 + rnd() * 26; g.lineTo(x, y); }
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+  },
+  // Bruine, vieze vloer (start-staat): versleten zeil met vlekken en kringen.
+  dirt(g, [base, dark]) {
+    g.fillStyle = base; g.fillRect(0, 0, SIZE, SIZE);
+    const rnd = seeded(41);
+    for (let i = 0; i < 70; i++) {
+      const x = rnd() * SIZE, y = rnd() * SIZE, r = 10 + rnd() * 46;
+      g.globalAlpha = 0.10 + rnd() * 0.2; g.fillStyle = i % 4 ? dark : '#8a6a48';
+      for (const [ox, oy] of [[0, 0], [SIZE, 0], [-SIZE, 0], [0, SIZE], [0, -SIZE]]) {
+        g.beginPath(); g.ellipse(x + ox, y + oy, r, r * (0.5 + rnd() * 0.5), rnd() * 3, 0, 7); g.fill();
+      }
+    }
+    g.globalAlpha = 0.25; g.strokeStyle = dark; g.lineWidth = 3;
+    for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(rnd() * SIZE, rnd() * SIZE, 16 + rnd() * 26, 0, 7); g.stroke(); }
+    g.globalAlpha = 0.18; g.lineWidth = 2;
+    for (let p = 0; p <= SIZE; p += SIZE / 2) { g.beginPath(); g.moveTo(p, 0); g.lineTo(p, SIZE); g.moveTo(0, p); g.lineTo(SIZE, p); g.stroke(); }
+    g.globalAlpha = 1;
+  },
 };
 
 function grout(g, n, color) {
@@ -97,4 +135,74 @@ export function drawCanvas(w, h, draw) {
   canvas.width = w; canvas.height = h;
   draw(canvas.getContext('2d'), w, h);
   return canvas;
+}
+
+// ── Vlekken en beschadigingen (punten 80 en 83): getekend, cartoonesk, met doorzichtige achtergrond ──
+const blob = (g, cx, cy, r, rnd, points = 11, wobble = 0.45) => {
+  g.beginPath();
+  for (let i = 0; i <= points; i++) {
+    const a = i / points * Math.PI * 2, rr = r * (1 - wobble / 2 + rnd() * wobble);
+    const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+    i ? g.quadraticCurveTo(cx + Math.cos(a - Math.PI / points) * rr * 1.18, cy + Math.sin(a - Math.PI / points) * rr * 1.18, x, y) : g.moveTo(x, y);
+  }
+  g.closePath();
+};
+
+// Spetter tegen de muur of op de vloer: grillige klodder met losse druppels.
+export function paintSplat(variant = 0) {
+  const palettes = [['#6a4a22', '#8a6a34', '#3d2a12'], ['#5c6a2a', '#7d8a3a', '#34401a'], ['#7a5a1c', '#a08030', '#4a3410']];
+  const [main, light, dark] = palettes[variant % palettes.length];
+  return drawCanvas(256, 256, g => {
+    const rnd = seeded(101 + variant * 17);
+    g.fillStyle = dark; blob(g, 128, 124, 84, rnd); g.fill();
+    g.fillStyle = main; blob(g, 126, 120, 74, rnd); g.fill();
+    for (let i = 0; i < 12; i++) {
+      const a = rnd() * 6.28, d = 84 + rnd() * 34, r = 5 + rnd() * 12;
+      g.fillStyle = i % 3 ? main : dark;
+      g.beginPath(); g.ellipse(128 + Math.cos(a) * d, 124 + Math.sin(a) * d, r, r * 0.8, a, 0, 7); g.fill();
+    }
+    g.fillStyle = light; g.globalAlpha = 0.7;
+    blob(g, 108, 100, 22, rnd, 7, 0.5); g.fill();
+    g.beginPath(); g.ellipse(150, 144, 9, 6, 0.6, 0, 7); g.fill();
+    g.globalAlpha = 1;
+  });
+}
+
+// Plas op de vloer: platte, glimmende vlek.
+export function paintPuddle() {
+  return drawCanvas(256, 256, g => {
+    const rnd = seeded(77);
+    g.fillStyle = 'rgba(70, 52, 24, 0.9)'; blob(g, 128, 128, 108, rnd, 9, 0.3); g.fill();
+    g.fillStyle = 'rgba(126, 104, 52, 0.85)'; blob(g, 128, 126, 96, rnd, 9, 0.28); g.fill();
+    g.strokeStyle = 'rgba(255, 255, 255, 0.5)'; g.lineWidth = 6; g.lineCap = 'round';
+    g.beginPath(); g.arc(112, 112, 62, 3.5, 4.5); g.stroke();
+    g.beginPath(); g.arc(150, 150, 30, 0.4, 1.2); g.stroke();
+  });
+}
+
+// Barst (deksel): vertakte zwarte lijn met een lichte rand.
+export function paintCrack() {
+  return drawCanvas(256, 256, g => {
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    for (const [color, extra] of [['rgba(255,255,255,0.75)', 3], ['#2a2a2a', 0]]) {
+      const rnd = seeded(5);
+      g.strokeStyle = color;
+      let x = 150, y = 14, a = 1.75;
+      for (let i = 0; i < 9; i++) {
+        const nx = x + Math.cos(a) * 26, ny = y + Math.sin(a) * 26;
+        g.lineWidth = 6 - i * 0.4 + extra; g.beginPath(); g.moveTo(x, y); g.lineTo(nx, ny); g.stroke();
+        if (i % 3 === 1) { g.lineWidth = 3 + extra; g.beginPath(); g.moveTo(nx, ny); g.lineTo(nx + Math.cos(a + 1.1) * 40, ny + Math.sin(a + 1.1) * 40); g.lineTo(nx + Math.cos(a + 1.5) * 62, ny + Math.sin(a + 0.9) * 62); g.stroke(); }
+        if (i % 3 === 2) { g.lineWidth = 3 + extra; g.beginPath(); g.moveTo(nx, ny); g.lineTo(nx + Math.cos(a - 1.2) * 34, ny + Math.sin(a - 1.2) * 34); g.stroke(); }
+        x = nx; y = ny; a += (rnd() - 0.5) * 0.9;
+      }
+    }
+  });
+}
+
+// Ontbrekend stukje uit de rand van de bril: donkere hap met een lichte breukrand.
+export function paintChip() {
+  return drawCanvas(128, 128, g => {
+    g.fillStyle = '#cfcabb'; g.beginPath(); g.moveTo(10, 128); g.lineTo(22, 60); g.lineTo(44, 74); g.lineTo(60, 30); g.lineTo(84, 66); g.lineTo(104, 44); g.lineTo(120, 128); g.closePath(); g.fill();
+    g.fillStyle = '#4a463e'; g.beginPath(); g.moveTo(20, 128); g.lineTo(30, 76); g.lineTo(46, 88); g.lineTo(60, 48); g.lineTo(82, 82); g.lineTo(100, 62); g.lineTo(110, 128); g.closePath(); g.fill();
+  });
 }

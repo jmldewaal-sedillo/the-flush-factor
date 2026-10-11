@@ -7,6 +7,9 @@ import { MESSAGES, T } from './data/texts.js';
 import { bus } from './events.js';
 import { createState, loadState, saveState, bucketDef, bucketLiters } from './state.js';
 import { ClogSystem } from './clog.js';
+import { CareSystem } from './care.js';
+import { CLEANERS, DEFECTS, SURFACE_LABELS } from './data/care.js';
+import { unlockedAt } from './data/catalog.js';
 import { InventorySystem } from './inventory.js';
 import { Shop } from './shop.js';
 import { init3D } from './renderer3d.js';
@@ -21,6 +24,9 @@ const params = new URLSearchParams(location.search);
 const state = loadState(createState());
 const clog = new ClogSystem();
 const inv = new InventorySystem(state, clog);
+const care = new CareSystem(state);
+clog.chanceFactor = care.clogFactor();
+let cleaner = null;            // gekozen schoonmaakmiddel (schoonmaakstand), of null
 let shop, profileScreen, three = null;
 const save = () => saveState(state);
 
@@ -30,10 +36,15 @@ function addScore(pts) {
   state.highScore = Math.max(state.highScore, state.score);
   const cfg = LEVELS.filter(l => state.score >= l.minScore).pop();
   if (cfg.level > state.level) {
+    // Alles wat op de tussenliggende levels vrijkomt is "nieuw" in de winkel (punt 81).
+    const fresh = [];
+    for (let l = state.level + 1; l <= cfg.level; l++) fresh.push(...unlockedAt(l).map(i => i.id));
+    state.newItems = [...new Set([...state.newItems, ...fresh])];
     state.level = cfg.level;
     clog.setLevel(cfg);
     hud.level(state.level);
-    hud.levelUpBanner(cfg.level, cfg.name);
+    hud.levelUpBanner(cfg.level, cfg.name, fresh.length);
+    hud.shopBadge(state.newItems.length);
   }
   hud.score(state.score, state.highScore);
 }
@@ -58,7 +69,8 @@ function flush() {
     : Math.max(1, state.combo - SCORING.comboStep);
   state.lastFlushTime = now;
 
-  const pts = Math.round(SCORING.flushPoints * state.combo);
+  // Vies kost punten (punt 83).
+  const pts = Math.max(1, Math.round(SCORING.flushPoints * state.combo * care.pointsFactor()));
   addScore(pts);
   hud.pointPopup(pts);
   hud.message(rnd(MESSAGES.flushSuccess));
@@ -75,6 +87,7 @@ function flush() {
 // ──────── VERSTOPPING ────────
 clog.on('clog', () => {
   state.stats.totalClogs++;
+  care.onClogStart();
   state.streak = 0;
   state.currentProp = state.forcedProp || rnd(CLOG_PROPS);
   state.forcedProp = null;
@@ -88,6 +101,7 @@ clog.on('clog', () => {
 clog.on('resolved', () => {
   const prop = state.currentProp;
   state.currentProp = null;
+  care.onResolved();
   hud.clogWarning(false);
   hud.unclogBanner(rnd(MESSAGES.unclogSuccess));
   state.stats.totalUnclogs++;
@@ -120,8 +134,57 @@ clog.on('overflow', () => {
   hud.combo(0);
   state.combo = 1;
   bus.emit('overflow');
+  // Herhaald overlopen maakt de boel vies (punt 83).
+  const added = care.onOverflow();
+  if (added.mess.length || added.puddle) {
+    if (added.mess.length) { hud.message(T.care.mess); bus.emit('mess'); }
+    refreshDirt();
+  }
   save();
 });
+
+// ──────── SCHOONMAAK EN REPARATIE ────────
+function refreshDirt() {
+  bus.emit('stains', { list: state.stains.map(s => ({ ...s })) });
+  hud.dirt(care.dirtCount(), care.pointsFactor());
+  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
+}
+
+function setCleaner(id) {
+  cleaner = id && id !== cleaner ? id : null;
+  bus.emit('scrubmode', { on: !!cleaner });
+  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
+  if (cleaner) hud.message(T.care.pick(CLEANERS.find(c => c.id === cleaner).name));
+}
+
+// Er is in de schoonmaakstand over iets geveegd of getikt.
+function scrub(target) {
+  if (!cleaner) return;
+  const r = care.scrub(cleaner, target);
+  if (r.result === 'wrong-tool') return hud.message(T.care.wrongTool(SURFACE_LABELS[r.surface]));
+  if (r.result === 'nothing') return;
+  if (r.surface === 'toilet') bus.emit('toilet:condition', { ...toiletCondition(), animate: 'clean' });
+  else bus.emit('stain:scrub', { id: r.id, dirt: r.dirt });
+  if (r.result === 'cleaned') {
+    hud.message(T.care.cleaned);
+    hud.sparkle();
+    if (r.surface !== 'toilet') bus.emit('stains', { list: state.stains.map(s => ({ ...s })) });
+    if (care.dirtCount() === 0 && cleaner) setCleaner(null);
+  }
+  hud.dirt(care.dirtCount(), care.pointsFactor());
+  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
+  save();
+}
+
+const toiletCondition = () => ({ defects: { ...state.toilet.defects }, dirt: state.toilet.dirt });
+
+function repair(repairId) {
+  const fixed = care.repair(repairId);
+  if (!fixed) return false;
+  clog.chanceFactor = care.clogFactor();
+  bus.emit('toilet:condition', { ...toiletCondition(), animate: 'repair', fixed });
+  return true;
+}
 
 function useTool(id) {
   const result = inv.use(id);
@@ -183,6 +246,10 @@ async function init() {
     },
     setBucket(id) { state.bucketId = id; bus.emit('bucket:set', { id }); updateBucket(); },
     addTool(id) { inv.addTool(id); hud.buildInventory(inv.getAll(), useTool); },
+    repair,
+    cleanerBought() { hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount()); },
+    toiletReady: () => !care.isBroken() && !care.isToiletDirty(),
+    seen(ids) { state.newItems = state.newItems.filter(id => !ids.includes(id)); hud.shopBadge(state.newItems.length); },
     changed() { hud.score(state.score, state.highScore); save(); },
   });
 
@@ -218,6 +285,11 @@ async function init() {
   hud.buildInventory(inv.getAll(), useTool);
   hud.buildCredits();
   hud.view(DEFAULT_VIEW);
+  hud.shopBadge(state.newItems.length);
+  hud.dirt(care.dirtCount(), care.pointsFactor());
+  hud.cleaning(care.ownedCleaners(), cleaner, care.dirtCount());
+  hud.bindCleaning(setCleaner);
+  hud.bindTools();
   updateBucket();
 
   const cameraMenu = hud.bindPopover('btn-camera', 'camera-menu');
@@ -226,7 +298,7 @@ async function init() {
   hud.buildCameraMenu(setView);
 
   $('flush-btn').addEventListener('click', flush);
-  $('btn-shop').addEventListener('click', () => shop.open());
+  $('btn-shop').addEventListener('click', () => { if (cleaner) setCleaner(null); shop.open(); });
   $('btn-shop-close').addEventListener('click', () => { shop.close(); save(); });
   $('btn-bucket').addEventListener('click', () => setView('bucket'));
   $('btn-back').addEventListener('click', () => bus.emit('view:back'));
@@ -252,14 +324,17 @@ async function init() {
 
   bus.on('view:changed', ({ id }) => hud.view(id));
   bus.on('anchor:tap', ({ id }) => hud.message(T.anchorFree(ANCHORS[id].label)));
+  bus.on('scrub', target => scrub(target));
 
   // 3D
   try {
     three = await init3D($('scene'), {
       bucketId: state.bucketId,
-      bucketItems: state.bucketItems.map(it => it.id),
+      bucketItems: state.bucketItems.map(it => ({ ...it })),
       cosmetics: { ...state.cosmetics },
       decor: { ...state.decor },
+      toilet: toiletCondition(),
+      stains: state.stains.map(st => ({ ...st })),
     });
   } catch (err) {
     console.error('[3D] laden mislukt:', err);
@@ -294,6 +369,8 @@ window.__game = {
     bucketId: state.bucketId, bucketItems: state.bucketItems.map(i => i.id), bucketLiters: bucketLiters(state),
     cosmetics: { ...state.cosmetics }, decor: { ...state.decor }, ownedTools: [...state.ownedTools],
     profile: state.profile ? { ...state.profile } : null, stats: { ...state.stats, bestStreak: state.bestStreak },
+    toilet: toiletCondition(), broken: care.isBroken(), stains: state.stains.map(st => ({ ...st })), dirtCount: care.dirtCount(), pointsFactor: care.pointsFactor(),
+    overflowStreak: state.overflowStreak, newItems: [...state.newItems], purchased: [...state.purchased], cleaner,
     clogged: clog.isClogged, waterLevel: clog.waterLevel, overflowing: clog.isOverflowing, currentProp: state.currentProp?.id ?? null,
   }),
   forceClog(propId) { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(); },
@@ -301,6 +378,10 @@ window.__game = {
   setScore(n) { state.score = n; addScore(0); save(); },
   resetCooldowns() { inv.getAll().forEach(t => { t.cooldownRemaining = 0; }); },
   pauseClogs(on = true) { clog.paused = on; },
+  // Schoonmaken zonder te mikken (tests): doet precies wat een veeg over die plek doet.
+  scrub,
+  setCleaner,
+  defects: () => Object.keys(DEFECTS),
   skipTime(ms) { clog.timeSinceLastClog += ms; clog.totalPlaytime += ms; },
   useTool,
 };
