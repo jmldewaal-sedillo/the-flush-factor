@@ -17,7 +17,6 @@ Nog te besluiten door Jenn:
 - **Doelgroep en leeftijd.** Aanname nu: algemeen publiek, geen kinder-app (toilethumor, en er zijn
   knoppen voor inloggen en echt geld voorbereid). Bij "ook voor kinderen onder 13": geen inloggen via
   Google/Facebook, een ouderslot voor gegevens verwijderen, en het Families-beleid.
-- **Stijl** (punt 78): A, B of C; de voorbeelden staan op het testadres (`style-preview.html`).
 - **Inloggen en punten kopen**: de knoppen staan er, zonder werking. Vóór publicatie: óf weghalen, óf
   echt maken. Echt maken betekent eerst de privacyverklaring en Data Safety bijwerken.
 - **Advertenties en aankopen**: uit. Pas mogelijk nadat het zakelijke postadres bij de KvK is vastgelegd en

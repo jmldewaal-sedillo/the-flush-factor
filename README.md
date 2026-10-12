@@ -54,7 +54,7 @@ index.html            Pagina: 3D-scène, zwevende knoppen, winkel, profiel, cred
 privacy.html, delete.html, verwijderen.html   Privacyverklaring en "gegevens verwijderen"
 manifest.webmanifest, sw.js   PWA: installeerbaar en offline speelbaar
 css/                  tokens.css (HET designbestand: kleuren, letters, randen, schaduwen), style.css, animations.css, pages.css
-style-preview.html    Stijlvoorbeelden (drie richtingen; voorlopig doorgevoerd: A · Sticker, Jenn kiest nog).
+style-preview.html    Stijlvoorbeelden (drie richtingen; gekozen door Jenn: A · Sticker).
                       Hoort niet bij het spel; staat wel op het testadres.
 js/
   game.js             Coördinator: spelregels, game-loop, koppeling logica ↔ weergave
