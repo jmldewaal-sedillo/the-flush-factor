@@ -115,9 +115,9 @@ test('draaien en formaat wisselen: scène en knoppen passen zich aan', async ({ 
     await until(page, s => { const c = document.getElementById('scene-canvas-3d').getBoundingClientRect(); return c.width === s.width && c.height === s.height; }, size);
     const b = await boxes(page, CONTROLS);
     // Ook met een breder systeemlettertype en een groot getal mag niets overlappen.
-    await page.evaluate(() => { document.body.style.fontFamily = 'Verdana, DejaVu Sans, sans-serif'; document.getElementById('score-value').textContent = '99,9k'; });
+    await page.evaluate(() => { document.body.style.fontFamily = 'Verdana, DejaVu Sans, sans-serif'; document.body.style.letterSpacing = '0.08em'; document.getElementById('score-value').textContent = '99,9k'; document.getElementById('bucket-liters').textContent = '100,0 / 100 L'; });
     expectNoOverlap(await boxes(page, CONTROLS), `${size.width}x${size.height} breed lettertype`);
-    await page.evaluate(() => { document.body.style.fontFamily = ''; });
+    await page.evaluate(() => { document.body.style.fontFamily = ''; document.body.style.letterSpacing = ''; });
     expectInside(b, size, [0, 0, 0, 0], `${size.width}x${size.height}`);
     expectNoOverlap(b, `${size.width}x${size.height}`);
     expect(await page.evaluate(() => window.__game.three.topCovered())).toBe(true);

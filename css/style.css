@@ -247,9 +247,14 @@ body.is-clogged #flush-btn { background: var(--plunger); }
 /* Rechtsonder: emmer */
 #hud-bottomright {
   bottom: calc(var(--sab) + 18px); right: calc(var(--sar) + var(--gap));
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
 }
-#bucket-liters { font-size: 0.74rem; font-weight: 800; background: var(--paper); border: var(--border-thin); padding: 2px 9px; border-radius: var(--radius-pill); white-space: nowrap; }
+/* Het literlabel blijft rechts van de spoelknop in het midden: wordt het breder dan de ruimte ernaast
+   (breder lettertype, grote emmer), dan breekt het af op twee regels. */
+#bucket-liters {
+  font-size: 0.74rem; font-weight: 800; background: var(--paper); border: var(--border-thin); padding: 2px 9px; border-radius: var(--radius-pill);
+  max-width: calc(50vw - var(--flush) / 2 - var(--gap) - 10px); text-align: center; line-height: 1.15;
+}
 .bucket-btn { background: var(--duck); }
 .bucket-btn.full { animation: bucketFull 0.45s ease-in-out infinite alternate; background: var(--plunger); color: #fff; }
 
@@ -521,8 +526,11 @@ body[data-zoom] #btn-back { display: inline-flex; }
   #flush-btn .ic { width: 34px; height: 34px; }
   #hud-clean { bottom: calc(var(--sab) + 8px); }
   #hud-bottomright { bottom: calc(var(--sab) + 10px); gap: 6px; }
-  /* Spoelknop naast de emmerknop, zodat hij niet voor het toilet staat. */
-  #hud-bottom { bottom: calc(var(--sab) + 10px); left: auto; transform: none; right: calc(var(--sar) + var(--gap) + 76px); }
+  /* Het literlabel wordt nooit breder dan dit (een breder lettertype of een langere tekst breekt af op
+     twee regels), zodat het de spoelknop ernaast niet raakt. */
+  #bucket-liters { max-width: 96px; }
+  /* Spoelknop naast de emmerknop, zodat hij niet voor het toilet staat: net voorbij het breedste label. */
+  #hud-bottom { bottom: calc(var(--sab) + 10px); left: auto; transform: none; right: calc(var(--sar) + var(--gap) + 106px); }
   #hud-topright { gap: 8px; }
   #score-bubble { padding: 4px 12px 6px; }
   #score-value { font-size: 1.35rem; }

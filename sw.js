@@ -4,7 +4,7 @@
 // reserve); modellen, textures en iconen cache-eerst. De pagina wordt nooit vanuit hier herladen.
 
 // PRECACHE:START (gegenereerd door tools/build-sw.mjs)
-const VERSION = 'd5bc12f86b';
+const VERSION = 'd8e076f8dc';
 const PRECACHE = [
   './',
   'assets/fonts/lilita-one/lilita-one-400.woff2',
