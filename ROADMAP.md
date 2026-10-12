@@ -14,7 +14,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9, 10 en 11), nog niet 
 ## Nu bezig
 
 - [x] **Sprint 10 (punten 89–95)** en **Sprint 11 (punten 96–101)**: zie de secties onderaan. Klaar op de branch, wacht op testen door Jenn.
-- [ ] **Sprint 12 (punten 102–106):** aanvulling op de geluiden na het beluisteren door Jenn; zie de sectie onderaan.
+- [ ] **Geluiden en muziek beluisteren (punten 102–106).** Claude kan niet luisteren: de zestien gereedschapsgeluiden, de plons, het legen van de emmer en de muziek zijn gekozen op titel, omschrijving, duur en gemeten volume. Jenn beoordeelt ze op het testadres; per geluid vervangen of harder/zachter kan in `js/data/sounds.js`.
 
 ## Volgende
 
@@ -27,7 +27,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9, 10 en 11), nog niet 
 
 ## Later / ideeën
 
-- [ ] 58. Geluiden, tweede deel (kassa, level-up, begin van een verstopping) · 60. Echte betaling voor punten · 63. Aankleden (zie "Toekomst" verderop)
+- [ ] 58. Geluiden, het laatste restje (level-up, repareren) · 60. Echte betaling voor punten · 63. Aankleden (zie "Toekomst" verderop)
 - [ ] **Aankopen via een server controleren zodra er accounts komen (bij punt 59; besluit van Jenn, 2026-10-12):** elke aankoop bij Google laten bevestigen door een eigen server (Google Play Developer API), en terugbetaalde of teruggedraaide aankopen intrekken (de punten weer afschrijven). Tot die tijd vertrouwt het spel het antwoord van Google Play Billing op het toestel. Zie "Capacitor: betalen, inloggen en offline", onderdeel 1.
 - [ ] 59. Echt inloggen met Google/Facebook. **Eerst** privacyverklaring en Data Safety bijwerken (CLAUDE.md §5).
 - [ ] 44, 72–75: zie "Toekomstplan" en "Toekomst (vastgelegd, nog niet bouwen)" verderop. (Punt 77 bestaat niet: het nummer is overgeslagen.)
@@ -51,6 +51,10 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9, 10 en 11), nog niet 
 - [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
 
 ## Logboek
+
+### 2026-10-13
+- **Sprint 12 (punten 102–106)** op de branch `sprint-9`, na het beluisteren door Jenn: geluid op het moment van het spel-event (ook een plons bij het verstopt raken), geluid bij het legen van de emmer, elk van de zestien gereedschappen een eigen geluid, een rustige deep-house-lus als muziek (zachter bij spoelen en ontstoppen, stil op de achtergrond), en geluidsinstellingen met een regelaar per groep plus "Alle geluid uit". Alles CC0; bronnen in `docs/credits.md`.
+- Muziek, andere kandidaten (allemaal CC0, Freesound), voor als de gekozen lus niet bevalt: "deep chords 120.aif" van LogicMoon (https://freesound.org/people/LogicMoon/sounds/175378/, alleen akkoorden, 16 s) en "213.wav" van AbduAbdi (https://freesound.org/people/AbduAbdi/sounds/70335/, dub techno, 31 s).
 
 ### 2026-10-12
 - **Stijl gekozen (punt 78):** Jenn heeft de drie richtingen op het testadres bekeken en kiest A · Sticker. Die was al doorgevoerd; er verandert niets aan het spel.
@@ -316,7 +320,7 @@ Ook in deze sprint (uit de audit): code opgesplitst in data (`js/data/`), logica
 
 ## Toekomst (alleen vastgelegd, nog niet bouwen)
 
-- [ ] **58. Geluiden** — *Eerste deel gedaan in punt 96:* spoelen, overlopen (borrelen), plop bij ontstoppen, chaos-geluid, voorwerpen in de emmer, volume en aan/uit in het menu. **Nog te doen:** kassa bij een aankoop, level-up, het begin van een verstopping, schoonmaken en repareren; eventueel een eigen geluid per chaos-gereedschap (nu één toeter voor alle).
+- [ ] **58. Geluiden** — *Gedaan in de punten 96 en 102–106:* spoelen, verstopt raken, overlopen, ontstopt, een eigen geluid per gereedschap, voorwerpen in de emmer, emmer legen, schoonmaken, knoppen, aankoop, muziek, en een regelaar per groep. **Nog te doen:** level-up en repareren.
 - [ ] **59. Profiel** — *Fase 1 (lokaal gastprofiel, naam, avatar, statistieken) is gedaan in punt 69.* Nog te doen: echt koppelen met Google/Facebook/e-mail om te synchroniseren, gastvoortgang overzetten, account verwijderen. *Bijgewerkt 2026-10-11 voor Capacitor:* in de Android-app kan inloggen niet met een webvenster (pop-up of omleiding), maar via een plug-in die het inlogscherm van Android zelf opent; `authService` in `js/auth.js` blijft het enige koppelpunt. Zie "Capacitor: betalen, inloggen en offline" hieronder en de aangepaste stappen in het stappenplan bij Sprint 8. *(Vervangt punt 40.)*
 - [ ] **60. Echte betaling voor punten** — Google Play Billing via een Capacitor-plug-in, achter `purchaseService.buy()` in `js/purchases.js`. ~~Digital Goods API + Payment Request API in de TWA~~ is vervallen (besluit 2026-10-11). Uitwerking: "Capacitor: betalen, inloggen en offline" hieronder. Voorwaarden vooraf: het KvK-postadres en akkoord van Jenn (sectie 11, punt 5), en de privacyverklaring en Data Safety bijgewerkt. **Besluit van Jenn (2026-10-12):** bij puntenpakketten voorlopig het antwoord van Google Play Billing op het toestel vertrouwen, zonder eigen server; elke aankoop netjes bevestigen (acknowledge) en verbruiken (consume). Zodra er accounts komen (punt 59): controle via een server toevoegen, inclusief het intrekken van terugbetaalde aankopen. *(Vervangt punt 41.)*
 - [ ] **61. Logische puntenbalans** — Eén doordacht systeem voor punten per spoelbeurt/combo/ontstopping/level en prijzen, met een overzicht "hoeveel minuten spelen voor item X"; straffen in verhouding. Alle getallen staan al bij elkaar in `js/data/`.
@@ -612,8 +616,8 @@ Branch `sprint-9` (nog niet gemerged).
 
 Branch `sprint-9` (nog niet gemerged). Feedback van Jenn na het beluisteren van punt 96.
 
-- [ ] **102. Geluid op het juiste moment** — Het geluid bij het verstopt raken begint op hetzelfde moment als de verstopping (het voorwerp dat valt). Structureel voor alle geluiden: vooraf geladen en gedecodeerd (AudioBuffers, na de eerste tik), zonder stilte vooraan, afgespeeld vanuit dezelfde spel-events die de animaties starten. Test meet de vertraging tussen event en start van het geluid; doel onder 50 ms.
-- [ ] **103. Geluid bij emmer legen** — Eigen geluid (troep die eruit kiept en rammelt).
-- [ ] **104. Elk gereedschap een eigen geluid** — Zestien gereedschappen, zestien geluiden. Werkend: eigen geluid tijdens gebruik, daarna het algemene ontstopt-geluid. Chaos: alleen het eigen geluid. Per gereedschap vastgelegd in `js/data/tools.js`; een test eist dat elk gereedschap een geluid heeft en dat geen twee hetzelfde bestand delen.
-- [ ] **105. Rustig house-deuntje** — Rustige deep-house-lus als achtergrondmuziek, naadloos herhalend, standaard aan. Vrije licentie, bron in `docs/credits.md` en het credits-scherm. Zachter tijdens spoelen en ontstoppen, stil op de achtergrond, klein bestand, pas geladen na het startscherm.
-- [ ] **106. Geluidsinstellingen** — Per profiel een schuif en aan/uit voor Muziek, Toilet & water, Gereedschap, Emmer & schoonmaak en Interface, plus de hoofdschakelaar "Alle geluid uit". Onthouden na herladen. Test: elke regelaar raakt alleen zijn eigen groep.
+- [x] **102. Geluid op het juiste moment** — Het geluid bij het verstopt raken begint op hetzelfde moment als de verstopping (het voorwerp dat valt). Structureel voor alle geluiden: vooraf geladen en gedecodeerd (AudioBuffers, na de eerste tik), zonder stilte vooraan, afgespeeld vanuit dezelfde spel-events die de animaties starten. Test meet de vertraging tussen event en start van het geluid; doel onder 50 ms. *Gedaan: het verstoppen had nog geen eigen geluid (wat je hoorde was het borrelen bij het overlopen); er is nu een plons op het moment dat het voorwerp valt. Geluiden hangen aan de eventbus (`bindSounds()` in `js/game.js`), stilte vooraan elk bestand is weggeknipt en wordt bij het laden nog eens overgeslagen. Gemeten in de test: hooguit 2,4 ms tussen event en start. De vertraging van de luidspreker of een bluetooth-koptelefoon kan het spel niet meten of wegnemen.*
+- [x] **103. Geluid bij emmer legen** — Eigen geluid (troep die eruit kiept en rammelt).
+- [x] **104. Elk gereedschap een eigen geluid** — Zestien gereedschappen, zestien geluiden. Werkend: eigen geluid tijdens gebruik, daarna het algemene ontstopt-geluid. Chaos: alleen het eigen geluid. Per gereedschap vastgelegd in `js/data/tools.js`; een test eist dat elk gereedschap een geluid heeft en dat geen twee hetzelfde bestand delen. *Keuze: het ontstopt-geluid volgt 0,25 s na het gereedschap (`UNCLOG_AFTER_TOOL`), zodat je eerst het gereedschap hoort; de animatie van het ontstoppen begint wel meteen.*
+- [x] **105. Rustig house-deuntje** — Rustige deep-house-lus als achtergrondmuziek, naadloos herhalend, standaard aan. Vrije licentie, bron in `docs/credits.md` en het credits-scherm. Zachter tijdens spoelen en ontstoppen, stil op de achtergrond, klein bestand, pas geladen na het startscherm. *Gekozen: "Deep House.wav" van Johnnie_Holiday (Freesound, CC0), ingekort tot 16 maten en vertraagd van 128 naar ±118 tellen per minuut; 0,46 MB. Andere kandidaten staan in het logboek.*
+- [x] **106. Geluidsinstellingen** — Per profiel een schuif en aan/uit voor Muziek, Toilet & water, Gereedschap, Emmer & schoonmaak en Interface, plus de hoofdschakelaar "Alle geluid uit". Onthouden na herladen. Test: elke regelaar raakt alleen zijn eigen groep. *In een eigen venster (menuknop → Geluid). Erbij gekomen voor de groepen: een veeg-geluid bij schoonmaken, een klik op knoppen en een geluid bij een aankoop. Wie punt 96 al had ingesteld houdt zijn stand (uit blijft uit, het volume geldt voor de effecten).*

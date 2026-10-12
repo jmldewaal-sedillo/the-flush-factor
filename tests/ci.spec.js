@@ -76,7 +76,7 @@ test('testversie: style-preview.html gaat mee (noindex), zit niet in de service 
   expect(fs.readFileSync(path.join(out, 'sw.js'), 'utf8')).not.toContain('style-preview');
   expect(fs.existsSync(path.join(out, 'CNAME'))).toBe(false);
   // geluiden gaan mee; documentatie en tests niet
-  expect(fs.readdirSync(path.join(out, 'assets/sounds')).length).toBe(13);
+  expect(fs.readdirSync(path.join(out, 'assets/sounds')).sort()).toEqual(fs.readdirSync(path.join(ROOT, 'assets/sounds')).sort());
   for (const no of ['docs', 'tests', 'tools', 'ROADMAP.md', 'AUDIT.md']) expect(fs.existsSync(path.join(out, no)), no).toBe(false);
   fs.rmSync(out, { recursive: true, force: true });
 });
