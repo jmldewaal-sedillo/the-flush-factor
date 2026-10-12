@@ -33,7 +33,10 @@ kwetsende grappen. De speler wordt met "je" aangesproken.
 - Eén designbestand: `css/tokens.css` (stijl "Sticker"). Geen losse kleuren of lettertypen elders.
 - Alle getallen en lijsten (prijzen, levels, gereedschap, schoonmaakspullen, geluiden) staan in `js/data/`.
 - Geluid: alleen via `js/sound.js`; bestanden in `assets/sounds/` (kort, mono mp3, alleen CC0), elk met bron
-  en licentie in `docs/credits.md` en `js/data/credits.js`. Laden pas na de eerste tik.
+  en licentie in `docs/credits.md` en `js/data/credits.js`. Laden pas na de eerste tik, dan alles tegelijk.
+  Een geluid hangt aan een event van de eventbus (`bindSounds()` in `js/game.js`), nooit aan een timer.
+  **Elk gereedschap krijgt een eigen geluid** (`sound` in `js/data/tools.js`); een test eist dat.
+  Claude kan niet luisteren: Jenn keurt elk nieuw geluid op het testadres.
 - `sw.js` heeft geen handmatige `CACHE_VERSION`: `npm run build` (`tools/build-sw.mjs`) berekent de
   versie uit de inhoud van de bestanden, en een test faalt als hij niet actueel is.
 - Tests: Playwright, vier formaten, eigen poort (5599). `npm test`; `npm run serve` voor zelf kijken.

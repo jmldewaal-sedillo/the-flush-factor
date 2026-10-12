@@ -68,7 +68,7 @@ js/
   shop.js             Winkel met uitklapbare categorieën
   purchases.js        Koppelpunt voor echte aankopen (nu een stub)
   auth.js             Koppelpunt voor inloggen met Google/Facebook (nu een stub)
-  sound.js            Geluid: laden na de eerste tik, afspelen, lus bij overlopen, aan/uit en volume
+  sound.js            Geluid en muziek: alles vooraf decoderen na de eerste tik, afspelen, groepen, ducking
   events.js           Eventbus tussen logica en weergave
   renderer3d.js       Bouwt de 3D-scène en luistert naar de eventbus
   boot.js             Gesimuleerde safe-area (?safe=…)
@@ -178,7 +178,7 @@ npx playwright test shop          # één onderwerp
 | `layout.spec.js` | alle knoppen in beeld en zonder overlap, met notch- en punch-hole-profiel; scène tot achter de notch |
 | `sw.spec.js` | service worker in een submap, volledige cache, offline, geen herlaad; manifest |
 | `screenshots.spec.js` | screenshots van alle toestanden in `tests/screenshots/<formaat>/` om na te kijken |
-| `sound.spec.js` | geluiden: laden pas na de eerste tik en zonder fouten, elk moment zijn geluid, aan/uit en volume onthouden, klein, met bron en licentie |
+| `sound.spec.js` | geluiden en muziek: vooraf geladen na de eerste tik, start binnen 50 ms na het event, elk gereedschap een eigen geluid, muzieklus met ducking, regelaar per groep onthouden, klein, met bron en licentie |
 | `ci.spec.js` | de controle op privégegevens (blocklist) staat in de workflows en werkt; de testversie bevat `style-preview.html`, noindex |
 | `rook.spec.js` | de rooktest: kort en breed, draait vóór publicatie van de testversie (`npm run test:rook`) |
 | `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |
@@ -240,14 +240,26 @@ Engels); daarna de keuze uit het menu (menuknop → Taal). Teksten staan in `js/
 invulplek; vaste teksten in `index.html` hebben `data-i18n`. Nederlands is de bron. De vertalingen zijn
 nog niet nagekeken door moedertaalsprekers (ROADMAP → Voor publicatie).
 
-## Geluid
+## Geluid en muziek
 
-Dertien korte geluiden in `assets/sounds/` (mono mp3, samen ±113 kB), allemaal CC0; bron en licentie per
-geluid in `docs/credits.md` en het credits-scherm. Welk geluid bij welk moment hoort en hoe hard het
-klinkt staat in `js/data/sounds.js`; per voorwerp staat in `js/data/clog-props.js` of het zacht, hard of
-zwaar in de emmer valt. Browsers spelen pas geluid af na een tik: tot dan wordt er niets geladen, en als
-het geluid uit staat ook daarna niet. Menuknop → Geluid (aan/uit) en Volume; bewaard bij het profiel.
-In de console: `__game.sound()` laat zien wat er geladen en afgespeeld is.
+In `assets/sounds/` staan 33 korte geluiden (mono mp3, samen ±300 kB) en één muzieklus (stereo mp3,
+±450 kB), allemaal CC0; bron en licentie per bestand in `docs/credits.md` en het credits-scherm.
+
+- **Waar het staat:** welk bestand bij welk geluid hoort, in welke groep het valt en hoe hard het klinkt:
+  `js/data/sounds.js`. Het geluid van een gereedschap: `sound` in `js/data/tools.js` (verplicht en uniek; een
+  test faalt als een gereedschap er geen heeft of er een deelt). Hoe een voorwerp in de emmer klinkt:
+  `js/data/clog-props.js`.
+- **Op tijd:** browsers spelen pas geluid af na een tik. Bij die eerste tik worden alle geluiden opgehaald en
+  gedecodeerd; daarna start een geluid op het moment van het spel-event dat ook de animatie start (de
+  eventbus in `js/events.js`; de koppeling staat in `bindSounds()` in `js/game.js`). Een test meet de tijd
+  tussen event en start: onder 50 ms.
+- **Gereedschap:** elk een eigen geluid. Werkt het, dan volgt een kwart seconde later het ontstopt-geluid
+  (`UNCLOG_AFTER_TOOL`); chaos-gereedschap laat alleen zijn eigen geluid horen.
+- **Muziek:** rustige deep-house-lus van 16 maten, wordt pas geladen na het startscherm, gaat zachter tijdens
+  spoelen en ontstoppen (`DUCK`) en pauzeert als de app naar de achtergrond gaat.
+- **Instellingen:** menuknop → Geluid. Per groep een knop en een schuif (Muziek, Toilet & water, Gereedschap,
+  Emmer & schoonmaak, Interface) en de hoofdschakelaar "Alle geluid uit"; bewaard bij het profiel.
+- In de console: `__game.sound()` laat zien wat er geladen en afgespeeld is, met de gemeten vertragingen.
 
 ## Gegevens en privacy
 
