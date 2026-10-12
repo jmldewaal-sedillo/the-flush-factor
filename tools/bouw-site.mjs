@@ -20,8 +20,10 @@ if (out === ROOT || ROOT.startsWith(out + sep)) { console.error('De uitvoermap m
 const NOT_ON_SITE = new Set([
   '.git', '.github', '.gitignore', '_site', 'node_modules',
   'docs', 'store', 'tests', 'tools', 'test-results', 'playwright-report',
-  'package.json', 'package-lock.json', 'playwright.config.js', 'credits.txt', 'style-preview.html', 'CNAME',
+  'package.json', 'package-lock.json', 'playwright.config.js', 'credits.txt', 'CNAME',
 ]);
+// style-preview.html (de drie stijlrichtingen, punt 78) gaat wél mee naar de testversie, zodat Jenn hem op
+// haar telefoon kan bekijken; hij hoort niet bij het spel en zit niet in de service worker.
 const NOT_IN_ASSETS = new Set(['reference']);      // referentiemateriaal van de maker
 
 rmSync(out, { recursive: true, force: true });
@@ -57,7 +59,7 @@ manifest.name = 'TEST – ' + manifest.name;
 manifest.short_name = ('TEST ' + manifest.short_name).slice(0, 12);
 writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
 
-for (const must of ['index.html', 'sw.js', 'manifest.webmanifest', 'privacy.html', 'delete.html', 'verwijderen.html', 'robots.txt']) {
+for (const must of ['index.html', 'sw.js', 'manifest.webmanifest', 'privacy.html', 'delete.html', 'verwijderen.html', 'style-preview.html', 'robots.txt']) {
   if (!existsSync(join(out, must))) { console.error(`Ontbreekt in de site: ${must}`); process.exit(1); }
 }
 if (existsSync(join(out, 'CNAME'))) { console.error('Er staat een CNAME in de site; de testversie hoort op github.io.'); process.exit(1); }

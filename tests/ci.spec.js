@@ -63,3 +63,31 @@ test('het script vindt een treffer, toont het patroon niet, en slaat zonder lijs
   expect(run.stdout).toContain('::warning::Controle op privégegevens overgeslagen');
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+// Punt 100: de stijlvoorbeeldpagina (punt 78) staat op het testadres, noindex, en hoort niet bij het spel.
+test('testversie: style-preview.html gaat mee (noindex), zit niet in de service worker, en er komt geen CNAME', () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'site-'));
+  execFileSync('node', [path.join(ROOT, 'tools/bouw-site.mjs'), out, 'the-flush-factor-test', 'test'], { encoding: 'utf8' });
+  const html = fs.readFileSync(path.join(out, 'style-preview.html'), 'utf8');
+  expect(html).toContain('<meta name="robots" content="noindex, nofollow">');
+  for (const f of ['index.html', 'privacy.html', 'delete.html']) expect(fs.readFileSync(path.join(out, f), 'utf8'), f).toContain('noindex');
+  // alles waar de pagina naar verwijst staat ook echt in de testversie
+  for (const ref of new Set(html.match(/assets\/[\w./-]+\.(?:woff2|svg)/g))) expect(fs.existsSync(path.join(out, ref)), ref).toBe(true);
+  expect(fs.readFileSync(path.join(out, 'sw.js'), 'utf8')).not.toContain('style-preview');
+  expect(fs.existsSync(path.join(out, 'CNAME'))).toBe(false);
+  // geluiden gaan mee; documentatie en tests niet
+  expect(fs.readdirSync(path.join(out, 'assets/sounds')).length).toBe(13);
+  for (const no of ['docs', 'tests', 'tools', 'ROADMAP.md', 'AUDIT.md']) expect(fs.existsSync(path.join(out, no)), no).toBe(false);
+  fs.rmSync(out, { recursive: true, force: true });
+});
+
+test('style-preview.html: drie richtingen naast elkaar, zonder fouten of ontbrekende bestanden', async ({ page }) => {
+  const problems = [];
+  page.on('pageerror', e => problems.push(e.message));
+  page.on('response', r => { if (r.status() >= 400) problems.push(`${r.status()}: ${r.url()}`); });
+  await page.goto('./style-preview.html');
+  await expect(page.locator('h2')).toHaveText([/A · /, /B · /, /C · /]);
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: 'tests/screenshots/s11-03-style-preview.png', fullPage: true });
+  expect(problems).toEqual([]);
+});
