@@ -6,6 +6,16 @@ const { openGame, until, tapScene, setView, expectNoProblems, NEW_PLAYER } = req
 const snap = page => page.evaluate(() => window.__game.snapshot());
 const card = (page, id) => page.locator(`.shop-card[data-id="${id}"]`);
 const toiletPoint = page => page.evaluate(() => window.__game.three.toiletScreen());
+// Een punt op het toilet dat náást het open menu ligt. Op een liggende tablet hangt het hoofdmenu (sinds de
+// volumeschuif van punt 96) over de stortbak; dan nemen we een punt lager op het toilet, net onder het menu.
+async function besideMenu(page, menu) {
+  const p = await toiletPoint(page), m = await page.locator(menu).boundingBox();
+  const inside = q => q.x >= m.x - 4 && q.x <= m.x + m.width + 4 && q.y >= m.y - 4 && q.y <= m.y + m.height + 4;
+  if (!inside(p)) return p;
+  const lower = { x: p.x, y: m.y + m.height + 24 };
+  expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, lower), 'het punt onder het menu ligt in de scène').toBe('scene-canvas-3d');
+  return lower;
+}
 // Een echte tik (aanwijzer omlaag, omhoog en de klik die daarop volgt) op een punt in beeld.
 async function tapAt(page, point) { await page.mouse.click(point.x, point.y); }
 async function centerOf(page, selector) {
@@ -163,7 +173,7 @@ for (const { name, button, menu } of MENUS) {
     // tik in de scène (op het toilet): menu dicht, geen inzoomen
     await page.locator(button).click();
     await expect(page.locator(menu)).toBeVisible();
-    await tapAt(page, await toiletPoint(page));
+    await tapAt(page, await besideMenu(page, menu));
     await expect(page.locator(menu)).toBeHidden();
     await expect(page.locator(button)).toHaveAttribute('aria-expanded', 'false');
     await settle(page);
