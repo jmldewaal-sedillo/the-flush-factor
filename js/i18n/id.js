@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Sedikit lebih baik! Coba terus…',
   'cooldown': 'Masih didinginkan…',
-  'soundSoon': 'Suara segera hadir!',
   'bucketEmptyAlready': 'Embernya sudah kosong!',
   'bucketEmptied': 'Ember dikosongkan!',
   'bucketFull': 'Ember penuh! −{pts} poin',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Ketinggian air',
 
   'menu.sound': 'Suara',
+  'menu.soundOn': 'Nyala',
+  'menu.soundOff': 'Mati',
+  'menu.volume': 'Volume',
   'menu.credits': 'Kredit',
   'menu.fullscreen': 'Layar penuh',
   'menu.cameraReset': 'Atur ulang kamera',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Ikon game ({n})',
   'credits.fonts': 'Font',
   'credits.tech': 'Teknologi',
+  'credits.sounds': 'Suara',
+  'credits.soundsNote': 'Semua suara dipendekkan dan diubah ke mp3. Suara melancarkan sumbatan menggabungkan dua rekaman.',
 
   'item.plunger.name': 'Penyedot WC', 'item.plunger.short': 'Penyedot', 'item.plunger.desc': 'Solusi klasik. Pompa pompa pompa!',
   'item.hot-water.name': 'Seember air panas', 'item.hot-water.short': 'Air panas', 'item.hot-water.desc': 'Kuno tapi ampuh. Aduh aduh aduh!',

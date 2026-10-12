@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Um pouco melhor! Continue tentando…',
   'cooldown': 'Ainda está esfriando…',
-  'soundSoon': 'O som chega em breve!',
   'bucketEmptyAlready': 'O balde já está vazio!',
   'bucketEmptied': 'Balde esvaziado!',
   'bucketFull': 'Balde cheio! −{pts} pontos',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Nível da água',
 
   'menu.sound': 'Som',
+  'menu.soundOn': 'Ligado',
+  'menu.soundOff': 'Desligado',
+  'menu.volume': 'Volume',
   'menu.credits': 'Créditos',
   'menu.fullscreen': 'Tela cheia',
   'menu.cameraReset': 'Recentrar câmera',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Ícones do jogo ({n})',
   'credits.fonts': 'Fontes',
   'credits.tech': 'Tecnologia',
+  'credits.sounds': 'Sons',
+  'credits.soundsNote': 'Todos os sons foram encurtados e convertidos para mp3. O som de desentupir combina duas gravações.',
 
   'item.plunger.name': 'Desentupidor', 'item.plunger.short': 'Desentupidor', 'item.plunger.desc': 'A solução clássica. Bomba, bomba, bomba!',
   'item.hot-water.name': 'Balde de água quente', 'item.hot-water.short': 'Água quente', 'item.hot-water.desc': 'Antigo, mas funciona. Ai ai ai!',

@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Biraz daha iyi! Denemeye devam…',
   'cooldown': 'Hâlâ soğuyor…',
-  'soundSoon': 'Ses yakında geliyor!',
   'bucketEmptyAlready': 'Kova zaten boş!',
   'bucketEmptied': 'Kova boşaltıldı!',
   'bucketFull': 'Kova dolu! −{pts} puan',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Su seviyesi',
 
   'menu.sound': 'Ses',
+  'menu.soundOn': 'Açık',
+  'menu.soundOff': 'Kapalı',
+  'menu.volume': 'Ses düzeyi',
   'menu.credits': 'Emeği geçenler',
   'menu.fullscreen': 'Tam ekran',
   'menu.cameraReset': 'Kamerayı sıfırla',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Oyun simgeleri ({n})',
   'credits.fonts': 'Yazı tipleri',
   'credits.tech': 'Teknoloji',
+  'credits.sounds': 'Sesler',
+  'credits.soundsNote': 'Tüm sesler kısaltıldı ve mp3 biçimine dönüştürüldü. Tıkanıklık açma sesi iki kaydın birleşimidir.',
 
   'item.plunger.name': 'Pompa', 'item.plunger.short': 'Pompa', 'item.plunger.desc': 'Klasik çözüm. Pompala pompala pompala!',
   'item.hot-water.name': 'Bir kova sıcak su', 'item.hot-water.short': 'Sıcak su', 'item.hot-water.desc': 'Eski usul ama etkili. Ay ay ay!',

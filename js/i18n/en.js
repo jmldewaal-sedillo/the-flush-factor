@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'A bit better! Keep trying…',
   'cooldown': 'Still cooling down…',
-  'soundSoon': 'Sound is coming soon!',
   'bucketEmptyAlready': 'The bucket is already empty!',
   'bucketEmptied': 'Bucket emptied!',
   'bucketFull': 'Bucket full! −{pts} points',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Water level',
 
   'menu.sound': 'Sound',
+  'menu.soundOn': 'On',
+  'menu.soundOff': 'Off',
+  'menu.volume': 'Volume',
   'menu.credits': 'Credits',
   'menu.fullscreen': 'Full screen',
   'menu.cameraReset': 'Reset camera',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Game icons ({n})',
   'credits.fonts': 'Fonts',
   'credits.tech': 'Technology',
+  'credits.sounds': 'Sounds',
+  'credits.soundsNote': 'All sounds were trimmed and converted to mp3. The unclog sound combines two recordings.',
 
   'item.plunger.name': 'Plunger', 'item.plunger.short': 'Plunger', 'item.plunger.desc': 'The classic solution. Pump pump pump!',
   'item.hot-water.name': 'Bucket of hot water', 'item.hot-water.short': 'Hot water', 'item.hot-water.desc': 'Old-fashioned but effective. Ow ow ow!',

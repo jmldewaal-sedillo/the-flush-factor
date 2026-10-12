@@ -34,7 +34,11 @@
     <div id="hud-topcenter">
       <button id="btn-menu" class="round-btn" data-i18n-aria="a.menu" aria-label="Menu" aria-expanded="false" aria-controls="main-menu"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#menu"/></svg></button>
       <div id="main-menu" class="popover" role="menu" hidden>
-        <button class="menu-item" data-action="sound"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-2"/></svg><span data-i18n="menu.sound">Geluid</span></button>
+        <!-- Geluid (punt 96): aan/uit en volume, per profiel onthouden -->
+        <button class="menu-item" id="btn-sound" data-action="sound" aria-pressed="true"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-2"/></svg><span data-i18n="menu.sound">Geluid</span><span id="sound-state" class="menu-state"></span></button>
+        <label class="menu-item menu-volume"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-1"/></svg><span data-i18n="menu.volume">Volume</span>
+          <input id="setting-volume" type="range" min="0" max="100" step="5" value="80" data-i18n-aria="menu.volume" aria-label="Volume">
+        </label>
         <button class="menu-item" data-action="credits"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#info"/></svg><span data-i18n="menu.credits">Credits</span></button>
         <button class="menu-item" data-action="fullscreen"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#maximize"/></svg><span data-i18n="menu.fullscreen">Volledig scherm</span></button>
         <button class="menu-item" data-action="camera-reset"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="menu.cameraReset">Camera terugzetten</span></button>

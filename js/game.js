@@ -18,6 +18,7 @@ import { hud } from './ui/hud.js';
 import { playChaos } from './ui/chaos.js';
 import { ProfileScreen } from './ui/profile.js';
 import { bindDataControls, dataDialogOpen, closeDataDialogs } from './ui/data.js';
+import { sound } from './sound.js';
 
 const $ = id => document.getElementById(id);
 const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -26,6 +27,8 @@ const params = new URLSearchParams(location.search);
 migrateLegacy();               // sleutels van vóór de prefix flushfactor. overzetten (eenmalig)
 const state = loadState(createState());
 setLanguage(state.language);
+sound.configure(state.sound);
+sound.arm();                   // laden en afspelen pas na de eerste tik (punt 96)
 const clog = new ClogSystem();
 const inv = new InventorySystem(state, clog);
 const care = new CareSystem(state);
@@ -88,6 +91,7 @@ function flush() {
   hud.streak(state.streak, state.bestStreak);
 
   bus.emit('flush');
+  sound.play('flush');
   save();
 }
 
@@ -128,6 +132,7 @@ clog.on('resolved', () => {
     hud.message(t('bucketFull', { pts: SCORING.bucketFullPenalty }));
   }
   bus.emit('unclog', { propId: prop?.id, intoBucket: fits });
+  sound.play('unclog');
   updateBucket();
   save();
 });
@@ -212,9 +217,19 @@ function useTool(id) {
     hud.message(pick('m.toolChaos'));
     playChaos(inv.get(id).chaos);
     bus.emit('chaos', { effect: inv.get(id).chaos });
+    sound.play('chaos');
   }
   if (result === 'resolved' || result === 'partial' || result === 'chaos') save();
   return result;
+}
+
+// ──────── GELUID ────────
+// Aan/uit en volume uit het menu (punt 96); hoort bij het profiel en wordt met de spelstand bewaard.
+function setSound(change) {
+  state.sound = { ...state.sound, ...change };
+  sound.configure(state.sound);
+  hud.sound(state.sound);
+  save();
 }
 
 // ──────── EMMER ────────
@@ -245,6 +260,7 @@ function loop(ts) {
   hud.water(clog.waterLevel, phase, clog.isClogged);
   hud.updateInventory(inv.getAll(), clog.isClogged);
   bus.emit('water', { level: clog.waterLevel, clogged: clog.isClogged, phase });
+  sound.loop('overflow', clog.isOverflowing);
   requestAnimationFrame(loop);
 }
 
@@ -345,9 +361,9 @@ async function init() {
   $('main-menu').addEventListener('click', e => {
     const action = e.target.closest('[data-action]')?.dataset.action;
     if (!action) return;
+    if (action === 'sound') return setSound({ on: !state.sound.on });      // het menu blijft open: je ziet de stand
     mainMenu.close();
-    if (action === 'sound') hud.message(t('soundSoon'));
-    else if (action === 'credits') $('credits-modal').hidden = false;
+    if (action === 'credits') $('credits-modal').hidden = false;
     else if (action === 'fullscreen') document.fullscreenElement ? document.exitFullscreen?.() : document.documentElement.requestFullscreen?.().catch(() => {});
     else if (action === 'camera-reset') setView(DEFAULT_VIEW);
   });
@@ -355,6 +371,9 @@ async function init() {
   bus.on('view:changed', ({ id }) => hud.view(id));
   bus.on('anchor:tap', ({ id }) => ANCHORS[id] && hud.message(t('anchorFree', { place: t(`anchor.${id}`) })));
   bus.on('scrub', target => scrub(target));
+  // Het voorwerp landt in de emmer (of ernaast): het geluid hoort bij het soort voorwerp (punt 96).
+  bus.on('bucket:land', ({ propId }) => sound.play(`bucket-${CLOG_PROPS.find(p => p.id === propId)?.sound || 'soft'}`));
+  hud.bindSound(state.sound, setSound);
 
   // 3D
   try {
@@ -393,6 +412,7 @@ function refreshTexts() {
   hud.buildCredits();
   hud.dirt(care.dirtCount(), care.pointsFactor());
   hud.toolsLabel?.();
+  hud.sound(state.sound);
   showCleaning();
   updateBucket();
   profileScreen.refresh();
@@ -418,7 +438,7 @@ window.__game = {
     profile: state.profile ? { ...state.profile } : null, stats: { ...state.stats, bestStreak: state.bestStreak },
     toilet: toiletCondition(), broken: care.isBroken(), stains: state.stains.map(st => ({ ...st })), dirtCount: care.dirtCount(), pointsFactor: care.pointsFactor(),
     overflowStreak: state.overflowStreak, newItems: [...state.newItems], purchased: [...state.purchased], cleaner,
-    supplies: { ...state.supplies }, language: getLanguage(),
+    supplies: { ...state.supplies }, language: getLanguage(), sound: { ...state.sound },
     clogged: clog.isClogged, waterLevel: clog.waterLevel, overflowing: clog.isOverflowing, currentProp: state.currentProp?.id ?? null,
   }),
   forceClog(propId) { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(); },
@@ -435,6 +455,8 @@ window.__game = {
   missingTexts: () => missingKeys(),
   skipTime(ms) { clog.timeSinceLastClog += ms; clog.totalPlaytime += ms; },
   useTool,
+  // Geluid (punt 96): wat er geladen en afgespeeld is.
+  sound: () => sound.debug(),
 };
 
 if (!window.__PHONE_PREVIEW_ACTIVE) init();

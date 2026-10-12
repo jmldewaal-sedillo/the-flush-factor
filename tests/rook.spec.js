@@ -20,6 +20,9 @@ test('rook: eerste start, spoelen, verstopping oplossen, emmer', async ({ page }
   await page.locator('#flush-btn').click();
   expect((await snap(page)).score).toBeGreaterThan(0);
   await until(page, () => window.__game.three.flush().active);
+  // geluid (punt 96): na de eerste tik geladen, zonder fouten
+  await until(page, () => window.__game.sound().state === 'ready');
+  expect((await page.evaluate(() => window.__game.sound())).errors).toEqual([]);
 
   // verstopping: gereedschap lost hem op, het voorwerp belandt in de emmer
   await clogAndFix(page, 'duck');

@@ -17,7 +17,7 @@ voorkeur, zie onder).
 |---|---|---|---|
 | `flushfactor.settings` | `language` (gekozen taal), `toolsOpen` (gereedschap in- of uitgeklapt), `shopOpen` (welke winkelcategorieën openstaan), `preview` (voorkeur van de ontwikkel-preview op brede schermen) | Zodat de app de volgende keer hetzelfde opent | Tot de speler alles verwijdert |
 | `flushfactor.profiles` | Lijst met het ene profiel: id `p1` en de naam die de speler eventueel intypte | Zelfde vorm als de andere apps; nodig voor "Profiel verwijderen" | Tot het profiel of alles wordt verwijderd |
-| `flushfactor.profile.p1.game` | De spelstand: punten, hoogste score, level, reeksen, emmer en inhoud, gekochte spullen, gereedschap, decoratie, staat van het toilet, vlekken, voorraad schoonmaakspullen, statistieken (aantal keer gespoeld en ontstopt, liters), en het profiel (naam of bijnaam, avatar, aanmaakdatum) | Verder spelen waar je was | Tot het profiel of alles wordt verwijderd |
+| `flushfactor.profile.p1.game` | De spelstand: punten, hoogste score, level, reeksen, emmer en inhoud, gekochte spullen, gereedschap, decoratie, staat van het toilet, vlekken, voorraad schoonmaakspullen, geluid aan/uit en volume, statistieken (aantal keer gespoeld en ontstopt, liters), en het profiel (naam of bijnaam, avatar, aanmaakdatum) | Verder spelen waar je was | Tot het profiel of alles wordt verwijderd |
 
 De enige persoonsgegevens zijn dus een **zelfgekozen naam of bijnaam** (niet verplicht; leeg = "Gast").
 

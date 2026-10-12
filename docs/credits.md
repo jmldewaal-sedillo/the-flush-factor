@@ -3,6 +3,8 @@
 Bronvermelding van alles wat niet zelf gemaakt is. Het credits-scherm in het spel (menu → Credits)
 toont dezelfde gegevens uit `js/data/credits.js`.
 
+Volgorde: 3D-modellen · textures en licht · iconen · geluiden · lettertypen · code van anderen.
+
 ## 3D-modellen (gedownload)
 
 | Model | Maker | Licentie | Bron | Bestand in het spel |
@@ -107,6 +109,30 @@ Alle iconen staan als losse, ongewijzigde SVG-bestanden in `assets/icons/` en wo
 | `bare-wall` | [broken-wall](https://game-icons.net/1x1/delapouite/broken-wall.html) | Delapouite |
 | `dirt-floor` | [earth-crack](https://game-icons.net/1x1/lorc/earth-crack.html) | Lorc |
 | `wood-floor` | [wood-beam](https://game-icons.net/1x1/delapouite/wood-beam.html) | Delapouite |
+
+## Geluiden (CC0)
+
+Alle geluiden zijn CC0 1.0 (publiek domein); de licentie is per geluid op de pagina van de bron nagekeken op
+12 oktober 2026. De bestanden staan in `assets/sounds/`, als mono mp3 (44,1 kHz, 80 kbit/s), samen ±113 kB.
+Welk bestand bij welk moment hoort en hoe hard het klinkt staat in `js/data/sounds.js`.
+
+| Bestand in het spel | Moment | Bron | Maker | Licentie | Wat ermee gedaan is |
+|---|---|---|---|---|---|
+| `flush.mp3` | spoelen | ["Toilet Flushing"](https://freesound.org/people/lorenzgillner/sounds/274448/) | lorenzgillner (Freesound) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | ingekort tot 2,3 s (de spoelanimatie duurt 1,8 s), uitfaden |
+| `overflow.mp3` | overlopend toilet (loopt door) | ["Bubbling"](https://freesound.org/people/pillwave/sounds/423959/) | pillwave (Freesound) | CC0 1.0 | 4 s uitgeknipt, harder gezet; het spel maakt er bij het laden een naadloze lus van |
+| `unclog.mp3` | ontstoppen | ["Plop!"](https://freesound.org/people/Breviceps/sounds/447910/) + ["drain finishing/glug"](https://freesound.org/people/brittmosel/sounds/529300/) | Breviceps, brittmosel (Freesound) | CC0 1.0 | de plop, direct gevolgd door 1 s van het wegspoelen; samengevoegd tot één bestand |
+| `chaos.mp3` | chaos-gereedschap | ["Honk! (Vintage Bicycle Horn)"](https://freesound.org/people/Breviceps/sounds/468441/) | Breviceps (Freesound) | CC0 1.0 | iets harder gezet |
+| `bucket-soft-1…3.mp3` | zacht voorwerp in de emmer (papier, sok, knuffel, eend, vis, banaan) | ["Impact Sounds"](https://kenney.nl/assets/impact-sounds) 1.0: `impactSoft_medium_000…002.ogg` | Kenney (kenney.nl) | CC0 1.0 | alleen omgezet van ogg naar mp3 |
+| `bucket-hard-1…3.mp3` | klein hard voorwerp (autootje, telefoon, sleutel) | idem: `impactGeneric_light_000…002.ogg` | Kenney | CC0 1.0 | alleen omgezet |
+| `bucket-heavy-1…3.mp3` | baksteen | idem: `impactWood_heavy_000…002.ogg` | Kenney | CC0 1.0 | alleen omgezet |
+
+**Versie van Freesound:** de originele bestanden kun je bij Freesound alleen downloaden als je bent ingelogd. Gebruikt
+is daarom de voorbeeldversie die Freesound zelf van elk geluid aanbiedt (mp3, "hq"), en die is daarna ingekort.
+Het is dezelfde opname onder dezelfde licentie, alleen al een keer gecomprimeerd. Wil je de originelen gebruiken:
+log in bij Freesound, download ze via de links hierboven en geef ze aan Claude om opnieuw te knippen.
+
+**Nog niet beluisterd:** de geluiden zijn gekozen op titel, omschrijving, duur en gemeten volume. Claude kan niet
+luisteren; Jenn beoordeelt op het testadres of ze passen (zie ROADMAP punt 96).
 
 ## Lettertypen
 

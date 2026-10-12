@@ -20,7 +20,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Iets beter! Blijf proberen…',
   'cooldown': 'Nog even afkoelen…',
-  'soundSoon': 'Geluid komt binnenkort!',
   'bucketEmptyAlready': 'De emmer is al leeg!',
   'bucketEmptied': 'Emmer geleegd!',
   'bucketFull': 'Emmer vol! −{pts} punten',
@@ -57,6 +56,9 @@ export default {
 
   // ── menu ──
   'menu.sound': 'Geluid',
+  'menu.soundOn': 'Aan',
+  'menu.soundOff': 'Uit',
+  'menu.volume': 'Volume',
   'menu.credits': 'Credits',
   'menu.fullscreen': 'Volledig scherm',
   'menu.cameraReset': 'Camera terugzetten',
@@ -187,6 +189,8 @@ export default {
   'credits.gameIcons': 'Spel-iconen ({n})',
   'credits.fonts': 'Lettertypen',
   'credits.tech': 'Techniek',
+  'credits.sounds': 'Geluiden',
+  'credits.soundsNote': 'Alle geluiden zijn ingekort en omgezet naar mp3. Het ontstopgeluid is een combinatie van twee opnamen.',
 
   // ── gereedschap ──
   'item.plunger.name': 'Ontstopper', 'item.plunger.short': 'Ontstopper', 'item.plunger.desc': 'De klassieke oplossing. Pomp pomp pomp!',

@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Trochę lepiej! Próbuj dalej…',
   'cooldown': 'Jeszcze stygnie…',
-  'soundSoon': 'Dźwięk pojawi się wkrótce!',
   'bucketEmptyAlready': 'Wiadro jest już puste!',
   'bucketEmptied': 'Wiadro opróżnione!',
   'bucketFull': 'Wiadro pełne! −{pts} pkt',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Poziom wody',
 
   'menu.sound': 'Dźwięk',
+  'menu.soundOn': 'Włączony',
+  'menu.soundOff': 'Wyłączony',
+  'menu.volume': 'Głośność',
   'menu.credits': 'Autorzy',
   'menu.fullscreen': 'Pełny ekran',
   'menu.cameraReset': 'Zresetuj kamerę',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Ikony gry ({n})',
   'credits.fonts': 'Czcionki',
   'credits.tech': 'Technologia',
+  'credits.sounds': 'Dźwięki',
+  'credits.soundsNote': 'Wszystkie dźwięki zostały skrócone i przekonwertowane do mp3. Dźwięk odtykania łączy dwa nagrania.',
 
   'item.plunger.name': 'Przepychaczka', 'item.plunger.short': 'Przepychacz', 'item.plunger.desc': 'Klasyczne rozwiązanie. Pompuj, pompuj, pompuj!',
   'item.hot-water.name': 'Wiadro gorącej wody', 'item.hot-water.short': 'Gorąca woda', 'item.hot-water.desc': 'Staroświeckie, ale skuteczne. Au au au!',

@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Etwas besser! Weiter so…',
   'cooldown': 'Kühlt noch ab…',
-  'soundSoon': 'Ton kommt bald!',
   'bucketEmptyAlready': 'Der Eimer ist schon leer!',
   'bucketEmptied': 'Eimer geleert!',
   'bucketFull': 'Eimer voll! −{pts} Punkte',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Wasserstand',
 
   'menu.sound': 'Ton',
+  'menu.soundOn': 'An',
+  'menu.soundOff': 'Aus',
+  'menu.volume': 'Lautstärke',
   'menu.credits': 'Credits',
   'menu.fullscreen': 'Vollbild',
   'menu.cameraReset': 'Kamera zurücksetzen',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Spiel-Icons ({n})',
   'credits.fonts': 'Schriften',
   'credits.tech': 'Technik',
+  'credits.sounds': 'Geräusche',
+  'credits.soundsNote': 'Alle Geräusche wurden gekürzt und in mp3 umgewandelt. Das Entstopfgeräusch kombiniert zwei Aufnahmen.',
 
   'item.plunger.name': 'Pömpel', 'item.plunger.short': 'Pömpel', 'item.plunger.desc': 'Die klassische Lösung. Pump pump pump!',
   'item.hot-water.name': 'Eimer heißes Wasser', 'item.hot-water.short': 'Heißwasser', 'item.hot-water.desc': 'Altmodisch, aber wirksam. Au au au!',

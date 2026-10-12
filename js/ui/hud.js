@@ -5,6 +5,7 @@ import { CAMERA_VIEWS } from '../data/room.js';
 import { CREDITS, STUDIO } from '../data/credits.js';
 import { icon } from './icons.js';
 import { storage } from '../storage.js';
+import { VOLUME_STEP } from '../data/sounds.js';
 
 const $ = id => document.getElementById(id);
 const RING = 2 * Math.PI * 24;
@@ -273,6 +274,24 @@ export const hud = {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') menus.forEach(m => m.isOpen() && m.close()); });
   },
   menuOpen: () => menus.some(m => m.isOpen()),
+
+  // Geluid in het menu (punt 96): een knop voor aan/uit en een schuif voor het volume.
+  // onChange({ on }) of onChange({ volume }) met het volume van 0 tot 1.
+  bindSound(settings, onChange) {
+    const range = $('setting-volume');
+    range.step = String(Math.round(VOLUME_STEP * 100));
+    range.addEventListener('input', () => onChange({ volume: Number(range.value) / 100 }));
+    this.sound(settings);
+  },
+  sound({ on, volume }) {
+    const btn = $('btn-sound'), range = $('setting-volume'), pct = Math.round(volume * 100);
+    btn.setAttribute('aria-pressed', String(on));
+    btn.querySelector('use').setAttribute('href', `assets/icons/sprite.svg#${on ? 'volume-2' : 'volume-x'}`);
+    $('sound-state').textContent = t(on ? 'menu.soundOn' : 'menu.soundOff');
+    range.value = String(pct);
+    range.disabled = !on;
+    range.setAttribute('aria-valuetext', `${pct}%`);
+  },
 
   // Taalkeuze in het menu (punt 94): keuzelijst met elke taal in die taal zelf, zoals in Sudoku Kids.
   buildLanguages(current, onPick) {

@@ -7,6 +7,7 @@ import { STARTING_TOOLS, LEGACY_STARTING_TOOLS, TOOLS } from './data/tools.js';
 import { DEFECTS, CLEANERS } from './data/care.js';
 import { STRINGS, deviceLanguage } from './i18n/index.js';
 import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from './data/profile.js';
+import { SOUND_DEFAULTS } from './data/sounds.js';
 
 // Een nieuwe speler begint in een armoedig hokje (punt 79): kapot en vies toilet, roestige emmer,
 // kale muur, vieze vloer, vier stuks gereedschap.
@@ -27,6 +28,7 @@ export function createState() {
     overflowStreak: 0,                  // verstoppingen achter elkaar die overliepen
     newItems: [],                       // net vrijgespeeld bij een level-up, nog niet bekeken in de winkel
     supplies: {},                       // voorraad schoonmaakspullen: { cleanerId: aantal keer gebruik over } (punt 92)
+    sound: { ...SOUND_DEFAULTS },       // geluid aan/uit en volume (0–1); hoort bij het profiel (punt 96)
     language: deviceLanguage(),         // taal: eerst die van het toestel (anders Engels), daarna de keuze uit het menu
     // niet opgeslagen:
     lastFlushTime: 0, isFlushing: false, currentProp: null,
@@ -46,7 +48,7 @@ export function saveState(state) {
     purchased: [...state.purchased], ownedTools: state.ownedTools,
     toolDiscovery: state.toolDiscovery, stats: state.stats, profile: state.profile,
     toilet: state.toilet, stains: state.stains, overflowStreak: state.overflowStreak, newItems: state.newItems,
-    supplies: state.supplies,
+    supplies: state.supplies, sound: state.sound,
   };
   storage.write('game', data, state.profile?.name);
   storage.writeSetting('language', state.language);       // de taal hoort bij het toestel, niet bij het profiel
@@ -150,6 +152,11 @@ export function loadState(state) {
     const left = Math.min(c.uses, Math.floor(num(data.supplies?.[c.id], 0)));
     if (left > 0) { state.supplies[c.id] = left; state.purchased.add(c.id); } else state.purchased.delete(c.id);
   }
+  // Geluid: oudere opslag heeft dit nog niet en krijgt de standaard (aan).
+  state.sound = {
+    on: typeof data.sound?.on === 'boolean' ? data.sound.on : SOUND_DEFAULTS.on,
+    volume: Math.min(1, Math.max(0, num(data.sound?.volume, SOUND_DEFAULTS.volume))),
+  };
   if (data.profile && typeof data.profile === 'object') {
     state.profile = {
       name: String(data.profile.name || '').slice(0, NAME_MAX),      // leeg = "Gast" in de gekozen taal

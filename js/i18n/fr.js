@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Un peu mieux ! Continue…',
   'cooldown': 'Ça refroidit encore…',
-  'soundSoon': 'Le son arrive bientôt !',
   'bucketEmptyAlready': 'Le seau est déjà vide !',
   'bucketEmptied': 'Seau vidé !',
   'bucketFull': 'Seau plein ! −{pts} points',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Niveau d’eau',
 
   'menu.sound': 'Son',
+  'menu.soundOn': 'Activé',
+  'menu.soundOff': 'Coupé',
+  'menu.volume': 'Volume',
   'menu.credits': 'Crédits',
   'menu.fullscreen': 'Plein écran',
   'menu.cameraReset': 'Recentrer la caméra',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Icônes de jeu ({n})',
   'credits.fonts': 'Polices',
   'credits.tech': 'Technique',
+  'credits.sounds': 'Sons',
+  'credits.soundsNote': 'Tous les sons ont été raccourcis et convertis en mp3. Le son du débouchage combine deux enregistrements.',
 
   'item.plunger.name': 'Ventouse', 'item.plunger.short': 'Ventouse', 'item.plunger.desc': 'La solution classique. Pompe pompe pompe !',
   'item.hot-water.name': 'Seau d’eau chaude', 'item.hot-water.short': 'Eau chaude', 'item.hot-water.desc': 'À l’ancienne mais efficace. Aïe aïe aïe !',

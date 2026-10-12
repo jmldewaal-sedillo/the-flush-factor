@@ -87,7 +87,7 @@ export async function init3D(container, snapshot) {
   stains.set(snapshot.stains, { animate: false });
 
   const water = createWater(ctx, toilet);
-  const effects = createEffects(ctx, { toilet, water, bucket, rig });
+  const effects = createEffects(ctx, { toilet, water, bucket, rig, onLand: detail => bus.emit('bucket:land', detail) });
   water.setScale(snapshot.toilet.dirt);
 
   // Schoonmaakstand (punt 83): elke aanraking of veeg zoekt wat eronder zit en meldt dat aan het spel.

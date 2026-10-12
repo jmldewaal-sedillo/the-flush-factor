@@ -5,7 +5,7 @@
 // Elke sleutel begint met PREFIX. Sleutels in gebruik (houd docs/privacy-audit.md gelijk):
 //     flushfactor.settings             instellingen van dit toestel (taal, welke menu's openstaan)
 //     flushfactor.profiles             lijst van profielen en welk profiel actief is (nu altijd één: p1)
-//     flushfactor.profile.<id>.game    de spelstand van een profiel (punten, level, aankopen, naam, avatar…)
+//     flushfactor.profile.<id>.game    de spelstand van een profiel (punten, level, aankopen, geluid, naam, avatar…)
 //
 // Sleutels veranderen nooit meer zodra ze live staan. Moet het toch: een migratie die de oude sleutel
 // leest en overzet, en een test die dat bewijst. Zo'n migratie staat onderaan (migrateLegacy): tot en met

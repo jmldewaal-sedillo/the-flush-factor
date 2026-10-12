@@ -20,6 +20,15 @@ export const CREDITS = [
     { titleKey: 'uiIcons', author: 'Lucide', license: 'ISC', url: 'https://lucide.dev' },
     ...GAME_ICON_CREDITS.map(c => ({ titleKey: 'gameIcons', count: c.icons.length, author: c.author, license: 'CC BY 3.0', url: c.url })),
   ] },
+  // Geluiden (punt 96): allemaal CC0. Wat er per bestand mee gedaan is staat in docs/credits.md.
+  { group: 'sounds', items: [
+    { title: 'Toilet Flushing', author: 'lorenzgillner', license: 'CC0', url: 'https://freesound.org/people/lorenzgillner/sounds/274448/' },
+    { title: 'Bubbling', author: 'pillwave', license: 'CC0', url: 'https://freesound.org/people/pillwave/sounds/423959/' },
+    { title: 'Plop!', author: 'Breviceps', license: 'CC0', url: 'https://freesound.org/people/Breviceps/sounds/447910/' },
+    { title: 'drain finishing/glug', author: 'brittmosel', license: 'CC0', url: 'https://freesound.org/people/brittmosel/sounds/529300/' },
+    { title: 'Honk! (Vintage Bicycle Horn)', author: 'Breviceps', license: 'CC0', url: 'https://freesound.org/people/Breviceps/sounds/468441/' },
+    { title: 'Impact Sounds', author: 'Kenney', license: 'CC0', url: 'https://kenney.nl/assets/impact-sounds' },
+  ], note: 'soundsNote' },
   { group: 'fonts', items: [
     { title: 'Lilita One', author: 'Juan Montoreano', license: 'SIL OFL 1.1', url: 'https://fonts.google.com/specimen/Lilita+One' },
     { title: 'Nunito', author: 'The Nunito Project Authors', license: 'SIL OFL 1.1', url: 'https://fonts.google.com/specimen/Nunito' },

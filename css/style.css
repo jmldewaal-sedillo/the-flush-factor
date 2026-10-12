@@ -93,6 +93,11 @@ body[data-cleaning] #scene-canvas-3d { cursor: crosshair; }
   flex: 1; min-width: 0; margin-left: auto; padding: 5px 6px; font: inherit; font-size: 0.86rem; color: var(--ink);
   background: var(--paper); border: var(--border-thin); border-radius: var(--radius-sm);
 }
+/* geluid (punt 96): de stand rechts op de knop; de volumeschuif vult de rest van de regel */
+.menu-state { margin-left: auto; padding: 1px 8px; font-size: 0.8rem; background: var(--soft-ok); border: var(--border-thin); border-radius: var(--radius-pill); }
+#btn-sound[aria-pressed="false"] .menu-state { background: var(--soft-bad); }
+.menu-volume input { flex: 1; min-width: 0; margin: 0 0 0 auto; accent-color: var(--blue); }
+.menu-volume input:disabled { opacity: 0.4; }
 .menu-item[aria-checked="true"] { background: var(--duck); box-shadow: var(--shadow-sm); }
 
 /* ──────── HUD-ZONES ──────── */

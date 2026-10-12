@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { buildProp } from './props.js';
 
-export function createEffects(ctx, { toilet, water, bucket, rig }) {
+export function createEffects(ctx, { toilet, water, bucket, rig, onLand = () => {} }) {
   const fx = ctx.fx;
   const scene = ctx.scene;
   const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
@@ -155,6 +155,7 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
     scene.remove(prop.obj);
     if (prop.intoBucket) bucket.adopt(prop.obj);
     splash(prop.to, 6, 0.5);
+    onLand({ propId: prop.id, intoBucket: !!prop.intoBucket });
     prop = null;
   }
 
@@ -171,7 +172,7 @@ export function createEffects(ctx, { toilet, water, bucket, rig }) {
       const obj = buildProp(propId, ctx);
       obj.scale.setScalar(Math.min(1, water.fit.restRx / 0.07));
       scene.add(obj);
-      prop = { obj, phase: 'drop', t: 0 };
+      prop = { obj, id: propId, phase: 'drop', t: 0 };
       clearTimeout(unfocusTimer);
       rig.focusClog(true);
     },

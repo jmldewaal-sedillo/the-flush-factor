@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': '¡Algo mejor! Sigue intentándolo…',
   'cooldown': 'Aún se está enfriando…',
-  'soundSoon': '¡El sonido llegará pronto!',
   'bucketEmptyAlready': '¡El cubo ya está vacío!',
   'bucketEmptied': '¡Cubo vaciado!',
   'bucketFull': '¡Cubo lleno! −{pts} puntos',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Nivel del agua',
 
   'menu.sound': 'Sonido',
+  'menu.soundOn': 'Activado',
+  'menu.soundOff': 'Desactivado',
+  'menu.volume': 'Volumen',
   'menu.credits': 'Créditos',
   'menu.fullscreen': 'Pantalla completa',
   'menu.cameraReset': 'Restablecer cámara',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Iconos del juego ({n})',
   'credits.fonts': 'Tipografías',
   'credits.tech': 'Tecnología',
+  'credits.sounds': 'Sonidos',
+  'credits.soundsNote': 'Todos los sonidos se han recortado y convertido a mp3. El sonido de desatasco combina dos grabaciones.',
 
   'item.plunger.name': 'Desatascador', 'item.plunger.short': 'Desatascador', 'item.plunger.desc': 'La solución clásica. ¡Bombea, bombea, bombea!',
   'item.hot-water.name': 'Cubo de agua caliente', 'item.hot-water.short': 'Agua caliente', 'item.hot-water.desc': 'Anticuado pero eficaz. ¡Ay ay ay!',

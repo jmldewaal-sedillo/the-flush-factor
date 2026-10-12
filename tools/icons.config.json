@@ -43,7 +43,9 @@
     "globe",
     "arrow-left-right",
     "user-x",
-    "shield-check"
+    "shield-check",
+    "volume-x",
+    "volume-1"
   ],
   "gameIcons": {
     "flush": "lorc/vortex",

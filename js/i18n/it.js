@@ -17,7 +17,6 @@ export default {
   'liters': '{used} / {cap} L',
   'partial': 'Un po’ meglio! Continua a provare…',
   'cooldown': 'Si sta ancora raffreddando…',
-  'soundSoon': 'L’audio arriva presto!',
   'bucketEmptyAlready': 'Il secchio è già vuoto!',
   'bucketEmptied': 'Secchio svuotato!',
   'bucketFull': 'Secchio pieno! −{pts} punti',
@@ -52,6 +51,9 @@ export default {
   'tip.water': 'Livello dell’acqua',
 
   'menu.sound': 'Audio',
+  'menu.soundOn': 'Attivo',
+  'menu.soundOff': 'Spento',
+  'menu.volume': 'Volume',
   'menu.credits': 'Crediti',
   'menu.fullscreen': 'Schermo intero',
   'menu.cameraReset': 'Ripristina la camera',
@@ -176,6 +178,8 @@ export default {
   'credits.gameIcons': 'Icone di gioco ({n})',
   'credits.fonts': 'Caratteri',
   'credits.tech': 'Tecnologia',
+  'credits.sounds': 'Suoni',
+  'credits.soundsNote': 'Tutti i suoni sono stati accorciati e convertiti in mp3. Il suono dello sturamento combina due registrazioni.',
 
   'item.plunger.name': 'Sturalavandini', 'item.plunger.short': 'Ventosa', 'item.plunger.desc': 'La soluzione classica. Pompa pompa pompa!',
   'item.hot-water.name': 'Secchio d’acqua calda', 'item.hot-water.short': 'Acqua calda', 'item.hot-water.desc': 'All’antica ma funziona. Ahi ahi ahi!',
