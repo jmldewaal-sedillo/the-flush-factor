@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Trastos recogidos',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Hecho por Studio Sedillo',
+  'credits.madeBy': 'Hecho por Studio Sedillo · KvK 42122276',
   'credits.contact': 'Contacto',
   'credits.models': 'Modelos 3D',
   'credits.modelsNote': 'Los modelos se han reducido (texturas en WebP, máx. 1024 px). El cubo de madera sigue disponible bajo CC BY-SA 4.0 en assets/models/buckets/.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Sí, sustituir todo',
   'data.importDone': 'El progreso se ha restaurado.',
   'page.backToApp': 'Volver al juego',
+  'page.country': 'Países Bajos',
   'page.language': 'Idioma',
 };

@@ -32,6 +32,12 @@ test('privacyverklaring: in elke taal, met verantwoordelijke, contactadres, datu
     expect(text, `${code}: naam van het spel`).toContain('The Flush Factor');
     expect(text, `${code}: datum (2026)`).toContain('2026');
     for (const must of ['GitHub', 'Gmail', 'Google', 'EU-U.S. Data Privacy Framework', 'Autoriteit Persoonsgegevens', 'HTTPS', '6']) expect(text, `${code}: ${must}`).toContain(must);
+    // verantwoordelijke met KvK-nummer (Apps/CLAUDE.md §1), en per bouwdoel kloppend: alleen de webversie haalt bestanden op
+    expect(text, `${code}: KvK-nummer bij de verantwoordelijke`).toContain('KvK 42122276');
+    for (const must of ['GitHub Pages', 'Android', 'IP']) expect(text, `${code}: ${must}`).toContain(must);
+    // de vaste voettekst, met het land in de gekozen taal
+    const country = await page.evaluate(async c => (await import('./js/i18n/index.js')).STRINGS[c]['page.country'], code);
+    await expect(page.locator('#company'), `${code}: voettekst`).toHaveText(`© 2026 Studio Sedillo · KvK 42122276 · ${country} · ${MAIL}`);
     expect(text, `${code}: geen invulplek blijven staan`).not.toMatch(/\{\w+\}/);
     expect(emojiIn(text)).toEqual([]);
     // zelfde opbouw en dezelfde links als de Nederlandse brontekst
@@ -88,9 +94,9 @@ test('vanuit het spel: links naar privacy en verwijderen, en "Gemaakt door Studi
   await page.locator('#btn-profile-close').click();
   await page.locator('#btn-menu').click();
   await page.locator('#main-menu [data-action="credits"]').click();
-  await expect(page.locator('.credits-made')).toHaveText('Gemaakt door Studio Sedillo');
+  await expect(page.locator('.credits-made')).toHaveText('Gemaakt door Studio Sedillo · KvK 42122276');
   await expect(page.locator(`.credits-contact a[href="mailto:${MAIL}"]`)).toBeVisible();
   await page.evaluate(() => window.__game.setLanguage('en'));
-  await expect(page.locator('.credits-made')).toHaveText('Made by Studio Sedillo');
+  await expect(page.locator('.credits-made')).toHaveText('Made by Studio Sedillo · KvK 42122276');
   // op het welkomstscherm staan de knoppen voor gegevens nog niet (er is nog niets om te wissen)
 });

@@ -39,4 +39,4 @@ export const CREDITS = [
 ];
 
 // Vaste gegevens van de maker (zie CLAUDE.md in de Apps-map).
-export const STUDIO = { name: 'Studio Sedillo', email: 'studio.sedillo@gmail.com', site: 'https://studiosedillo.com' };
+export const STUDIO = { name: 'Studio Sedillo', email: 'studio.sedillo@gmail.com', site: 'https://studiosedillo.com', kvk: '42122276', year: 2026 };

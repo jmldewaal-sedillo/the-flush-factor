@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Tralha recolhida',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Feito por Studio Sedillo',
+  'credits.madeBy': 'Feito por Studio Sedillo · KvK 42122276',
   'credits.contact': 'Contato',
   'credits.models': 'Modelos 3D',
   'credits.modelsNote': 'Os modelos foram reduzidos (texturas em WebP, máx. 1024 px). O balde de madeira continua disponível sob CC BY-SA 4.0 em assets/models/buckets/.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Sim, substituir tudo',
   'data.importDone': 'O progresso foi restaurado.',
   'page.backToApp': 'Voltar ao jogo',
+  'page.country': 'Países Baixos',
   'page.language': 'Idioma',
 };

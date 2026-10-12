@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Roba raccolta',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Creato da Studio Sedillo',
+  'credits.madeBy': 'Creato da Studio Sedillo · KvK 42122276',
   'credits.contact': 'Contatto',
   'credits.models': 'Modelli 3D',
   'credits.modelsNote': 'I modelli sono stati alleggeriti (texture in WebP, max 1024 px). Il secchio di legno resta disponibile con licenza CC BY-SA 4.0 in assets/models/buckets/.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Sì, sostituisci tutto',
   'data.importDone': 'I progressi sono stati ripristinati.',
   'page.backToApp': 'Torna al gioco',
+  'page.country': 'Paesi Bassi',
   'page.language': 'Lingua',
 };

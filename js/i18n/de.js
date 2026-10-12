@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Gesammelter Kram',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Gemacht von Studio Sedillo',
+  'credits.madeBy': 'Gemacht von Studio Sedillo · KvK 42122276',
   'credits.contact': 'Kontakt',
   'credits.models': '3D-Modelle',
   'credits.modelsNote': 'Die Modelle wurden verkleinert (Texturen als WebP, max. 1024 px). Der Holzeimer bleibt unter CC BY-SA 4.0 in assets/models/buckets/ verfügbar.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Ja, alles ersetzen',
   'data.importDone': 'Der Fortschritt wurde wiederhergestellt.',
   'page.backToApp': 'Zurück zum Spiel',
+  'page.country': 'Niederlande',
   'page.language': 'Sprache',
 };

@@ -18,6 +18,7 @@ function show() {
   document.title = `${T.title} – ${APP_NAME}`;
   document.getElementById('page-text').innerHTML =
     `<h1>${T.title}</h1><p class="updated">${fill(T.sub)}</p>` + T.sections.map(s => `<h2>${s[0]}</h2>${fill(s[1])}`).join('');
+  document.getElementById('company').innerHTML = `&copy; ${STUDIO.year} ${STUDIO.name} · KvK ${STUDIO.kvk} · ${esc(t('page.country'))} · ${mail}`;
   document.querySelectorAll('.langs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
 }
 
@@ -38,5 +39,3 @@ langs.addEventListener('click', e => {
 });
 show();
 document.documentElement.dataset.ready = 'true';
-// (t wordt gebruikt door data-i18n in de pagina, via setLanguage → applyTranslations)
-void t;

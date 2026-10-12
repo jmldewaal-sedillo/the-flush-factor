@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Toplanan ıvır zıvır',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Studio Sedillo tarafından yapıldı',
+  'credits.madeBy': 'Studio Sedillo tarafından yapıldı · KvK 42122276',
   'credits.contact': 'İletişim',
   'credits.models': '3B modeller',
   'credits.modelsNote': 'Modeller küçültüldü (dokular WebP, en fazla 1024 px). Ahşap kova, CC BY-SA 4.0 lisansıyla assets/models/buckets/ klasöründe durmaya devam ediyor.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Evet, hepsini değiştir',
   'data.importDone': 'İlerleme geri yüklendi.',
   'page.backToApp': 'Oyuna dön',
+  'page.country': 'Hollanda',
   'page.language': 'Dil',
 };

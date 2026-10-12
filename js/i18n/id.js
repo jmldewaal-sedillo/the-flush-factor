@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Barang terkumpul',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Dibuat oleh Studio Sedillo',
+  'credits.madeBy': 'Dibuat oleh Studio Sedillo · KvK 42122276',
   'credits.contact': 'Kontak',
   'credits.models': 'Model 3D',
   'credits.modelsNote': 'Model sudah diperkecil (tekstur ke WebP, maks. 1024 px). Ember kayu tetap tersedia dengan lisensi CC BY-SA 4.0 di assets/models/buckets/.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Ya, ganti semuanya',
   'data.importDone': 'Progres sudah dipulihkan.',
   'page.backToApp': 'Kembali ke game',
+  'page.country': 'Belanda',
   'page.language': 'Bahasa',
 };

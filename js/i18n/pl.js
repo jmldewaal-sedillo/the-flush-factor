@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Zebrane rupiecie',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Stworzone przez Studio Sedillo',
+  'credits.madeBy': 'Stworzone przez Studio Sedillo · KvK 42122276',
   'credits.contact': 'Kontakt',
   'credits.models': 'Modele 3D',
   'credits.modelsNote': 'Modele zostały zmniejszone (tekstury w WebP, maks. 1024 px). Drewniane wiadro pozostaje dostępne na licencji CC BY-SA 4.0 w assets/models/buckets/.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Tak, zastąp wszystko',
   'data.importDone': 'Postępy zostały przywrócone.',
   'page.backToApp': 'Wróć do gry',
+  'page.country': 'Holandia',
   'page.language': 'Język',
 };

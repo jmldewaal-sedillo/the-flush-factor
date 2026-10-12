@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Junk collected',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Made by Studio Sedillo',
+  'credits.madeBy': 'Made by Studio Sedillo · KvK 42122276',
   'credits.contact': 'Contact',
   'credits.models': '3D models',
   'credits.modelsNote': 'Models have been reduced in size (textures to WebP, max. 1024 px). The wooden bucket remains available under CC BY-SA 4.0 in assets/models/buckets/.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Yes, replace everything',
   'data.importDone': 'The progress has been restored.',
   'page.backToApp': 'Back to the game',
+  'page.country': 'the Netherlands',
   'page.language': 'Language',
 };

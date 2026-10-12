@@ -180,7 +180,7 @@ export default {
   'stat.litersValue': '{n} L',
 
   // ── credits ──
-  'credits.madeBy': 'Gemaakt door Studio Sedillo',
+  'credits.madeBy': 'Gemaakt door Studio Sedillo · KvK 42122276',
   'credits.contact': 'Contact',
   'credits.models': '3D-modellen',
   'credits.modelsNote': 'Modellen zijn verkleind (textures naar WebP, max. 1024 px). De houten emmer blijft onder CC BY-SA 4.0 beschikbaar in assets/models/buckets/.',
@@ -285,5 +285,6 @@ export default {
   'data.importYes': 'Ja, vervang alles',
   'data.importDone': 'De voortgang is teruggezet.',
   'page.backToApp': 'Terug naar het spel',
+  'page.country': 'Nederland',
   'page.language': 'Taal',
 };

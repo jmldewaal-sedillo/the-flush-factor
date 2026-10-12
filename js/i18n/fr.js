@@ -169,7 +169,7 @@ export default {
   'stat.liters': 'Bazar récolté',
   'stat.litersValue': '{n} L',
 
-  'credits.madeBy': 'Créé par Studio Sedillo',
+  'credits.madeBy': 'Créé par Studio Sedillo · KvK 42122276',
   'credits.contact': 'Contact',
   'credits.models': 'Modèles 3D',
   'credits.modelsNote': 'Les modèles ont été allégés (textures en WebP, max. 1024 px). Le seau en bois reste disponible sous CC BY-SA 4.0 dans assets/models/buckets/.',
@@ -270,5 +270,6 @@ export default {
   'data.importYes': 'Oui, tout remplacer',
   'data.importDone': 'La progression a été restaurée.',
   'page.backToApp': 'Retour au jeu',
+  'page.country': 'Pays-Bas',
   'page.language': 'Langue',
 };

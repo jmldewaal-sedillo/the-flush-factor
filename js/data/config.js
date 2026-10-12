@@ -2,7 +2,7 @@
 
 // Datum van de laatste wijziging van de privacyverklaring (JJJJ-MM-DD). Pas hem aan samen met de tekst
 // in js/i18n/legal/.
-export const PRIVACY_DATE = '2026-10-11';
+export const PRIVACY_DATE = '2026-10-12';
 export const APP_NAME = 'The Flush Factor';
 export const APP_SHORT_NAME = 'FlushFactor';
 
