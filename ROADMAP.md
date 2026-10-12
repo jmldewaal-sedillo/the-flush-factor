@@ -581,3 +581,16 @@ Branch `sprint-9` (nog niet gemerged).
 - [x] **93. Schoonmaakmenu sluit bij tik ernaast** — Ook het cameramenu en het hoofdmenu. De tik wordt ingeslikt: niet inzoomen, niet spoelen, geen andere knop. Van het ene menu naar het andere kan wel in één tik; Escape sluit ook. **Afwijking (besluit van Jenn, 11 oktober):** het gereedschapsmenu blijft open tot je op de moersleutel tikt, anders zou de eerste tik op Spoelen het inklappen en niet spoelen.
 - [x] **94. Talen zoals Sudoku Kids** — Dezelfde tien talen (Nederlands, English, Deutsch, Français, Español, Português, Italiano, Polski, Türkçe, Bahasa Indonesia), dezelfde keuzelijst (in het hoofdmenu), standaard de taal van het toestel en anders Engels. Eén bestand per taal in `js/i18n/`; in de code en de data staat geen tekst meer. In Sudoku Kids is niets gewijzigd.
 - [x] **95. Tests** — `tests/water.spec.js`, `menus.spec.js`, `i18n.spec.js`, `storage.spec.js`, `pages.spec.js`; uitbreidingen in `care.spec.js`, `layout.spec.js` en `screenshots.spec.js`.
+
+---
+
+## Sprint 11 (punten 96–101)
+
+Branch `sprint-9` (nog niet gemerged).
+
+- [ ] **96. Geluiden (uitvoering van punt 58, eerste deel)** — Spoelen (even lang als de spoelanimatie), overlopend toilet (borrelen, loopt mee zolang het overloopt), ontstoppen (plop plus wegspoelen; chaos-gereedschap een eigen grappig geluid), voorwerpen die in de emmer vallen (per soort, drie varianten). Alleen CC0; bron en licentie per geluid in `docs/credits.md` en het credits-scherm. Klein en kort, pas laden na de eerste tik. Menu: geluid aan/uit en volume, per profiel onthouden.
+- [ ] **97. Knop naar de winkel in het schoonmaakmenu** — Winkelwagentje in de uitgeklapte la (aria-label "Schoonmaakspullen kopen") dat de winkel opent op "Schoonmaak & Reparatie"; na het sluiten ben je terug in het spel.
+- [ ] **98. Controle tegen de Apps-CLAUDE.md** — Opnieuw volledig gelezen (tussentijds gewijzigd), de lijst in AUDIT.md bijgewerkt en opgelost wat niet voldoet, waaronder de blocklist-controle in de CI.
+- [ ] **99. Open punten roadmap** — Overzicht van alle open punten in vier groepen; dubbele en achterhaalde punten opgeruimd, nummering intact.
+- [ ] **100. Antwoorden op het rapport van sprint 10** — Betalen (besluit vastgelegd), privacytekst (welke dienst stuurt gegevens naar de VS), punt 78 (stijlvoorbeeld op de testlink).
+- [ ] **101. Tests** — Geluiden laden zonder fouten en volgen de instellingen, de winkelknop in het schoonmaakmenu opent de juiste categorie, de blocklist-controle draait in CI.
