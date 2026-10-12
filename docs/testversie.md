@@ -27,7 +27,20 @@ De workflow (`.github/workflows/ci.yml`) draait twee dingen naast elkaar:
   Kijk dus na een uur nog even: `gh run list -R jmldewaal-sedillo/the-flush-factor-test --limit 1`.
 
 `tools/bouw-site.mjs` zet de site klaar: noindex in elke pagina, een `robots.txt` die alles weigert, en
-"TEST" in de naam op het startscherm.
+"TEST" in de naam op het startscherm. De stijlvoorbeelden (punt 78) gaan mee:
+https://jmldewaal-sedillo.github.io/the-flush-factor-test/style-preview.html
+
+## Controle op privégegevens (blocklist)
+
+Vóór de rooktest en vóór het publiceren controleert de workflow alles tegen de lijst uit het geheim
+`PRIVATE_BLOCKLIST` (`Apps/CLAUDE.md`, sectie 11, punt 6). Het geheim staat in beide repo's. Ontbreekt het,
+dan faalt de run met "Het geheim PRIVATE_BLOCKLIST ontbreekt" en wordt er niet gepubliceerd.
+
+- Na een wijziging van `~/.studio-sedillo/blocklist.txt`: `Apps/tools/sync-blocklist.sh --dry-run` en
+  daarna `Apps/tools/sync-blocklist.sh` (zet het geheim opnieuw in alle repo's, zonder de inhoud te tonen).
+- Alleen deze test-repo opnieuw zetten:
+  `gh secret set PRIVATE_BLOCKLIST -R jmldewaal-sedillo/the-flush-factor-test < ~/.studio-sedillo/blocklist.txt`
+- Open de lijst nooit met `cat` en zet de inhoud nooit in een log of rapport.
 
 **`main` blijft achter de volledige suite.** Het live adres wordt rechtstreeks vanaf `main` gevuld, zonder
 workflow ertussen. Mergen naar `main` gebeurt daarom alleen na akkoord van Jenn én als de job "Volledige

@@ -31,7 +31,9 @@ kwetsende grappen. De speler wordt met "je" aangesproken.
 - Tien talen (zelfde lijst als Sudoku Kids): één bestand per taal in `js/i18n/`, de juridische
   teksten in `js/i18n/legal/`. Nieuwe tekst = in **alle** tien bestanden; de tests controleren dat.
 - Eén designbestand: `css/tokens.css` (stijl "Sticker"). Geen losse kleuren of lettertypen elders.
-- Alle getallen en lijsten (prijzen, levels, gereedschap, schoonmaakspullen) staan in `js/data/`.
+- Alle getallen en lijsten (prijzen, levels, gereedschap, schoonmaakspullen, geluiden) staan in `js/data/`.
+- Geluid: alleen via `js/sound.js`; bestanden in `assets/sounds/` (kort, mono mp3, alleen CC0), elk met bron
+  en licentie in `docs/credits.md` en `js/data/credits.js`. Laden pas na de eerste tik.
 - `sw.js` heeft geen handmatige `CACHE_VERSION`: `npm run build` (`tools/build-sw.mjs`) berekent de
   versie uit de inhoud van de bestanden, en een test faalt als hij niet actueel is.
 - Tests: Playwright, vier formaten, eigen poort (5599). `npm test`; `npm run serve` voor zelf kijken.
@@ -48,6 +50,10 @@ kwetsende grappen. De speler wordt met "je" aangesproken.
 - **Geld verdienen:** de knoppen voor punten kopen en de plek voor advertenties blijven uit.
   AdMob of aankopen kunnen pas nadat het zakelijke postadres bij de KvK is vastgelegd en het
   bezoekadres is afgeschermd, en dan alleen na akkoord van Jenn (sectie 11, punt 5).
+- **Betalen (besluit van Jenn, 2026-10-12):** bij puntenpakketten voorlopig het antwoord van Google Play
+  Billing op het toestel vertrouwen, elke aankoop bevestigen en verbruiken; controle via een server pas
+  zodra er accounts komen (ROADMAP, punt 60).
+- **Blocklist:** de controle draait in `ci.yml` en `privacy.yml`; zonder het geheim faalt de run.
 - Testen op de telefoon: de testversie staat op `jmldewaal-sedillo.github.io/the-flush-factor-test/`
   (noindex). Push naar test: `git push test <branch>:main`; zie `docs/testversie.md`.
 - **Afwijking van `Apps/CLAUDE.md` §3 ("deploy alleen als de tests groen zijn"), besluit van Jenn

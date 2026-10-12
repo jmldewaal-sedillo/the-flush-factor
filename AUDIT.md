@@ -443,7 +443,9 @@ een beetje scheef, waardoor er onderin weinig ruimte is. De overige emmers zijn 
 
 ## Controle tegen `Apps/CLAUDE.md` (punt 89)
 
-Nagelopen op 11 oktober 2026. **V** = voldaan, **N** = niet voldaan, **–** = niet van toepassing.
+Nagelopen op 11 oktober 2026 en **opnieuw op 12 oktober 2026 (punt 98)**, nadat het bestand weer was gewijzigd.
+**V** = voldaan, **N** = niet voldaan, **–** = niet van toepassing. De tabellen hieronder zijn bijgewerkt naar de
+stand van 12 oktober; wat er die dag veranderd is staat in "Controle van 12 oktober 2026 (punt 98)" verderop.
 
 **Het bestand is tijdens de sprint drie keer aangevuld.** De laatste aanvulling, sectie 11
 ("App-structuur Studio Sedillo"), draait een deel van de eerdere afspraken om: geen app-website op een
@@ -463,8 +465,13 @@ heb ik weer weggehaald voordat er iets gepusht was; er zijn geen DNS-records aan
 | GitHub-account jmldewaal-sedillo | V | |
 | GitHub Pages met eigen domein en HTTPS | – | Geen eigen domein (sectie 11). Live en test staan op github.io, met HTTPS. |
 | Play Console, AdMob | – | Nog niet gepubliceerd; AdMob wordt niet gebruikt. |
-| "Gemaakt door Studio Sedillo" in de app | V | Nieuw, bovenaan het credits-scherm, in elke taal (dezelfde woorden als Sudoku Kids). |
-| Vermelding verantwoordelijke (AVG) | V | De formulering van de template overgenomen. Niet woord voor woord naast de hoofdsite gelegd. |
+| "Gemaakt door Studio Sedillo · KvK 42122276" in de app | V | Bovenaan het credits-scherm, in elke taal (dezelfde woorden als Sudoku Kids). Het KvK-nummer is op 12 oktober toegevoegd. |
+| Rechtsvorm en KvK (eenmanszaak, KvK 42122276, Nederland) | V | Sinds 12 oktober in de privacyverklaring, de voettekst en de credits. |
+| Vermelding verantwoordelijke (AVG) | V | "Studio Sedillo (eenmanszaak), KvK 42122276, Nederland · studio.sedillo@gmail.com", in tien talen; de vijf talen die Sudoku Kids ook op de hoofdsite heeft zijn woordelijk overgenomen. |
+| Voettekst op webpagina's | V | "© 2026 Studio Sedillo · KvK 42122276 · Nederland · studio.sedillo@gmail.com" op `privacy.html` en `delete.html` (het land in de gekozen taal). Het spelscherm zelf is geen leespagina en heeft geen voettekst; daar staat het in de credits. |
+| Btw-id | – | Nog niet bekend; nergens vermeld. |
+| Adres nooit vermelden | V | Staat nergens. Bewaakt door de pre-commit hook, de CI en `tests/ci.spec.js`; lokaal ook de hele geschiedenis nagelopen (geen treffers). De lijst zelf is niet geopend. |
+| Apps met advertenties of aankopen pas na het postadres | V | Beide staan uit; vastgelegd in ROADMAP en `docs/publiceren.md`. |
 
 ### §2 Naamgeving (slug `flushfactor`)
 
@@ -507,10 +514,12 @@ Het script `nieuwe-app.sh` is voor nieuwe apps; deze app bestond al. Per onderde
 | `docs/publiceren.md` | V | Kort, bijgewerkt naar sectie 11. |
 | Upload key | – | Maakt Jenn zelf. |
 | App op studiosedillo.com | – | Pas na de lancering (sectie 11, punt 3). |
-| **Sectie 11: één codebase met drie bouwdoelen** (`platform/`, Capacitor, webportals) | N | Nog niet omgezet; staat onder "Volgende" in de roadmap. Dit is een eigen sprint. |
+| **Sectie 11: één codebase met drie bouwdoelen** (`platform/`, Capacitor, webportals, `tools/bouw.mjs`, `capacitor.config.json`, `bouw.config.json`) | N | Nog niet omgezet; staat onder "Volgende" in de roadmap. Dit is een eigen sprint. Daar horen ook bij: de vindbaar-schakelaar (`VINDBAAR` in `config.js`), `docs/lanceren.md`, `docs/android.md`, `docs/webportals.md` en de privacypagina's bouwen voor de hoofdsite (`bouw.mjs hoofdsite`). |
+| Sectie 11: vindbaar-schakelaar op "nee" | deels | De testversie is altijd noindex (meta-tag en `robots.txt`). Het live adres op github.io (versie 0.2, van vóór deze afspraken) heeft **geen** noindex; dat verandert pas bij een merge naar `main`, na akkoord. |
+| Sectie 11: geen externe verzoeken | V | Een test faalt bij elk verzoek buiten het eigen adres. De geluiden (punt 96) komen uit `assets/sounds/`. |
 | Sectie 11: testversie op github.io, noindex | V | Meta-tag in elke pagina en een `robots.txt` die alles weigert. |
 | Sectie 11: advertenties en aankopen standaard uit | V | De knoppen voor punten kopen doen niets; er is geen advertentiecode. |
-| Sectie 11: blocklist met pre-commit hook en CI-controle | deels | De hook staat in deze repo (door een andere sessie geplaatst). De CI-controle (`PRIVATE_BLOCKLIST`) zit nog niet in de workflow van deze repo; hoort bij het omzetten. De lijst zelf heb ik niet geopend. |
+| Sectie 11: blocklist met pre-commit hook en CI-controle | V | Hook: `tools/install-hooks.sh` (staat aan in deze kopie). CI, sinds 12 oktober: vóór de rooktest in `ci.yml`, nog een keer op de gebouwde testversie vóór het publiceren, en `privacy.yml` bij elke push (ook alleen documentatie) inclusief de geschiedenis. Zonder het geheim faalt de run. Het geheim `PRIVATE_BLOCKLIST` stond wel in `the-flush-factor` maar niet in `the-flush-factor-test`; daar is het op 12 oktober gezet (rechtstreeks van schijf naar `gh`, zonder de inhoud te tonen). |
 
 ### §4 DNS, §5 Privacy
 
@@ -522,8 +531,10 @@ Het script `nieuwe-app.sh` is voor nieuwe apps; deze app bestond al. Per onderde
 | Gegevens alleen lokaal, met de prefix | V | Alleen `js/storage.js` raakt de opslag aan (test). |
 | Sleutels veranderen nooit, of met migratie en test | V | `migrateLegacy` in `js/storage.js`, `tests/storage.spec.js`. |
 | `docs/privacy-audit.md` | V | Een test faalt als het spel een sleutel schrijft die er niet in staat. |
-| Privacyverklaring met alle verplichte onderdelen, in alle talen | V | Een test controleert per taal: verantwoordelijke, adres, datum, GitHub, Gmail, het Data Privacy Framework, artikel 6, de Autoriteit Persoonsgegevens. |
-| Controleren of het Data Privacy Framework nog geldt | N | Niet opnieuw nagezocht; de tekst volgt de template. Staat onder "Voor publicatie". |
+| Privacyverklaring met alle verplichte onderdelen, in alle talen | V | Een test controleert per taal: verantwoordelijke met KvK, contactadres, datum, GitHub Pages, Gmail, het Data Privacy Framework, artikel 6, de Autoriteit Persoonsgegevens, en de voettekst. |
+| Privacyverklaring per bouwdoel kloppend | V | Sinds 12 oktober: alleen de webversie haalt bestanden op bij GitHub Pages; de Android-app bevat alles zelf. Een aparte tekst voor een portal komt bij het omzetten. |
+| Controleren of het Data Privacy Framework nog geldt | V, tijdelijk | Nagezocht op 12 oktober 2026: van kracht. Het Gerecht van de EU liet het op 3 september 2025 in stand; het hoger beroep (C-703/25 P) loopt nog. Vlak voor publicatie opnieuw nakijken (staat onder "Voor publicatie"). |
+| Privacyverklaring op `studiosedillo.com/the-flush-factor/privacy` en `/delete` | N | De pagina's bestaan in de app; op de hoofdsite staan ze nog niet. Dat pusht naar de live site en gebeurt pas bij de lancering, na akkoord (`Apps/tools/hoofdsite-toevoegen.sh`). |
 | Kinderparagraaf, ouderslot | – | Geen kinder-app (aanname). |
 | Verwijderpagina `/delete` met `/verwijderen` | V | |
 | Wissen getest: geen sleutel en geen cache over | V | |
@@ -533,16 +544,16 @@ Het script `nieuwe-app.sh` is voor nieuwe apps; deze app bestond al. Per onderde
 | Afspraak | | Toelichting |
 |---|---|---|
 | Roadmap in de vaste opbouw, logboek bijwerken | V | |
-| Begin van de sessie: `git status`, `git pull`, roadmap lezen | deels | `git status` en de roadmap wel; `git pull` niet gedaan (de branch liep op dat moment niet achter). |
-| Kleine commits | N | De commits van Sprint 9 en 10 zijn groot. Voortaan per punt committen. |
+| Begin van de sessie: `git status`, `git pull`, roadmap lezen | V | Sprint 11: alle drie gedaan (werkmap schoon, branch actueel). |
+| Kleine commits | V | Sprint 11: één commit per onderdeel. De commits van Sprint 9 en 10 waren groot. |
 | `main` alleen na akkoord | V | Alles staat op de branch `sprint-9`. |
 | Alle tests groen; sw-versie omhoog | V | |
 | Pushen naar de test-repo | V | Nieuw: `git push test sprint-9:main`. |
 | Nooit force-pushen naar `main`, geen secrets | V | `.gitignore` sluit nu ook `*.keystore` en `*.jks` uit. |
-| Scripts die naar live pushen alleen met `--dry-run` | – | Geen van die scripts gedraaid. |
+| Scripts die naar live pushen alleen met `--dry-run` | – | Geen van die scripts gedraaid (ook `sync-blocklist.sh` niet: dat zet het geheim in álle repo's; hier was alleen de test-repo nodig). |
 | Eigen werk of CC0 heeft de voorkeur; CC-BY met naamsvermelding | V | |
 | Niets zonder duidelijke licentie | V | **Let op:** de houten emmer is CC BY-**SA** 4.0 (gelijk delen). Het bewerkte model blijft daarom onder dezelfde licentie beschikbaar; dat staat in de credits. Wil je dat niet, dan moet er een ander model komen. |
-| Bronnen in `docs/credits.md`, gegevens gecontroleerd | deels | Verplaatst van `CREDITS.md` (dat verwijst er nu naar). De gegevens zijn in Sprint 7 nagelopen, deze sprint niet opnieuw. |
+| Bronnen in `docs/credits.md`, gegevens gecontroleerd | deels | De geluiden (punt 96) zijn op 12 oktober per stuk op de pagina van de bron nagekeken (alle CC0). De modellen zijn in Sprint 7 nagelopen en daarna niet opnieuw; de maker van "Old Rusted Bucket" is nog niet bevestigd (punt 73). |
 | Geen emoji als iconen | V | Test op broncode en op het scherm, nu ook op alle taalbestanden. |
 | Store-geschikt | V | Cartoonesk vies, niet realistisch. |
 | Nederlands, structureel oplossen, stappen opschrijven, afwijkingen melden | V | Zie hieronder en `docs/testversie.md`. |
@@ -560,6 +571,42 @@ De test-repo `the-flush-factor-test` is aangemaakt na akkoord van Jenn in deze s
 een eigen testdomein was. De `CLAUDE.md` van de app zei daarna dat aanmaken "bij het omzetten hoort".
 De repo bestaat nu dus eerder dan daar bedoeld; hij publiceert naar github.io, zonder eigen domein en
 met noindex, zoals sectie 11 voorschrijft.
+
+## Controle van 12 oktober 2026 (punt 98)
+
+`Apps/CLAUDE.md` opnieuw volledig gelezen. Nieuw of anders ten opzichte van de controle van 11 oktober:
+het KvK-nummer met de vaste formuleringen (verantwoordelijke, voettekst, credits), de regel dat het adres
+nergens mag staan, de URL's van de privacypagina's op de hoofdsite, `sync-blocklist.sh`, en in §5 dat de
+privacyverklaring per bouwdoel moet kloppen. De tabellen hierboven zijn daarop bijgewerkt.
+
+**Niet voldaan, en opgelost**
+
+| Wat | Wat er mis was | Wat er nu staat |
+|---|---|---|
+| Blocklist-controle in de CI | De stap stond niet (meer) in `ci.yml`, en de test-repo, de enige die publiceert, had het geheim niet. Er werd dus niets gecontroleerd voordat iets online kwam. | `ci.yml`: controle vóór de rooktest en op de gebouwde testversie vóór het publiceren. `privacy.yml`: bij elke push, ook met alleen documentatie, met de hele geschiedenis. Zonder geheim faalt de run in plaats van te waarschuwen. Geheim gezet in de test-repo. Test: `tests/ci.spec.js`. |
+| KvK-nummer | Stond nergens in de app. | Credits (tien talen), verantwoordelijke in de privacyverklaring (tien talen), voettekst op de privacy- en verwijderpagina. |
+| Privacyverklaring per bouwdoel | De tekst deed alsof het spel altijd van een website komt. | Onderscheid tussen de webversie (GitHub Pages) en de Android-app (alles in de app). |
+| Wat het spel bewaart | Nieuw: geluid aan/uit en volume. | In de privacyverklaring (tien talen) en `docs/privacy-audit.md`. Geen nieuwe sleutel: het zit in de spelstand van het profiel. |
+| `style-preview.html` op het testadres | Werd niet meegenomen in de testversie. | Gaat mee (noindex), zit niet in de service worker. |
+
+**Niet voldaan, en niet door mij op te lossen**
+
+| Wat | Waarom niet | Wat Jenn moet doen |
+|---|---|---|
+| Eén codebase met drie bouwdoelen (sectie 11, punt 2), met alles wat eraan hangt | Een eigen sprint; staat onder "Volgende". | Zeggen wanneer die sprint mag beginnen. Eén keer `npm run android:init` en de upload key volgen daarna (`docs/android.md` komt dan). |
+| Privacy- en verwijderpagina op studiosedillo.com | Pusht naar de live hoofdsite; alleen na akkoord en pas bij de lancering. | Bij de lancering akkoord geven voor `Apps/tools/hoofdsite-toevoegen.sh`. |
+| Het live adres (github.io, versie 0.2) heeft geen noindex, geen KvK en nog de oude opslag | `main` verandert alleen na "zet live". | Na het testen van deze branch "zet live" zeggen, of besluiten dat het live adres tot de lancering weg mag. |
+| Doelgroep (`KINDER_APP`) | Besluit van Jenn. | Kiezen: algemeen publiek (aanname) of ook kinderen onder 13. |
+| Postadres bij de KvK | Voorwaarde voor advertenties en aankopen. | Regelen vóórdat aankopen of AdMob aan gaan. |
+| Privacytekst en vertalingen | Door Claude geschreven, door niemand nagekeken. | Laten nakijken (staat onder "Voor publicatie"). |
+
+**Zelf gedaan aan instellingen bij GitHub** (hoort bij "los de blocklist-controle in de CI op"): het geheim
+`PRIVATE_BLOCKLIST` gezet in `the-flush-factor-test`. Verder niets aan Pages, domeinen of DNS.
+
+**Geluiden: eerlijk gezegd.** Claude kan niet luisteren. De geluiden zijn gekozen op titel, omschrijving,
+duur en gemeten volume; ze laden en spelen aantoonbaar af, maar of ze góéd klinken moet Jenn horen. De
+bestanden van Freesound zijn de voorbeeldversies die Freesound zelf aanbiedt (mp3), omdat de originelen
+alleen na inloggen te downloaden zijn; zie `docs/credits.md`.
 
 ## Water buiten de kom (punt 90)
 

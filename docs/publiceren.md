@@ -17,6 +17,7 @@ Nog te besluiten door Jenn:
 - **Doelgroep en leeftijd.** Aanname nu: algemeen publiek, geen kinder-app (toilethumor, en er zijn
   knoppen voor inloggen en echt geld voorbereid). Bij "ook voor kinderen onder 13": geen inloggen via
   Google/Facebook, een ouderslot voor gegevens verwijderen, en het Families-beleid.
+- **Stijl** (punt 78): A, B of C; de voorbeelden staan op het testadres (`style-preview.html`).
 - **Inloggen en punten kopen**: de knoppen staan er, zonder werking. Vóór publicatie: óf weghalen, óf
   echt maken. Echt maken betekent eerst de privacyverklaring en Data Safety bijwerken.
 - **Advertenties en aankopen**: uit. Pas mogelijk nadat het zakelijke postadres bij de KvK is vastgelegd en
@@ -29,7 +30,9 @@ Stand van zaken:
 - [x] In de app: profiel verwijderen, alle gegevens verwijderen, voortgang overzetten.
 - [x] `docs/privacy-audit.md` klopt met wat het spel bewaart (een test bewaakt dat).
 - [ ] Vertalingen nagekeken door moedertaalsprekers.
-- [ ] EU-U.S. Data Privacy Framework geldt nog voor GitHub en Google (de privacytekst gaat daarvan uit).
+- [ ] Privacytekst nagekeken door iemand met verstand van de AVG.
+- [ ] EU-U.S. Data Privacy Framework geldt nog voor GitHub en Google (de privacytekst noemt het). Stand op
+      2026-10-12: van kracht; hoger beroep C-703/25 P loopt nog. Vlak voor publicatie opnieuw nakijken.
 - [ ] Data Safety: "geen gegevens verzameld of gedeeld", zolang inloggen en aankopen niet actief zijn.
 - [ ] Contentclassificatie (IARC): let op de toilethumor.
 - [ ] Store-materiaal in `store/` compleet.

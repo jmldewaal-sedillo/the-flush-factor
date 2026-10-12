@@ -9,15 +9,17 @@ Webportals: nog geen
 
 **Besluit van Jenn, 2026-10-11 (`Apps/CLAUDE.md`, sectie 11):** eerst de Android-app en webportals; geen app-website op een subdomein tot "lanceren web". Het plan "verhuizen naar flushfactor.studiosedillo.com" en de TWA zijn vervallen.
 
-Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet gemerged naar `main`.
+Werk in uitvoering staat op de branch `sprint-9` (Sprint 9, 10 en 11), nog niet gemerged naar `main`.
 
 ## Nu bezig
 
-- [x] **Sprint 10 (punten 89–95)**: zie de sectie onderaan. Klaar op de branch, wacht op testen door Jenn.
+- [x] **Sprint 10 (punten 89–95)** en **Sprint 11 (punten 96–101)**: zie de secties onderaan. Klaar op de branch, wacht op testen door Jenn.
+- [ ] **Geluiden beluisteren (punt 96).** Claude kan niet luisteren: de geluiden zijn gekozen op titel, omschrijving, duur en gemeten volume. Jenn beoordeelt op het testadres of ze passen en of de volumes kloppen (bijstellen: `js/data/sounds.js`).
+- [ ] **Stijl kiezen (punt 78).** De drie richtingen staan op https://jmldewaal-sedillo.github.io/the-flush-factor-test/style-preview.html. Richting A · Sticker is in Sprint 9 al doorgevoerd zonder dat Jenn de voorbeelden had gezien; na haar keuze blijft A staan of wordt het B of C.
 
 ## Volgende
 
-- [ ] **88 / 61. Puntenbalans opnieuw nakijken.** Er is veel bijgekomen (opbouw, schoonmaakspullen die opraken). Neem de aantallen in `js/data/care.js` mee: hoeveel spelen kost een spons, en loont schoonmaken dan nog?
+- [ ] **61 (en 88). Puntenbalans opnieuw nakijken.** Er is veel bijgekomen (opbouw, schoonmaakspullen die opraken). Neem de aantallen in `js/data/care.js` mee: hoeveel spelen kost een spons, en loont schoonmaken dan nog?
 - [ ] **Omzetten naar één codebase met drie bouwdoelen** (`Apps/CLAUDE.md`, sectie 11; voorbeeld: de template `studio-sedillo-app-template` en Sudoku Kids): een dunne laag per bouwdoel (opslag, advertenties, SDK, terugknop), `android` met Capacitor (alle bestanden in de app, zonder service worker, package `com.studiosedillo.flushfactor`), `webportals` als upload-zip zonder service worker en zonder externe links, en de testversie op github.io met noindex. Wat van het oude plan was (subdomein, TWA, `assetlinks.json`) is al weg; `tools/bouw-site.mjs` (testversie voor github.io) gaat dan op in `tools/bouw.mjs`.
 - [ ] ~~Verhuizen naar flushfactor.studiosedillo.com~~ **Vervallen** (besluit 2026-10-11): geen subdomein en geen DNS-records tot "lanceren web".
 - [x] Test-repo `the-flush-factor-test` aangemaakt (2026-10-11, na akkoord), met deploy naar github.io na groene tests.
@@ -26,9 +28,10 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet geme
 
 ## Later / ideeën
 
-- [ ] 58. Geluiden · 60. Echte betaling voor punten · 63. Aankleden (zie "Toekomst" verderop)
+- [ ] 58. Geluiden, tweede deel (kassa, level-up, begin van een verstopping) · 60. Echte betaling voor punten · 63. Aankleden (zie "Toekomst" verderop)
+- [ ] **Aankopen via een server controleren zodra er accounts komen (bij punt 59; besluit van Jenn, 2026-10-12):** elke aankoop bij Google laten bevestigen door een eigen server (Google Play Developer API), en terugbetaalde of teruggedraaide aankopen intrekken (de punten weer afschrijven). Tot die tijd vertrouwt het spel het antwoord van Google Play Billing op het toestel. Zie "Capacitor: betalen, inloggen en offline", onderdeel 1.
 - [ ] 59. Echt inloggen met Google/Facebook. **Eerst** privacyverklaring en Data Safety bijwerken (CLAUDE.md §5).
-- [ ] 72–75, 77: zie "Toekomst (vastgelegd, nog niet bouwen)" verderop.
+- [ ] 44, 72–75: zie "Toekomstplan" en "Toekomst (vastgelegd, nog niet bouwen)" verderop. (Punt 77 bestaat niet: het nummer is overgeslagen.)
 - [ ] Meer dan 16 gereedschappen (het menu is erop voorbereid).
 
 ## Voor publicatie in Google Play
@@ -36,7 +39,8 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet geme
 - [ ] **Vertalingen laten nakijken door moedertaalsprekers**: alle tien talen in `js/i18n/` (spel) en `js/i18n/legal/` (privacyverklaring en verwijderpagina). Ze zijn door Claude geschreven en nog door niemand nagelezen; vooral de grappen en de juridische tekst.
 - [ ] Doelgroep en leeftijd vastleggen (aanname nu: geen kinder-app; zie `CLAUDE.md` van deze app).
 - [ ] Privacyverklaring en verwijderpagina **live** op https://studiosedillo.com/the-flush-factor/privacy en `/delete` (de URL's voor de Play Store; minimaal EN en NL). De pagina's zelf zijn er (Sprint 10); ze moeten nog naar de hoofdsite.
-- [ ] Controleren of het EU-U.S. Data Privacy Framework nog geldt voor GitHub en Google (de tekst gaat daarvan uit).
+- [ ] **Privacytekst laten nakijken** (door iemand met verstand van de AVG): de verklaring en de verwijderpagina in `js/i18n/legal/`, in elk geval Nederlands en Engels. Door Claude geschreven, door niemand nagekeken.
+- [ ] Vlak voor publicatie opnieuw controleren of het EU-U.S. Data Privacy Framework nog geldt voor GitHub en Google (de tekst noemt het). Stand op 2026-10-12: van kracht; het Gerecht van de EU heeft het op 3 september 2025 in stand gelaten, het hoger beroep (zaak C-703/25 P, Latombe/Commissie) loopt nog bij het Hof van Justitie. Vernietigt het Hof het besluit, dan moet die alinea eruit of anders.
 - [ ] Data Safety ingevuld (antwoorden volgen uit `docs/privacy-audit.md`).
 - [ ] Store-teksten (begin in `store/`), icoon, feature graphic 1024×500, telefoon- en tabletscreenshots.
 - [ ] Android-app gebouwd met Capacitor en getest in de interne test van de Play Console. De upload key maakt Jenn zelf. (Was: TWA met `assetlinks.json`; vervallen.)
@@ -50,6 +54,8 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet geme
 ## Logboek
 
 ### 2026-10-12
+- **Sprint 11 (punten 96–101)** op de branch `sprint-9`: geluiden (dertien korte CC0-geluiden, pas geladen na de eerste tik, aan/uit en volume in het menu, bewaard bij het profiel), winkelwagentje in de schoonmaakla, controle tegen de gewijzigde `Apps/CLAUDE.md` (AUDIT.md deel 6: blocklist-controle in de CI, KvK-vermelding en vaste voettekst), privacytekst preciezer over wat er naar de VS gaat, `style-preview.html` op het testadres, en deze roadmap opgeruimd (zie punt 99).
+- Besluit van Jenn over betalen vastgelegd: voorlopig het antwoord van Google Play Billing op het toestel vertrouwen, aankopen altijd bevestigen en verbruiken; controle via een server zodra er accounts komen.
 - **Testversie sneller online:** de test-repo publiceert na een korte rooktest (`tests/rook.spec.js`, telefoon en tablet) in plaats van na de volledige suite van een uur. De volledige suite draait ernaast en blijft de eis voor `main`. Werkwijze in README.md ("Testen en publiceren").
 - Testversie staat online op https://jmldewaal-sedillo.github.io/the-flush-factor-test/. Layout: het literlabel bij de emmer kon met een breder lettertype over de spoelknop vallen (gevonden door de tests op GitHub); hersteld.
 
@@ -207,33 +213,33 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet geme
 ## Versie 0.2 — Verbeteringen & uitbreiding
 
 ### Prioriteit hoog
-- [ ] **Geluidseffecten** via Web Audio API: plons bij spoelen, blorp bij verstopping, feest bij oplossen.
-- [ ] **Dagelijkse uitdagingen**: "Spoel 50× vandaag voor bonuspunten."
+- [x] ~~**Geluidseffecten** via Web Audio API~~ *Gedaan in punt 96; wat nog ontbreekt staat bij punt 58.*
+- [ ] **Dagelijkse uitdagingen en dagelijkse bonus**: "Spoel 50× vandaag voor bonuspunten", beloning voor terugkomen. Eerlijk houden: geen druk of straf voor een gemiste dag.
 - [ ] **Prestaties/badges**: bijv. "Eerste overloop overleefd", "Ninja Combo × 8".
-- [ ] **Betere PWA-iconen**: echte PNG-iconen in meerdere maten (192×192, 512×512).
-- [ ] **Splashscherm**: titelscherm met start-knop bij eerste bezoek.
+- [x] ~~**Betere PWA-iconen**~~ *Gedaan in Sprint 7 (192, 512 en maskable).*
+- [x] ~~**Splashscherm**~~ *Gedaan als welkomstscherm (punten 69 en 86).*
 
 ### Prioriteit middel
-- [ ] **Animaties verbeteren**: vloeiendere wateranimatie, bubbels in de kom bij verstopping.
-- [ ] **Extra gereedschappen**: Vacuümpomp, Hydrojet, etc.
+- [x] ~~**Animaties verbeteren**~~ *Gedaan in de punten 54 en 68.*
+- [x] ~~**Extra gereedschappen**~~ *Gedaan: zestien stuks (punt 81). Nog meer: zie "Later / ideeën".*
 - [ ] **Extra cosmetica**: seizoensgebonden items (kerst-toilet, zomer-strandtoilet).
-- [ ] **Tutorial**: eerste 3 verstoppingen worden begeleid.
+- [ ] ~~**Tutorial**~~ *Dubbel: staat bij punt 73 (spelregels / tutorial).*
 - [ ] **Snelheidsmodus**: optie om spoelcyclus te versnellen voor gevorderde spelers.
 
 ### Prioriteit laag
-- [ ] **Statistiekenscherm**: totaal spoelen, totaal verstoppingen, beste combo.
-- [ ] **Dagelijks bonus**: beloningssysteem voor dagelijks terugkeren.
+- [x] ~~**Statistiekenscherm**~~ *Gedaan in het profielscherm (punt 69); "beste combo" zit er niet in.*
+- [ ] ~~**Dagelijks bonus**~~ *Dubbel: samengevoegd met "Dagelijkse uitdagingen" hierboven.*
 
 ---
 
 ## Versie 1.0 — Play Store release
 
 - [ ] ~~TWA-integratie~~ **Vervallen** (besluit 2026-10-11): de Android-app wordt een Capacitor-app. Zie "Capacitor: betalen, inloggen en offline" verderop.
-- [ ] **Privacybeleid** (vereist voor Play Store).
-- [ ] **Reclame-integratie** (optioneel): AdMob via de Capacitor-plug-in, standaard uit; pas na het KvK-postadres en akkoord van Jenn (`Apps/CLAUDE.md`, sectie 11, punt 5).
-- [ ] **In-app aankopen** (optioneel): punten kopen via Google Play Billing, met een Capacitor-plug-in (punt 60).
-- [ ] **Volledige offline test** op Android-apparaat.
-- [ ] **Prestatieoptimalisatie**: Lighthouse-score ≥ 90.
+- [x] ~~**Privacybeleid**~~ *Geschreven in Sprint 10 (punt 89); live zetten en laten nakijken staat onder "Voor publicatie in Google Play".*
+- [ ] ~~**Reclame-integratie**~~ *Dubbel: staat onder "Voor publicatie in Google Play" (vóór advertenties of aankopen).* AdMob via de Capacitor-plug-in, standaard uit; pas na het KvK-postadres en akkoord van Jenn (`Apps/CLAUDE.md`, sectie 11, punt 5).
+- [ ] ~~**In-app aankopen**~~ *Dubbel: punt 60.*
+- [ ] ~~**Volledige offline test** op Android-apparaat~~ *Dubbel: hoort bij "Android-app gebouwd met Capacitor en getest in de interne test" onder "Voor publicatie".*
+- [ ] **Prestatieoptimalisatie**: Lighthouse-score ≥ 90 (voor de webversie; pas zinvol bij "lanceren web").
 
 ---
 
@@ -249,16 +255,16 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet geme
 
 ## Toekomstplan (nog niet bouwen)
 
-- [ ] **40. Profiel**
+- [ ] ~~**40. Profiel**~~ *Vervangen: fase 1 is gedaan in punt 69, de rest staat in punt 59.*
   - Onder de scorebubbel een profielknop.
   - Fase 1: spelen als gast (lokaal profiel met naam/avatar).
   - Fase 2: account aanmaken met e-mailadres, Google of Facebook, zodat voortgang op meerdere apparaten bewaard blijft. Gastvoortgang moet bij het aanmaken van een account overgezet worden.
   - Uitzoeken: backend (bv. Firebase Authentication + Firestore of Supabase), privacyverklaring en AVG, account verwijderen moet mogelijk zijn (verplicht in de Play Store).
 
-- [ ] **41. Aankopen met echt geld**
+- [ ] ~~**41. Aankopen met echt geld**~~ *Vervangen door punt 60.*
   - Kostenprofiel / betaalomgeving voor aankopen met echt geld (bv. puntenpakketten, premium items).
   - Let op: voor digitale aankopen in een app via de Google Play Store is Google Play Billing verplicht. ~~Voor de PWA/TWA gaat dat via de Digital Goods API + Payment Request API.~~ *Bijgewerkt 2026-10-11: in de Capacitor-app loopt dat via een plug-in voor Google Play Billing; zie punt 60.* Andere betaalmethoden (Stripe, PayPal) zijn voor in-app digitale items niet toegestaan.
-  - Aankopen moeten server-side gecontroleerd worden en aan het account (punt 40) gekoppeld zijn.
+  - ~~Aankopen moeten server-side gecontroleerd worden en aan het account (punt 40) gekoppeld zijn.~~ *Besluit 2026-10-12: pas zodra er accounts komen; zie punt 60.*
   - Duidelijke prijzen, geen misleidende aankopen; nadenken over leeftijdsclassificatie en ouderlijk toezicht.
 
 - [x] **42. Winkel met uitklapmenu's** *(Sprint 6, hersteld in punt 51)*
@@ -310,11 +316,11 @@ Ook in deze sprint (uit de audit): code opgesplitst in data (`js/data/`), logica
 
 ## Toekomst (alleen vastgelegd, nog niet bouwen)
 
-- [ ] **58. Geluiden** — Spoelen, gorgelen, plop bij ontstoppen, chaos-geluiden, kassa, level-up (CC0-bronnen); volume en aan/uit in het menu.
+- [ ] **58. Geluiden** — *Eerste deel gedaan in punt 96:* spoelen, overlopen (borrelen), plop bij ontstoppen, chaos-geluid, voorwerpen in de emmer, volume en aan/uit in het menu. **Nog te doen:** kassa bij een aankoop, level-up, het begin van een verstopping, schoonmaken en repareren; eventueel een eigen geluid per chaos-gereedschap (nu één toeter voor alle).
 - [ ] **59. Profiel** — *Fase 1 (lokaal gastprofiel, naam, avatar, statistieken) is gedaan in punt 69.* Nog te doen: echt koppelen met Google/Facebook/e-mail om te synchroniseren, gastvoortgang overzetten, account verwijderen. *Bijgewerkt 2026-10-11 voor Capacitor:* in de Android-app kan inloggen niet met een webvenster (pop-up of omleiding), maar via een plug-in die het inlogscherm van Android zelf opent; `authService` in `js/auth.js` blijft het enige koppelpunt. Zie "Capacitor: betalen, inloggen en offline" hieronder en de aangepaste stappen in het stappenplan bij Sprint 8. *(Vervangt punt 40.)*
-- [ ] **60. Echte betaling voor punten** — Google Play Billing via een Capacitor-plug-in, achter `purchaseService.buy()` in `js/purchases.js`. ~~Digital Goods API + Payment Request API in de TWA~~ is vervallen (besluit 2026-10-11). Uitwerking: "Capacitor: betalen, inloggen en offline" hieronder. Voorwaarden vooraf: het KvK-postadres en akkoord van Jenn (sectie 11, punt 5), en de privacyverklaring en Data Safety bijgewerkt. *(Vervangt punt 41.)*
+- [ ] **60. Echte betaling voor punten** — Google Play Billing via een Capacitor-plug-in, achter `purchaseService.buy()` in `js/purchases.js`. ~~Digital Goods API + Payment Request API in de TWA~~ is vervallen (besluit 2026-10-11). Uitwerking: "Capacitor: betalen, inloggen en offline" hieronder. Voorwaarden vooraf: het KvK-postadres en akkoord van Jenn (sectie 11, punt 5), en de privacyverklaring en Data Safety bijgewerkt. **Besluit van Jenn (2026-10-12):** bij puntenpakketten voorlopig het antwoord van Google Play Billing op het toestel vertrouwen, zonder eigen server; elke aankoop netjes bevestigen (acknowledge) en verbruiken (consume). Zodra er accounts komen (punt 59): controle via een server toevoegen, inclusief het intrekken van terugbetaalde aankopen. *(Vervangt punt 41.)*
 - [ ] **61. Logische puntenbalans** — Eén doordacht systeem voor punten per spoelbeurt/combo/ontstopping/level en prijzen, met een overzicht "hoeveel minuten spelen voor item X"; straffen in verhouding. Alle getallen staan al bij elkaar in `js/data/`.
-- [ ] **62. Meerdere talen** — Alle teksten naar taalbestanden (nl, en), taalkeuze in het menu, standaard de toesteltaal. Voorbereid: teksten uit JavaScript staan in `js/data/texts.js`.
+- [x] **62. Meerdere talen** — *Gedaan in punt 94 (tien talen).* Oorspronkelijk: Alle teksten naar taalbestanden (nl, en), taalkeuze in het menu, standaard de toesteltaal. Voorbereid: teksten uit JavaScript staan in `js/data/texts.js`.
 - [ ] **63. Aankleden** — Toilet en hokje aankleden (wc-hoes, matjes, handdoeken, spiegels, kastjes, planten, posters, verlichting) op de ankerpunten; thema-sets; items plaatsen, verschuiven en weghalen. Basis ligt er: ankerpunten in `js/data/room.js`, decoratie in `js/data/cosmetics.js`.
 
 ---
@@ -358,11 +364,16 @@ worden: versies en eisen van Google veranderen.
     punten" en de test daarvoor blijven gelden.
   - Tests: een nagemaakte platformlaag die elk resultaat kan teruggeven; in de tests wordt nooit echt
     gekocht. Echt testen kan alleen met een testaccount in de interne test van de Play Console.
-- **"Server-side gecontroleerd" (stond in 41 en 60).** Het spel heeft geen server, en dat is ook de
-  afspraak. Voorstel: bij verbruikbare puntenpakketten vertrouwen op het antwoord van Google op het
-  toestel, zonder eigen server. Gevolg: wie het toestel manipuleert kan zichzelf punten geven, maar dat
-  kan nu ook al (de spelstand staat lokaal) en het kost niemand anders iets. Een server wordt pas nodig
-  als punten tussen toestellen gedeeld worden via een account (punt 59). **Besluit van Jenn nodig.**
+- **Controle van aankopen (besluit van Jenn, 2026-10-12).** Het spel heeft geen server. Bij verbruikbare
+  puntenpakketten vertrouwt het spel **voorlopig het antwoord van Google Play Billing op het toestel**.
+  Elke aankoop wordt altijd netjes afgehandeld: punten bijschrijven, daarna bevestigen (acknowledge) en
+  verbruiken (consume), en bij het starten van de app openstaande aankopen alsnog afhandelen. Wie het toestel
+  manipuleert kan zichzelf punten geven, maar dat kan nu ook al (de spelstand staat lokaal) en het kost
+  niemand anders iets.
+  **Zodra er accounts komen (punt 59):** controle via een eigen server toevoegen. De server laat elke aankoop
+  door Google bevestigen (Google Play Developer API) voordat de punten bij het account komen, en trekt
+  terugbetaalde of teruggedraaide aankopen in (Google meldt die; de punten gaan er dan weer af). Staat ook
+  onder "Later / ideeën".
 - **Voorwaarden vooraf** (sectie 11, punt 5): zakelijk postadres bij de KvK vastgelegd en het
   bezoekadres afgeschermd (Google toont bij apps met aankopen het adres), akkoord van Jenn, en daarna
   eerst de privacyverklaring, Data Safety ("financiële gegevens: aankoopgeschiedenis, verwerkt door
@@ -556,7 +567,7 @@ Het Facebook App-geheim hoef je mij niet te geven; dat vul je zelf in bij Fireba
 
 Branch `sprint-9` (nog niet gemerged). Feedback na het testen van Sprint 8: muren aantikken en inzoomen werken goed.
 
-- [x] **78. Eigen visuele stijl** — Stijlvoorbeeldpagina `style-preview.html` met drie richtingen (A Sticker, B Tegelwerk, C Stripboek). **Gekozen: A · Sticker.** Vastgelegd in één designbestand, `css/tokens.css` (kleuren, lettertypen Lilita One + Nunito, omlijning, harde schaduw, scheve hoekjes), en overal doorgevoerd: zwevende knoppen, scorebubbel, gereedschap, menu's, meldingen en banners, winkel, profiel en welkomstscherm, credits, laad- en foutscherm. De oude "glazen" stijl is weg; een test bewaakt dat kleuren en lettertypen alleen uit de tokens komen.
+- [ ] **78. Eigen visuele stijl** — *Wacht op de keuze van Jenn (2026-10-12): zij had de drie richtingen nog niet gezien toen Claude A koos en doorvoerde. De voorbeelden staan nu op het testadres (`style-preview.html`). Blijft het A, dan is dit punt klaar; wordt het B of C, dan hoeft alleen `css/tokens.css` om.* Stijlvoorbeeldpagina `style-preview.html` met drie richtingen (A Sticker, B Tegelwerk, C Stripboek). **Voorlopig doorgevoerd: A · Sticker.** Vastgelegd in één designbestand, `css/tokens.css` (kleuren, lettertypen Lilita One + Nunito, omlijning, harde schaduw, scheve hoekjes), en overal doorgevoerd: zwevende knoppen, scorebubbel, gereedschap, menu's, meldingen en banners, winkel, profiel en welkomstscherm, credits, laad- en foutscherm. De oude "glazen" stijl is weg; een test bewaakt dat kleuren en lettertypen alleen uit de tokens komen.
 - [x] **79. Opbouw: van kapotte wc naar luxe badkamer** — Nieuwe spelers beginnen met een kapot en vies toilet, de roestige emmer (12 L), een kale muur en een bruine vieze vloer. Alles heeft een prijs en een level (`minLevel`) in `js/data/`: tegels, vloeren, toiletmodellen, emmers, decoratie, gereedschap, schoonmaak en reparatie. Toilet: kapot → gerepareerd → schoon → ander model (dat laatste kan pas als hij heel en schoon is). Bestaande spelers houden alles; getest met een opslag op level 4.
 - [x] **80. Vies en kapot toilet** — Kapot: scheve bril, scheef deksel met een barst, een stukje uit de rand. Vies: vuillaag met vlekken en druipers over het hele toilet, doffe kleur, kalkrand in de pot. Allemaal lagen bovenop het model en zijn eigen textures; het model is niet vervangen. Repareren en schoonmaken laten de overgang zien (bril draait recht, barst vervaagt, vuil lost op).
 - [x] **81. Minder gereedschap aan het begin** — Vier om te beginnen: ontstopper en emmer heet water (werken), rubberen eendje en confettikanon (chaos). De overige twaalf komen per level vrij (level 1 t/m 5, lomp → luxe). Bij een level-up: melding "N nieuw in de winkel", een teller op de winkelknop en "Nieuw!" op de kaarten. Bestaande spelers houden hun gereedschap.
@@ -566,7 +577,7 @@ Branch `sprint-9` (nog niet gemerged). Feedback na het testen van Sprint 8: mure
 - [x] **85. Speelse, verslavende winkel (eerlijk)** — Categorieën met eigen kleur en icoon, sticker-kaarten, uitgelicht item (het goedkoopste dat je nu kunt kopen) met voortgangsbalk, voortgang naar het volgende level, "Nieuw!" en "Bijna betaalbaar!", collectie per categorie ("3 van 5"), confetti en muntjes bij een aankoop. Eerlijk: geen timers of "laatste kans" (test), en echt geld staat apart met het label "Echt geld" en de prijs in euro's.
 - [x] **86. Welkomstscherm** — In de nieuwe stijl. De Google- en Facebook-knoppen hebben een gestippelde rand en het label "Binnenkort", met de uitleg dat inloggen later komt.
 - [x] **87. Tests** — `tests/start.spec.js`, `care.spec.js`, `tools.spec.js`, `style.spec.js`, uitbreidingen in `bucket.spec.js` en `screenshots.spec.js`; bestaande tests bijgewerkt.
-- [ ] **88. Notitie voor later** — Na deze sprint de puntenbalans (punt 61) opnieuw nakijken: er is veel bijgekomen en de prijzen en levels zijn een eerste schatting.
+- [ ] ~~**88. Notitie voor later**~~ *Dubbel: samengevoegd met punt 61 (puntenbalans), dat bovenaan onder "Volgende" staat.*
 
 ---
 

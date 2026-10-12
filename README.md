@@ -54,7 +54,8 @@ index.html            Pagina: 3D-scène, zwevende knoppen, winkel, profiel, cred
 privacy.html, delete.html, verwijderen.html   Privacyverklaring en "gegevens verwijderen"
 manifest.webmanifest, sw.js   PWA: installeerbaar en offline speelbaar
 css/                  tokens.css (HET designbestand: kleuren, letters, randen, schaduwen), style.css, animations.css, pages.css
-style-preview.html    Stijlvoorbeelden (drie richtingen; gekozen: A · Sticker). Hoort niet bij het spel.
+style-preview.html    Stijlvoorbeelden (drie richtingen; voorlopig doorgevoerd: A · Sticker, Jenn kiest nog).
+                      Hoort niet bij het spel; staat wel op het testadres.
 js/
   game.js             Coördinator: spelregels, game-loop, koppeling logica ↔ weergave
   state.js            Spelstand, laden en bewaren, migratie van oudere versies
@@ -67,6 +68,7 @@ js/
   shop.js             Winkel met uitklapbare categorieën
   purchases.js        Koppelpunt voor echte aankopen (nu een stub)
   auth.js             Koppelpunt voor inloggen met Google/Facebook (nu een stub)
+  sound.js            Geluid: laden na de eerste tik, afspelen, lus bij overlopen, aan/uit en volume
   events.js           Eventbus tussen logica en weergave
   renderer3d.js       Bouwt de 3D-scène en luistert naar de eventbus
   boot.js             Gesimuleerde safe-area (?safe=…)
@@ -162,7 +164,7 @@ npx playwright test shop          # één onderwerp
 | `bucket.spec.js` | vullen, legen, herladen; volle emmer; emmerweergave; alle vijf emmers en hun hengsel; inhoud blijft binnen de emmer |
 | `camera.spec.js` | zes camerastanden, swipen, "+"-plekken, muren aantikken, tik tegenover slepen |
 | `start.spec.js` | start-staat van een nieuwe speler, vrijspelen per level, bestaande speler (level 4) houdt alles |
-| `care.spec.js` | repareren, toilet en vlekken schoonmaken, troep na drie keer overlopen, straf bij vuil |
+| `care.spec.js` | repareren, toilet en vlekken schoonmaken, troep na drie keer overlopen, straf bij vuil, winkelknop in de schoonmaakla |
 | `menus.spec.js` | knop schoonmaakspullen altijd in beeld, spullen raken op (ook na herladen), menu's sluiten bij een tik ernaast zonder bijwerking |
 | `water.spec.js` | geen water buiten de kom (acht camerapunten, zes momenten), spetters in de kom, geen losse bouten |
 | `i18n.spec.js` | zelfde talen als Sudoku Kids, elke taal compleet, standaardtaal, taalkeuze, niets buiten zijn knop of vak |
@@ -176,6 +178,8 @@ npx playwright test shop          # één onderwerp
 | `layout.spec.js` | alle knoppen in beeld en zonder overlap, met notch- en punch-hole-profiel; scène tot achter de notch |
 | `sw.spec.js` | service worker in een submap, volledige cache, offline, geen herlaad; manifest |
 | `screenshots.spec.js` | screenshots van alle toestanden in `tests/screenshots/<formaat>/` om na te kijken |
+| `sound.spec.js` | geluiden: laden pas na de eerste tik en zonder fouten, elk moment zijn geluid, aan/uit en volume onthouden, klein, met bron en licentie |
+| `ci.spec.js` | de controle op privégegevens (blocklist) staat in de workflows en werkt; de testversie bevat `style-preview.html`, noindex |
 | `rook.spec.js` | de rooktest: kort en breed, draait vóór publicatie van de testversie (`npm run test:rook`) |
 | `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |
 
@@ -222,6 +226,12 @@ Werkwijze:
 Een nieuwe push vervangt een nog lopende volledige run van dezelfde branch. Pushes met alleen
 documentatie (`*.md`) starten geen tests en publiceren dus ook niets.
 
+**Controle op privégegevens (blocklist).** Vóór de rooktest, en nog een keer op de gebouwde testversie vóór
+het publiceren, gaat alles langs de lijst uit het geheim `PRIVATE_BLOCKLIST`. De workflow
+`.github/workflows/privacy.yml` doet dat ook bij elke push met alleen documentatie, inclusief de
+geschiedenis. Ontbreekt het geheim, dan faalt de run. De inhoud van de lijst wordt nooit getoond. Lokaal:
+`tools/install-hooks.sh` (één keer per kopie van de repo) en `python3 tests/no-private-data.py`.
+
 ## Talen
 
 Tien talen, dezelfde als in Sudoku Kids: Nederlands, English, Deutsch, Français, Español, Português,
@@ -229,6 +239,15 @@ Italiano, Polski, Türkçe, Bahasa Indonesia. De eerste keer volgt het spel de t
 Engels); daarna de keuze uit het menu (menuknop → Taal). Teksten staan in `js/i18n/<taal>.js`, met `{naam}` als
 invulplek; vaste teksten in `index.html` hebben `data-i18n`. Nederlands is de bron. De vertalingen zijn
 nog niet nagekeken door moedertaalsprekers (ROADMAP → Voor publicatie).
+
+## Geluid
+
+Dertien korte geluiden in `assets/sounds/` (mono mp3, samen ±113 kB), allemaal CC0; bron en licentie per
+geluid in `docs/credits.md` en het credits-scherm. Welk geluid bij welk moment hoort en hoe hard het
+klinkt staat in `js/data/sounds.js`; per voorwerp staat in `js/data/clog-props.js` of het zacht, hard of
+zwaar in de emmer valt. Browsers spelen pas geluid af na een tik: tot dan wordt er niets geladen, en als
+het geluid uit staat ook daarna niet. Menuknop → Geluid (aan/uit) en Volume; bewaard bij het profiel.
+In de console: `__game.sound()` laat zien wat er geladen en afgespeeld is.
 
 ## Gegevens en privacy
 
