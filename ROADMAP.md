@@ -14,7 +14,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9, 10 en 11), nog niet 
 ## Nu bezig
 
 - [x] **Sprint 10 (punten 89–95)** en **Sprint 11 (punten 96–101)**: zie de secties onderaan. Klaar op de branch, wacht op testen door Jenn.
-- [ ] **Geluiden beluisteren (punt 96).** Claude kan niet luisteren: de geluiden zijn gekozen op titel, omschrijving, duur en gemeten volume. Jenn beoordeelt op het testadres of ze passen en of de volumes kloppen (bijstellen: `js/data/sounds.js`).
+- [ ] **Sprint 12 (punten 102–106):** aanvulling op de geluiden na het beluisteren door Jenn; zie de sectie onderaan.
 
 ## Volgende
 
@@ -605,3 +605,15 @@ Branch `sprint-9` (nog niet gemerged).
 - [x] **99. Open punten roadmap** — Overzicht van alle open punten in vier groepen; dubbele en achterhaalde punten opgeruimd, nummering intact.
 - [x] **100. Antwoorden op het rapport van sprint 10** — Betalen (besluit vastgelegd), privacytekst (welke dienst stuurt gegevens naar de VS), punt 78 (stijlvoorbeeld op de testlink; Jenn koos daarna A). De passage over het Data Privacy Framework is niet weggehaald maar preciezer gemaakt: de webversie komt van GitHub Pages en e-mail loopt via Gmail, allebei Amerikaans, en `Apps/CLAUDE.md` §5 schrijft die vermelding voor.
 - [x] **101. Tests** — Geluiden laden zonder fouten en volgen de instellingen, de winkelknop in het schoonmaakmenu opent de juiste categorie, de blocklist-controle draait in CI. `tests/sound.spec.js`, `tests/ci.spec.js`, uitbreidingen in `care.spec.js`, `pages.spec.js`, `rook.spec.js`; `menus.spec.js` aangepast (het hoofdmenu is een regel hoger). Volledige suite lokaal groen op vier formaten.
+
+---
+
+## Sprint 12 (punten 102–106): aanvulling op de geluiden
+
+Branch `sprint-9` (nog niet gemerged). Feedback van Jenn na het beluisteren van punt 96.
+
+- [ ] **102. Geluid op het juiste moment** — Het geluid bij het verstopt raken begint op hetzelfde moment als de verstopping (het voorwerp dat valt). Structureel voor alle geluiden: vooraf geladen en gedecodeerd (AudioBuffers, na de eerste tik), zonder stilte vooraan, afgespeeld vanuit dezelfde spel-events die de animaties starten. Test meet de vertraging tussen event en start van het geluid; doel onder 50 ms.
+- [ ] **103. Geluid bij emmer legen** — Eigen geluid (troep die eruit kiept en rammelt).
+- [ ] **104. Elk gereedschap een eigen geluid** — Zestien gereedschappen, zestien geluiden. Werkend: eigen geluid tijdens gebruik, daarna het algemene ontstopt-geluid. Chaos: alleen het eigen geluid. Per gereedschap vastgelegd in `js/data/tools.js`; een test eist dat elk gereedschap een geluid heeft en dat geen twee hetzelfde bestand delen.
+- [ ] **105. Rustig house-deuntje** — Rustige deep-house-lus als achtergrondmuziek, naadloos herhalend, standaard aan. Vrije licentie, bron in `docs/credits.md` en het credits-scherm. Zachter tijdens spoelen en ontstoppen, stil op de achtergrond, klein bestand, pas geladen na het startscherm.
+- [ ] **106. Geluidsinstellingen** — Per profiel een schuif en aan/uit voor Muziek, Toilet & water, Gereedschap, Emmer & schoonmaak en Interface, plus de hoofdschakelaar "Alle geluid uit". Onthouden na herladen. Test: elke regelaar raakt alleen zijn eigen groep.
