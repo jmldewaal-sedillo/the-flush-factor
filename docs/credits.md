@@ -3,7 +3,7 @@
 Bronvermelding van alles wat niet zelf gemaakt is. Het credits-scherm in het spel (menu → Credits)
 toont dezelfde gegevens uit `js/data/credits.js`.
 
-Volgorde: 3D-modellen · textures en licht · iconen · geluiden · lettertypen · code van anderen.
+Volgorde: 3D-modellen · textures en licht · iconen · geluiden en muziek · lettertypen · code van anderen.
 
 ## 3D-modellen (gedownload)
 
@@ -44,7 +44,7 @@ Alle iconen staan als losse, ongewijzigde SVG-bestanden in `assets/icons/` en wo
 
 - Bron: https://lucide.dev (pakket `lucide-static` 1.53.0)
 - Licentie: ISC — zie `assets/icons/lucide/LICENSE`
-- Gebruikt (39): menu, arrow-left, shopping-cart, trash-2, volume-2, info, maximize, switch-camera, x, chevron-down, lock, coins, trophy, check, circle-check, zap, flame, sparkles, wrench, plus, layout-grid, layers, toilet, smartphone, tablet, rotate-cw, triangle-alert, paintbrush, eye, droplets, scan-eye, chevron-left, chevron-right, star, gift, target, hammer, euro, arrow-up
+- Gebruikt (44): menu, arrow-left, shopping-cart, trash-2, volume-2, info, maximize, switch-camera, x, chevron-down, lock, coins, trophy, check, circle-check, zap, flame, sparkles, wrench, plus, layout-grid, layers, toilet, smartphone, tablet, rotate-cw, triangle-alert, paintbrush, eye, droplets, scan-eye, chevron-left, chevron-right, star, gift, target, hammer, euro, arrow-up, globe, arrow-left-right, user-x, shield-check, volume-x
 
 ### game-icons.net — spelvoorwerpen
 
@@ -110,29 +110,58 @@ Alle iconen staan als losse, ongewijzigde SVG-bestanden in `assets/icons/` en wo
 | `dirt-floor` | [earth-crack](https://game-icons.net/1x1/lorc/earth-crack.html) | Lorc |
 | `wood-floor` | [wood-beam](https://game-icons.net/1x1/delapouite/wood-beam.html) | Delapouite |
 
-## Geluiden (CC0)
+## Geluiden en muziek (CC0)
 
-Alle geluiden zijn CC0 1.0 (publiek domein); de licentie is per geluid op de pagina van de bron nagekeken op
-12 oktober 2026. De bestanden staan in `assets/sounds/`, als mono mp3 (44,1 kHz, 80 kbit/s), samen ±113 kB.
-Welk bestand bij welk moment hoort en hoe hard het klinkt staat in `js/data/sounds.js`.
+Alle geluiden en de muziek zijn CC0 1.0 (publiek domein, vrij te gebruiken in een commerciële app); de licentie
+is per geluid op de pagina van de bron nagekeken op 12 oktober 2026 (punt 96) en 13 oktober 2026 (punten
+102–105). De bestanden staan in `assets/sounds/`: de effecten als mono mp3 (44,1 kHz, 80 kbit/s, samen ±300 kB),
+de muziek als stereo mp3 (112 kbit/s, ±450 kB). Welk bestand bij welk moment hoort, in welke groep het valt en
+hoe hard het klinkt staat in `js/data/sounds.js`; het geluid per gereedschap in `js/data/tools.js`.
 
 | Bestand in het spel | Moment | Bron | Maker | Licentie | Wat ermee gedaan is |
 |---|---|---|---|---|---|
 | `flush.mp3` | spoelen | ["Toilet Flushing"](https://freesound.org/people/lorenzgillner/sounds/274448/) | lorenzgillner (Freesound) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | ingekort tot 2,3 s (de spoelanimatie duurt 1,8 s), uitfaden |
+| `clog.mp3` | verstopt raken: het voorwerp valt in de pot | ["Water drop (splash)"](https://freesound.org/people/bolkmar/sounds/451126/) | bolkmar (Freesound) | CC0 1.0 | ingekort tot 0,7 s, harder gezet |
 | `overflow.mp3` | overlopend toilet (loopt door) | ["Bubbling"](https://freesound.org/people/pillwave/sounds/423959/) | pillwave (Freesound) | CC0 1.0 | 4 s uitgeknipt, harder gezet; het spel maakt er bij het laden een naadloze lus van |
-| `unclog.mp3` | ontstoppen | ["Plop!"](https://freesound.org/people/Breviceps/sounds/447910/) + ["drain finishing/glug"](https://freesound.org/people/brittmosel/sounds/529300/) | Breviceps, brittmosel (Freesound) | CC0 1.0 | de plop, direct gevolgd door 1 s van het wegspoelen; samengevoegd tot één bestand |
-| `chaos.mp3` | chaos-gereedschap | ["Honk! (Vintage Bicycle Horn)"](https://freesound.org/people/Breviceps/sounds/468441/) | Breviceps (Freesound) | CC0 1.0 | iets harder gezet |
+| `unclog.mp3` | ontstopt | ["Plop!"](https://freesound.org/people/Breviceps/sounds/447910/) + ["drain finishing/glug"](https://freesound.org/people/brittmosel/sounds/529300/) | Breviceps, brittmosel (Freesound) | CC0 1.0 | de plop, direct gevolgd door 1 s van het wegspoelen; samengevoegd tot één bestand |
+| `tool-plunger.mp3` | gereedschap: ontstopper | ["Plunger Pop.wav"](https://freesound.org/people/praxis_bard/sounds/380324/) | praxis_bard (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-hot-water.mp3` | gereedschap: emmer heet water | ["Pouring Liquid.wav"](https://freesound.org/people/Dvideoguy/sounds/207781/) | Dvideoguy (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-rubber-duck.mp3` | gereedschap: rubberen eendje | ["Rubber Duck"](https://freesound.org/people/Slothfully_So/sounds/685067/) | Slothfully_So (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-confetti-cannon.mp3` | gereedschap: confettikanon | ["partypopper.flac"](https://freesound.org/people/Streety/sounds/26349/) | Streety (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-flamingo.mp3` | gereedschap: opblaasbare flamingo | ["balloon rub.wav"](https://freesound.org/people/simosco/sounds/235535/) | simosco (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-toilet-snake.mp3` | gereedschap: toiletveer | ["ratchet.wav"](https://freesound.org/people/Nomadyag/sounds/193058/) | Nomadyag (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-magic-wand.mp3` | gereedschap: toverstaf | ["cartoon_wink_magic_sparkle.wav"](https://freesound.org/people/MLaudio/sounds/511485/) | MLaudio (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-disco-ball.mp3` | gereedschap: discobal | ["Disco Beat 114 bpm.wav"](https://freesound.org/people/FullMetalJedi/sounds/339312/) | FullMetalJedi (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-megaphone.mp3` | gereedschap: megafoon | ["Megaphone/Radio Gibberish (5)"](https://freesound.org/people/Kastenfrosch/sounds/521971/) | Kastenfrosch (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-drain-cleaner.mp3` | gereedschap: ontstoppingsmiddel | ["Fizzle"](https://freesound.org/people/michorvath/sounds/388247/) | michorvath (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-tiny-elephant.mp3` | gereedschap: mini-olifant | ["Elephant Trumpets Growls.flac"](https://freesound.org/people/D.jones/sounds/527845/) | D.jones (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-ninja-unclogger.mp3` | gereedschap: ninja-ontstopper | ["Whoosh"](https://freesound.org/people/qubodup/sounds/60013/) | qubodup (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-super-plunger.mp3` | gereedschap: super ontstopper 3000 | ["Suction Cup"](https://freesound.org/people/michorvath/sounds/386885/) | michorvath (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-electric-plunger.mp3` | gereedschap: elektrische ontstopper | ["Electrical Drill.wav"](https://freesound.org/people/aidansamuel/sounds/540145/) | aidansamuel (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-hydro-jet.mp3` | gereedschap: hogedrukspuit | ["Hidrolavadora.wav"](https://freesound.org/people/valeulloam97/sounds/532823/) | valeulloam97 (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
+| `tool-robot-arm.mp3` | gereedschap: robotarm | ["servomotor.wav"](https://freesound.org/people/vacuumfan7072/sounds/264592/) | vacuumfan7072 (Freesound) | CC0 1.0 | stilte vooraan weg, ingekort, volume gelijkgetrokken |
 | `bucket-soft-1…3.mp3` | zacht voorwerp in de emmer (papier, sok, knuffel, eend, vis, banaan) | ["Impact Sounds"](https://kenney.nl/assets/impact-sounds) 1.0: `impactSoft_medium_000…002.ogg` | Kenney (kenney.nl) | CC0 1.0 | alleen omgezet van ogg naar mp3 |
 | `bucket-hard-1…3.mp3` | klein hard voorwerp (autootje, telefoon, sleutel) | idem: `impactGeneric_light_000…002.ogg` | Kenney | CC0 1.0 | alleen omgezet |
 | `bucket-heavy-1…3.mp3` | baksteen | idem: `impactWood_heavy_000…002.ogg` | Kenney | CC0 1.0 | alleen omgezet |
+| `bucket-empty.mp3` | emmer legen | ["Aggressive Clatter 01"](https://freesound.org/people/leonelmail/sounds/461696/) | leonelmail (Freesound) | CC0 1.0 | ingekort tot 1,1 s |
+| `scrub.mp3` | schoonmaken (één veeg) | ["toilet scrub.wav"](https://freesound.org/people/semccab/sounds/154369/) | semccab (Freesound) | CC0 1.0 | één veeg van 0,5 s uitgeknipt, harder gezet |
+| `ui-click.mp3` | knoppen | ["Interface Sounds"](https://kenney.nl/assets/interface-sounds) 1.0: `click_001.ogg` | Kenney (kenney.nl) | CC0 1.0 | alleen omgezet van ogg naar mp3 |
+| `ui-buy.mp3` | aankoop in de winkel | idem: `confirmation_001.ogg` | Kenney | CC0 1.0 | alleen omgezet |
+
+### Muziek
+
+| Bestand in het spel | Bron | Maker | Licentie | Wat ermee gedaan is |
+|---|---|---|---|---|
+| `music-deep-house.mp3` | ["Deep House.wav"](https://freesound.org/people/Johnnie_Holiday/sounds/564794/) (door de maker opgegeven: 128 tellen per minuut) | Johnnie_Holiday (Freesound) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | ingekort tot precies 64 tellen (16 maten), vertraagd naar 118 tellen per minuut zonder de toonhoogte te veranderen (32,5 s), iets zachter gezet |
 
 **Versie van Freesound:** de originele bestanden kun je bij Freesound alleen downloaden als je bent ingelogd. Gebruikt
 is daarom de voorbeeldversie die Freesound zelf van elk geluid aanbiedt (mp3, "hq"), en die is daarna ingekort.
 Het is dezelfde opname onder dezelfde licentie, alleen al een keer gecomprimeerd. Wil je de originelen gebruiken:
 log in bij Freesound, download ze via de links hierboven en geef ze aan Claude om opnieuw te knippen.
 
-**Nog niet beluisterd:** de geluiden zijn gekozen op titel, omschrijving, duur en gemeten volume. Claude kan niet
-luisteren; Jenn beoordeelt op het testadres of ze passen (zie ROADMAP punt 96).
+**Niet beluisterd door Claude:** de geluiden en de muziek zijn gekozen op titel, omschrijving, duur en gemeten
+volume. Claude kan niet luisteren; Jenn beoordeelt op het testadres of ze passen. Een geluid vervangen: nieuw
+bestand in `assets/sounds/`, de regel in `js/data/sounds.js`, en de bron hier en in `js/data/credits.js`.
 
 ## Lettertypen
 
