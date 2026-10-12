@@ -50,6 +50,10 @@ kwetsende grappen. De speler wordt met "je" aangesproken.
   bezoekadres is afgeschermd, en dan alleen na akkoord van Jenn (sectie 11, punt 5).
 - Testen op de telefoon: de testversie staat op `jmldewaal-sedillo.github.io/the-flush-factor-test/`
   (noindex). Push naar test: `git push test <branch>:main`; zie `docs/testversie.md`.
+- **Afwijking van `Apps/CLAUDE.md` §3 ("deploy alleen als de tests groen zijn"), besluit van Jenn
+  2026-10-12:** de testversie wordt gepubliceerd na de korte rooktest (`npm run test:rook`); de
+  volledige suite draait ernaast en blokkeert de testversie niet. `main` blijft achter de volledige
+  suite. Zie README.md, "Testen en publiceren".
 - De houten emmer is CC BY-SA 4.0 (gelijk delen): het bewerkte model moet onder dezelfde licentie
   beschikbaar blijven. Zie `docs/credits.md`.
 - Eerlijke winkel: geen nep-timers of "laatste kans"; echt geld altijd met de prijs in euro's en

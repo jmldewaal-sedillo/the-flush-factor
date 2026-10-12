@@ -8,7 +8,8 @@
     "icons": "node tools/build-icons.mjs --download",
     "assets": "bash tools/optimize-assets.sh",
     "test": "playwright test",
-    "test:headed": "playwright test --headed"
+    "test:headed": "playwright test --headed",
+    "test:rook": "playwright test tests/rook.spec.js --project=phone-portrait --project=tablet-landscape"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0"

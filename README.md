@@ -176,6 +176,7 @@ npx playwright test shop          # één onderwerp
 | `layout.spec.js` | alle knoppen in beeld en zonder overlap, met notch- en punch-hole-profiel; scène tot achter de notch |
 | `sw.spec.js` | service worker in een submap, volledige cache, offline, geen herlaad; manifest |
 | `screenshots.spec.js` | screenshots van alle toestanden in `tests/screenshots/<formaat>/` om na te kijken |
+| `rook.spec.js` | de rooktest: kort en breed, draait vóór publicatie van de testversie (`npm run test:rook`) |
 | `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |
 
 De tests wachten op het spel zelf (`window.__game`), niet op vaste tijden. `window.__game` is ook handig in de
@@ -195,9 +196,31 @@ npm test
 Of op je telefoon, via het testadres (zie [docs/testversie.md](docs/testversie.md)):
 
 ```bash
-git push test sprint-9:main          # eerst draaien de tests (ongeveer een uur), daarna staat het op
+git push test sprint-9:main          # na de rooktest (doel: binnen 10 minuten) staat het op
                                      # https://jmldewaal-sedillo.github.io/the-flush-factor-test/
 ```
+
+## Testen en publiceren
+
+| | Wat draait er | Hoe lang | Wat hangt ervan af |
+|---|---|---|---|
+| **Rooktest** | `npm run test:rook` (`tests/rook.spec.js`): laden zonder fouten, spoelen, verstopping oplossen, winkel, schoonmaken, menu, taal, gegevens, privacypagina's; één telefoon- en één tabletformaat | lokaal een kwart minuut, op GitHub een paar minuten | **Publicatie van de testversie** |
+| **Volledige suite** | `npm test`: alle tests op vier formaten | lokaal ongeveer 25 minuten, op GitHub ongeveer een uur | **`main`** (het live adres) |
+
+Werkwijze:
+
+1. **Testversie:** `git push test <branch>:main`. Op GitHub starten de rooktest en de volledige suite
+   tegelijk. Na een groene rooktest staat de testversie online; de volledige suite draait door en houdt de
+   publicatie niet tegen.
+2. **Na ongeveer een uur** nakijken of de volledige suite ook groen is:
+   `gh run list -R jmldewaal-sedillo/the-flush-factor-test --limit 1`. Rood = er is iets stuk dat de
+   rooktest niet ziet; de testversie staat er dan wel, maar is niet goedgekeurd.
+3. **Live:** mergen naar `main` alleen na akkoord van Jenn en alleen als de volledige suite groen is op
+   die commit. Het live adres wordt rechtstreeks vanaf `main` gevuld (geen workflow ertussen), dus die
+   controle is een afspraak en geen slot.
+
+Een nieuwe push vervangt een nog lopende volledige run van dezelfde branch. Pushes met alleen
+documentatie (`*.md`) starten geen tests en publiceren dus ook niets.
 
 ## Talen
 

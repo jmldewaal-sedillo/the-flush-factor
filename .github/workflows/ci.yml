@@ -1,29 +1,31 @@
 name: Testen en publiceren
 
-# Elke push: de tests draaien (CLAUDE.md §3).
-# Test-repo (the-flush-factor-test), branch main: zijn de tests groen, dan gaat de testversie naar
+# Elke push draait twee dingen naast elkaar:
+#   rook  de korte rooktest (laden, geen fouten, kernfuncties; telefoon en tablet; doel: onder 10 minuten)
+#   test  de volledige suite (vier formaten, ongeveer een uur op de runner van GitHub)
+#
+# Test-repo (the-flush-factor-test), branch main: is de ROOKTEST groen, dan gaat de testversie meteen naar
 #   https://jmldewaal-sedillo.github.io/the-flush-factor-test/   (noindex; Apps/CLAUDE.md sectie 11)
-# Live-repo (the-flush-factor): hier publiceert deze workflow NIET. Het live adres wordt door GitHub
-#   Pages rechtstreeks vanaf branch main gevuld, en main verandert alleen na akkoord van Jenn.
-# Zie docs/testversie.md.
+#   De volledige suite draait door en blokkeert de publicatie niet; faalt hij, dan zie je dat aan deze run.
+# Live-repo (the-flush-factor): deze workflow publiceert daar NIET. Het live adres wordt door GitHub Pages
+#   rechtstreeks vanaf branch main gevuld. main blijft achter de volledige suite: mergen naar main alleen na
+#   akkoord van Jenn en alleen als de job "test" groen is op de commit die gemerged wordt.
+# Zie README.md ("Testen en publiceren") en docs/testversie.md.
 
 on:
   push:
-    paths-ignore: ['**.md']      # alleen documentatie gewijzigd: geen testrun van een uur
+    paths-ignore: ['**.md']      # alleen documentatie gewijzigd: geen testrun
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  test:
+  rook:
+    name: Rooktest
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +43,40 @@ jobs:
       - name: Sprite en sw.js zijn actueel
         run: node tools/build-icons.mjs && node tools/build-sw.mjs --check && git diff --exit-code -- assets/icons/sprite.svg js/data/icon-credits.js
 
+      - name: Rooktest (telefoon en tablet)
+        run: npm run test:rook
+
+      - name: Upload rapport bij een fout
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: rooktest
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  test:
+    name: Volledige suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    # Een nieuwe push vervangt de lopende volledige run van dezelfde branch; anders staan ze een uur in de rij.
+    concurrency:
+      group: volledig-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installeer dependencies
+        run: npm ci
+
+      - name: Installeer Playwright-browser
+        run: npx playwright install --with-deps chromium
+
       - name: Playwright-tests
         run: npm test
 
@@ -57,11 +93,14 @@ jobs:
 
   deploy:
     name: Publiceren op het testadres
-    needs: test
-    # Alleen de test-repo, alleen main, alleen als de tests groen zijn.
+    needs: rook
+    # Alleen de test-repo, alleen main, alleen als de rooktest groen is. Wacht niet op de volledige suite.
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && endsWith(github.event.repository.name, '-test')
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write

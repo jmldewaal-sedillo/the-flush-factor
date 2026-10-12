@@ -49,6 +49,10 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 en 10), nog niet geme
 
 ## Logboek
 
+### 2026-10-12
+- **Testversie sneller online:** de test-repo publiceert na een korte rooktest (`tests/rook.spec.js`, telefoon en tablet) in plaats van na de volledige suite van een uur. De volledige suite draait ernaast en blijft de eis voor `main`. Werkwijze in README.md ("Testen en publiceren").
+- Testversie staat online op https://jmldewaal-sedillo.github.io/the-flush-factor-test/. Layout: het literlabel bij de emmer kon met een breder lettertype over de spoelknop vallen (gevonden door de tests op GitHub); hersteld.
+
 ### 2026-10-11
 - **App-structuur Studio Sedillo** (`Apps/CLAUDE.md`, sectie 11) vastgelegd. In deze roadmap aangepast: status (geen subdomein, testversie op github.io), "Verhuizen naar flushfactor.studiosedillo.com" vervallen, TWA vervangen door Capacitor, privacy-URL's op de hoofdsite, gesloten test, en de voorwaarde voor advertenties en aankopen. Nieuw onder "Volgende": omzetten naar drie bouwdoelen. `CLAUDE.md` verwijst nu naar sectie 11. Aan de app zelf is niets veranderd.
 
