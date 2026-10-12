@@ -5,7 +5,7 @@ import { CAMERA_VIEWS } from '../data/room.js';
 import { CREDITS, STUDIO } from '../data/credits.js';
 import { icon } from './icons.js';
 import { storage } from '../storage.js';
-import { VOLUME_STEP } from '../data/sounds.js';
+import { VOLUME_STEP, SOUND_GROUPS } from '../data/sounds.js';
 
 const $ = id => document.getElementById(id);
 const RING = 2 * Math.PI * 24;
@@ -279,22 +279,50 @@ export const hud = {
   },
   menuOpen: () => menus.some(m => m.isOpen()),
 
-  // Geluid in het menu (punt 96): een knop voor aan/uit en een schuif voor het volume.
-  // onChange({ on }) of onChange({ volume }) met het volume van 0 tot 1.
+  // Geluidsinstellingen (punt 106): per groep een aan/uit-knop en een schuif, plus "Alle geluid uit".
+  // onChange({ muted }) · onChange({ group, on }) · onChange({ group, volume }) met het volume van 0 tot 1.
   bindSound(settings, onChange) {
-    const range = $('setting-volume');
-    range.step = String(Math.round(VOLUME_STEP * 100));
-    range.addEventListener('input', () => onChange({ volume: Number(range.value) / 100 }));
+    const dialog = $('sound-dialog'), list = $('sound-groups');
+    list.innerHTML = SOUND_GROUPS.map(g => `
+      <div class="sound-row" data-group="${g.id}">
+        <button type="button" class="round-btn small sound-toggle" aria-pressed="true">${icon(g.icon, 20)}</button>
+        <label><span class="sound-name"></span><input type="range" min="0" max="100" step="${Math.round(VOLUME_STEP * 100)}"></label>
+      </div>`).join('');
+    list.addEventListener('click', e => {
+      const btn = e.target.closest('.sound-toggle');
+      if (btn) onChange({ group: btn.closest('.sound-row').dataset.group, on: btn.getAttribute('aria-pressed') !== 'true' });
+    });
+    list.addEventListener('input', e => {
+      if (e.target.matches('input[type="range"]')) onChange({ group: e.target.closest('.sound-row').dataset.group, volume: Number(e.target.value) / 100 });
+    });
+    $('btn-mute-all').addEventListener('click', () => onChange({ muted: $('btn-mute-all').getAttribute('aria-pressed') !== 'true' }));
+    $('btn-sound-close').addEventListener('click', () => this.closeSound());
+    dialog.addEventListener('click', e => { if (e.target === dialog) this.closeSound(); });
     this.sound(settings);
   },
-  sound({ on, volume }) {
-    const btn = $('btn-sound'), range = $('setting-volume'), pct = Math.round(volume * 100);
-    btn.setAttribute('aria-pressed', String(on));
-    btn.querySelector('use').setAttribute('href', `assets/icons/sprite.svg#${on ? 'volume-2' : 'volume-x'}`);
-    $('sound-state').textContent = t(on ? 'menu.soundOn' : 'menu.soundOff');
-    range.value = String(pct);
-    range.disabled = !on;
-    range.setAttribute('aria-valuetext', `${pct}%`);
+  openSound() { $('sound-dialog').hidden = false; $('btn-sound-close').focus(); },
+  closeSound() { $('sound-dialog').hidden = true; },
+  soundOpen: () => !$('sound-dialog').hidden,
+  // Toont de stand: { muted, groups: { <groep>: { on, volume } } }. Ook na een taalwissel.
+  sound({ muted, groups }) {
+    $('btn-mute-all').setAttribute('aria-pressed', String(muted));
+    $('sound-dialog').dataset.muted = String(muted);
+    $('btn-sound').querySelector('use').setAttribute('href', `assets/icons/sprite.svg#${muted ? 'volume-x' : 'volume-2'}`);
+    $('btn-sound').dataset.muted = String(muted);
+    $('sound-state').textContent = t(muted ? 'menu.soundOff' : 'menu.soundOn');
+    for (const row of document.querySelectorAll('#sound-groups .sound-row')) {
+      const g = groups[row.dataset.group], name = t(`sound.group.${row.dataset.group}`), pct = Math.round(g.volume * 100);
+      const btn = row.querySelector('.sound-toggle'), range = row.querySelector('input');
+      row.querySelector('.sound-name').textContent = name;
+      row.dataset.on = String(g.on && !muted);
+      btn.setAttribute('aria-pressed', String(g.on));
+      btn.setAttribute('aria-label', t(g.on ? 'sound.turnOff' : 'sound.turnOn', { name }));
+      btn.disabled = muted;
+      range.value = String(pct);
+      range.disabled = muted || !g.on;
+      range.setAttribute('aria-label', t('sound.volumeOf', { name }));
+      range.setAttribute('aria-valuetext', `${pct}%`);
+    }
   },
 
   // Taalkeuze in het menu (punt 94): keuzelijst met elke taal in die taal zelf, zoals in Sudoku Kids.

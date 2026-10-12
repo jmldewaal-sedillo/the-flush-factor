@@ -34,11 +34,8 @@
     <div id="hud-topcenter">
       <button id="btn-menu" class="round-btn" data-i18n-aria="a.menu" aria-label="Menu" aria-expanded="false" aria-controls="main-menu"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="assets/icons/sprite.svg#menu"/></svg></button>
       <div id="main-menu" class="popover" role="menu" hidden>
-        <!-- Geluid (punt 96): aan/uit en volume, per profiel onthouden -->
-        <button class="menu-item" id="btn-sound" data-action="sound" aria-pressed="true"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-2"/></svg><span data-i18n="menu.sound">Geluid</span><span id="sound-state" class="menu-state"></span></button>
-        <label class="menu-item menu-volume"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-1"/></svg><span data-i18n="menu.volume">Volume</span>
-          <input id="setting-volume" type="range" min="0" max="100" step="5" value="80" data-i18n-aria="menu.volume" aria-label="Volume">
-        </label>
+        <!-- Geluid (punten 96 en 106): opent de geluidsinstellingen; rechts de stand van de hoofdschakelaar -->
+        <button class="menu-item" id="btn-sound" data-action="sound"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-2"/></svg><span data-i18n="menu.sound">Geluid</span><span id="sound-state" class="menu-state"></span></button>
         <button class="menu-item" data-action="credits"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#info"/></svg><span data-i18n="menu.credits">Credits</span></button>
         <button class="menu-item" data-action="fullscreen"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#maximize"/></svg><span data-i18n="menu.fullscreen">Volledig scherm</span></button>
         <button class="menu-item" data-action="camera-reset"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="menu.cameraReset">Camera terugzetten</span></button>
@@ -191,6 +188,16 @@
       <button type="button" id="btn-import" class="pill-btn" data-i18n="data.importBtn">Zet terug</button>
     </div>
     <p id="transfer-status" role="status"></p>
+  </div>
+</div>
+
+<!-- Geluidsinstellingen (punt 106): per groep aan/uit en volume, plus "Alle geluid uit". Bewaard bij het profiel. -->
+<div id="sound-dialog" class="dialog" role="dialog" aria-labelledby="sound-title" hidden>
+  <div class="dialog-panel">
+    <button id="btn-sound-close" class="round-btn dialog-close" data-i18n-aria="a.close" aria-label="Sluiten"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#x"/></svg></button>
+    <h2 id="sound-title" data-i18n="sound.title">Geluid</h2>
+    <button type="button" id="btn-mute-all" class="sound-master" aria-pressed="false"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="assets/icons/sprite.svg#volume-x"/></svg><span data-i18n="sound.muteAll">Alle geluid uit</span><span class="switch" aria-hidden="true"></span></button>
+    <div id="sound-groups"></div>
   </div>
 </div>
 

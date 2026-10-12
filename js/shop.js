@@ -18,7 +18,7 @@ const $ = id => document.getElementById(id);
 
 export class Shop {
   // actions: activateCosmetic(slot, id), toggleDecor(def), setBucket(id), addTool(id), repair(id),
-  //          cleanerBought(id), usesLeft(id), toiletReady(), seen(ids), changed()
+  //          cleanerBought(id), usesLeft(id), toiletReady(), seen(ids), changed(), bought(item)
   constructor(state, actions) {
     this.state = state;
     this.actions = actions;
@@ -284,6 +284,7 @@ export class Shop {
       message = src.onBuy ? src.onBuy(item) : (src.onUse?.(item), t('shop.bought', { name: itemName(item) }));
       if (typeof message !== 'string') message = t('shop.bought', { name: itemName(item) });
       bought = true;
+      this.actions.bought?.(item);
     }
     const rect = card.getBoundingClientRect();
     this.actions.changed();

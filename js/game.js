@@ -19,6 +19,8 @@ import { playChaos } from './ui/chaos.js';
 import { ProfileScreen } from './ui/profile.js';
 import { bindDataControls, dataDialogOpen, closeDataDialogs } from './ui/data.js';
 import { sound } from './sound.js';
+import { SOUNDS, UNCLOG_AFTER_TOOL } from './data/sounds.js';
+import { TOOLS } from './data/tools.js';
 
 const $ = id => document.getElementById(id);
 const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -91,7 +93,6 @@ function flush() {
   hud.streak(state.streak, state.bestStreak);
 
   bus.emit('flush');
-  sound.play('flush');
   save();
 }
 
@@ -132,7 +133,6 @@ clog.on('resolved', () => {
     hud.message(t('bucketFull', { pts: SCORING.bucketFullPenalty }));
   }
   bus.emit('unclog', { propId: prop?.id, intoBucket: fits });
-  sound.play('unclog');
   updateBucket();
   save();
 });
@@ -181,6 +181,7 @@ function scrub(target) {
   const r = care.scrub(used, target);
   if (r.result === 'wrong-tool') return hud.message(t(`care.wrong.${r.surface}`));
   if (r.result === 'nothing') return;
+  bus.emit('scrubbed', { surface: r.surface });
   if (r.surface === 'toilet') bus.emit('toilet:condition', { ...toiletCondition(), animate: 'clean' });
   else bus.emit('stain:scrub', { id: r.id, dirt: r.dirt });
   if (r.result === 'cleaned') {
@@ -217,19 +218,59 @@ function useTool(id) {
     hud.message(pick('m.toolChaos'));
     playChaos(inv.get(id).chaos);
     bus.emit('chaos', { effect: inv.get(id).chaos });
-    sound.play('chaos');
   }
+  // Het gereedschap is echt gebruikt: zijn eigen geluid (punt 104).
+  if (result === 'resolved' || result === 'partial' || result === 'chaos') bus.emit('tool:use', { id, result });
   if (result === 'resolved' || result === 'partial' || result === 'chaos') save();
   return result;
 }
 
 // ──────── GELUID ────────
-// Aan/uit en volume uit het menu (punt 96); hoort bij het profiel en wordt met de spelstand bewaard.
+// Instellingen uit het geluidsvenster (punt 106); horen bij het profiel en worden met de spelstand bewaard.
+// change: { muted } of { group, on } of { group, volume }
 function setSound(change) {
-  state.sound = { ...state.sound, ...change };
+  const next = { muted: state.sound.muted, groups: Object.fromEntries(Object.entries(state.sound.groups).map(([id, v]) => [id, { ...v }])) };
+  if ('muted' in change) next.muted = !!change.muted;
+  if (change.group && next.groups[change.group]) {
+    if ('on' in change) next.groups[change.group].on = !!change.on;
+    if ('volume' in change) next.groups[change.group].volume = Math.min(1, Math.max(0, change.volume));
+  }
+  state.sound = next;
   sound.configure(state.sound);
   hud.sound(state.sound);
   save();
+}
+
+// Geluiden hangen aan dezelfde events als de animaties (punt 102): het geluid start op het moment dat het
+// event verstuurd wordt. pick(detail) → naam van het geluid (of niets); after: seconden later beginnen.
+function cue(event, pick, after = 0) {
+  bus.on(event, detail => {
+    const name = typeof pick === 'function' ? pick(detail) : pick;
+    if (name) sound.play(name, { since: bus.stamp(event), after });
+  });
+}
+function bindSounds() {
+  // Elk gereedschap moet een eigen geluid hebben (punt 104); een nieuw gereedschap zonder valt hier meteen op.
+  const used = new Set();
+  for (const tool of TOOLS) {
+    if (!SOUNDS[tool.sound] || used.has(tool.sound)) console.error(`[geluid] gereedschap "${tool.id}" heeft geen eigen geluid (js/data/tools.js, js/data/sounds.js)`);
+    used.add(tool.sound);
+  }
+  cue('flush', 'flush');
+  cue('clog', 'clog');                                    // het voorwerp valt in de pot
+  cue('tool:use', ({ id }) => inv.get(id)?.sound);
+  cue('unclog', 'unclog', UNCLOG_AFTER_TOOL);             // eerst het gereedschap, dan plop + wegspoelen
+  cue('bucket:land', ({ propId }) => `bucket-${CLOG_PROPS.find(p => p.id === propId)?.sound || 'soft'}`);
+  cue('bucket:empty', 'bucket-empty');
+  cue('scrubbed', 'scrub');
+  cue('ui:click', 'ui-click');
+  cue('ui:buy', 'ui-buy');
+  // Interface: elke knop, behalve de knoppen die zelf al een geluid maken (spoelen, gereedschap, emmer legen).
+  document.addEventListener('click', e => {
+    const el = e.target.closest('button, select, a, label.file-btn');
+    if (!el || e.defaultPrevented || el.closest('#flush-btn, .tool-btn, #btn-bucket-empty, .shop-card')) return;      // ook niet bij een ingeslikte tik (punt 93)
+    bus.emit('ui:click');
+  }, true);
 }
 
 // ──────── EMMER ────────
@@ -285,6 +326,7 @@ async function init() {
     toiletReady: () => !care.isBroken() && !care.isToiletDirty(),
     seen(ids) { state.newItems = state.newItems.filter(id => !ids.includes(id)); hud.shopBadge(state.newItems.length); },
     changed() { hud.score(state.score, state.highScore); save(); },
+    bought() { bus.emit('ui:buy'); },
   });
 
   // Profiel (punt 69): welkomstscherm bij de eerste start, daarna via de scorebubbel.
@@ -302,10 +344,11 @@ async function init() {
       state.profile = { ...profile, mode: 'guest', createdAt: state.profile?.createdAt || new Date().toISOString() };
       hud.profile(state.profile);
       save();
-      if (first) clog.paused = clogsPaused; else hud.message(t('profile.saved'));
+      if (first) { clog.paused = clogsPaused; sound.allowMusic(); } else hud.message(t('profile.saved'));
     },
   });
   hud.profile(state.profile);
+  if (state.profile) sound.allowMusic();      // muziek pas na het startscherm (punt 105)
   $('score-bubble').addEventListener('click', () => profileScreen.open());
   bindDataControls({ beforeChange() { saving = false; clog.paused = true; } });
   if (!state.profile) {
@@ -357,6 +400,7 @@ async function init() {
     if (e.key !== 'Escape') return;
     if (dataDialogOpen()) closeDataDialogs();
     else if (profileScreen.isOpen()) profileScreen.close();
+    else if (hud.soundOpen()) hud.closeSound();
     else if (!$('credits-modal').hidden) $('credits-modal').hidden = true;
     else if (document.body.hasAttribute('data-zoom')) bus.emit('view:back');
   });
@@ -364,8 +408,8 @@ async function init() {
   $('main-menu').addEventListener('click', e => {
     const action = e.target.closest('[data-action]')?.dataset.action;
     if (!action) return;
-    if (action === 'sound') return setSound({ on: !state.sound.on });      // het menu blijft open: je ziet de stand
     mainMenu.close();
+    if (action === 'sound') return hud.openSound();
     if (action === 'credits') $('credits-modal').hidden = false;
     else if (action === 'fullscreen') document.fullscreenElement ? document.exitFullscreen?.() : document.documentElement.requestFullscreen?.().catch(() => {});
     else if (action === 'camera-reset') setView(DEFAULT_VIEW);
@@ -374,8 +418,7 @@ async function init() {
   bus.on('view:changed', ({ id }) => hud.view(id));
   bus.on('anchor:tap', ({ id }) => ANCHORS[id] && hud.message(t('anchorFree', { place: t(`anchor.${id}`) })));
   bus.on('scrub', target => scrub(target));
-  // Het voorwerp landt in de emmer (of ernaast): het geluid hoort bij het soort voorwerp (punt 96).
-  bus.on('bucket:land', ({ propId }) => sound.play(`bucket-${CLOG_PROPS.find(p => p.id === propId)?.sound || 'soft'}`));
+  bindSounds();
   hud.bindSound(state.sound, setSound);
 
   // 3D
@@ -441,7 +484,7 @@ window.__game = {
     profile: state.profile ? { ...state.profile } : null, stats: { ...state.stats, bestStreak: state.bestStreak },
     toilet: toiletCondition(), broken: care.isBroken(), stains: state.stains.map(st => ({ ...st })), dirtCount: care.dirtCount(), pointsFactor: care.pointsFactor(),
     overflowStreak: state.overflowStreak, newItems: [...state.newItems], purchased: [...state.purchased], cleaner,
-    supplies: { ...state.supplies }, language: getLanguage(), sound: { ...state.sound },
+    supplies: { ...state.supplies }, language: getLanguage(), sound: JSON.parse(JSON.stringify(state.sound)),
     clogged: clog.isClogged, waterLevel: clog.waterLevel, overflowing: clog.isOverflowing, currentProp: state.currentProp?.id ?? null,
   }),
   forceClog(propId) { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(); },

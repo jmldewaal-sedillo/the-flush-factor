@@ -7,7 +7,7 @@ import { STARTING_TOOLS, LEGACY_STARTING_TOOLS, TOOLS } from './data/tools.js';
 import { DEFECTS, CLEANERS } from './data/care.js';
 import { STRINGS, deviceLanguage } from './i18n/index.js';
 import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from './data/profile.js';
-import { SOUND_DEFAULTS } from './data/sounds.js';
+import { SOUND_GROUPS, soundDefaults } from './data/sounds.js';
 
 // Een nieuwe speler begint in een armoedig hokje (punt 79): kapot en vies toilet, roestige emmer,
 // kale muur, vieze vloer, vier stuks gereedschap.
@@ -28,7 +28,7 @@ export function createState() {
     overflowStreak: 0,                  // verstoppingen achter elkaar die overliepen
     newItems: [],                       // net vrijgespeeld bij een level-up, nog niet bekeken in de winkel
     supplies: {},                       // voorraad schoonmaakspullen: { cleanerId: aantal keer gebruik over } (punt 92)
-    sound: { ...SOUND_DEFAULTS },       // geluid aan/uit en volume (0–1); hoort bij het profiel (punt 96)
+    sound: soundDefaults(),             // { muted, groups: { <groep>: { on, volume 0–1 } } }; hoort bij het profiel (punt 106)
     language: deviceLanguage(),         // taal: eerst die van het toestel (anders Engels), daarna de keuze uit het menu
     // niet opgeslagen:
     lastFlushTime: 0, isFlushing: false, currentProp: null,
@@ -152,10 +152,17 @@ export function loadState(state) {
     const left = Math.min(c.uses, Math.floor(num(data.supplies?.[c.id], 0)));
     if (left > 0) { state.supplies[c.id] = left; state.purchased.add(c.id); } else state.purchased.delete(c.id);
   }
-  // Geluid: oudere opslag heeft dit nog niet en krijgt de standaard (aan).
+  // Geluid (punt 106): per groep aan/uit en volume, plus de hoofdschakelaar. Oudere opslag had één schakelaar
+  // en één volume (punt 96): "uit" wordt "alle geluid uit", het volume geldt voor de effecten; de muziek
+  // krijgt zijn standaard. Nog oudere opslag heeft niets en krijgt de standaard.
+  const old = data.sound || {}, base = soundDefaults();
   state.sound = {
-    on: typeof data.sound?.on === 'boolean' ? data.sound.on : SOUND_DEFAULTS.on,
-    volume: Math.min(1, Math.max(0, num(data.sound?.volume, SOUND_DEFAULTS.volume))),
+    muted: typeof old.muted === 'boolean' ? old.muted : old.on === false,
+    groups: Object.fromEntries(SOUND_GROUPS.map(g => {
+      const own = old.groups?.[g.id] || {};
+      const legacy = g.id !== 'music' && Number.isFinite(old.volume) ? old.volume : base.groups[g.id].volume;
+      return [g.id, { on: typeof own.on === 'boolean' ? own.on : base.groups[g.id].on, volume: Math.min(1, Math.max(0, num(own.volume, legacy))) }];
+    })),
   };
   if (data.profile && typeof data.profile === 'object') {
     state.profile = {
