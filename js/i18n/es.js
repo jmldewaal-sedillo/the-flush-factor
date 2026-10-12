@@ -87,6 +87,7 @@ export default {
   'care.cleaned': '¡Limpio!',
   'care.penalty': '−{pct}% sucio',
   'care.open': 'Productos de limpieza',
+  'care.buy': 'Comprar productos de limpieza',
   'care.stock': 'Productos de limpieza: quedan {n} usos',
   'care.stockEmpty': 'Productos de limpieza: agotados. A la tienda.',
   'care.shopHint': 'Tus productos de limpieza se han agotado. Compra más aquí.',

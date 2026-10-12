@@ -87,6 +87,7 @@ export default {
   'care.cleaned': 'Czysto!',
   'care.penalty': '−{pct}% za brud',
   'care.open': 'Środki czystości',
+  'care.buy': 'Kup środki czystości',
   'care.stock': 'Środki czystości: pozostało użyć: {n}',
   'care.stockEmpty': 'Środki czystości: skończyły się. Do sklepu.',
   'care.shopHint': 'Środki czystości się skończyły. Tutaj kupisz nowe.',

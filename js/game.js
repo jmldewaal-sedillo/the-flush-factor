@@ -324,7 +324,10 @@ async function init() {
   hud.dirt(care.dirtCount(), care.pointsFactor());
   showCleaning();
   // Lege voorraad: de knop brengt je naar de juiste categorie in de winkel (punt 91).
-  hud.bindCleaning(setCleaner, () => { shop.open({ category: 'care' }); shop.say(t('care.shopHint')); });
+  // Het winkelwagentje in de la doet hetzelfde zonder die melding (punt 97); de schoonmaakstand stopt dan.
+  hud.bindCleaning(setCleaner,
+    () => { shop.open({ category: 'care' }); shop.say(t('care.shopHint')); },
+    () => { if (cleaner) setCleaner(null); shop.open({ category: 'care' }); });
   hud.bindTools();
   hud.bindDismiss();
   updateBucket();

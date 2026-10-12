@@ -87,6 +87,7 @@ export default {
   'care.cleaned': 'Sauber!',
   'care.penalty': '−{pct}% dreckig',
   'care.open': 'Putzsachen',
+  'care.buy': 'Putzsachen kaufen',
   'care.stock': 'Putzsachen: noch {n}-mal benutzbar',
   'care.stockEmpty': 'Putzsachen: aufgebraucht. Zum Laden.',
   'care.shopHint': 'Deine Putzsachen sind aufgebraucht. Hier kaufst du neue.',

@@ -93,12 +93,15 @@ export const hud = {
       const name = itemName(c);
       return `<button class="round-btn clean-option" data-cleaner="${c.id}" data-left="${c.left}" aria-label="${t('care.option', { name, left: c.left, total: c.uses })}" aria-pressed="${c.id === active}" title="${name}">
         ${icon(c.icon, 26)}<span class="uses">${t('care.uses', { left: c.left, total: c.uses })}</span></button>`;
-    }).join('');
+    }).join('')
+      // klein knopje naar de winkel, meteen op de juiste categorie (punt 97)
+      + `<button class="round-btn small shop-btn" id="btn-clean-shop" aria-label="${t('care.buy')}" title="${t('care.buy')}">${icon('shopping-cart', 20)}</button>`;
     if (!owned.length) this.closeCleanTray();
   },
   closeCleanTray() { $('clean-tray').hidden = true; $('btn-clean').setAttribute('aria-expanded', 'false'); },
   // onPick(id): een middel gekozen in de la. onEmpty(): de voorraad is leeg (de knop leidt dan naar de winkel).
-  bindCleaning(onPick, onEmpty) {
+  // onShop(): het winkelwagentje in de la.
+  bindCleaning(onPick, onEmpty, onShop) {
     const tray = $('clean-tray'), btn = $('btn-clean');
     btn.addEventListener('click', () => {
       if ($('hud-clean').dataset.owned === '0') return onEmpty();
@@ -106,6 +109,7 @@ export const hud = {
       btn.setAttribute('aria-expanded', String(!tray.hidden));
     });
     tray.addEventListener('click', e => {
+      if (e.target.closest('#btn-clean-shop')) { this.closeCleanTray(); return onShop(); }
       const opt = e.target.closest('[data-cleaner]');
       if (!opt) return;
       this.closeCleanTray();

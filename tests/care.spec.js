@@ -233,3 +233,48 @@ test('vegen (slepen) over een vlek poetst ook', async ({ page }) => {
   await until(page, () => window.__game.snapshot().stains.length === 0);           // hogedrukreiniger: één veeg
   expect(await page.evaluate(() => window.__game.three.view()), 'vegen in de schoonmaakstand wisselt niet van muur').toBe('wallBack');
 });
+
+// Punt 97: vanuit de uitgeklapte schoonmaakla direct naar de winkel, op de juiste categorie.
+test('winkelknop in het schoonmaakmenu opent de winkel op "Schoonmaak & Reparatie"; sluiten brengt je terug in het spel', async ({ page }, info) => {
+  // andere categorieën staan open, de juiste nog niet: de knop moet hem zelf openen en in beeld brengen
+  const problems = await openGame(page, { save: { ...NEW_PLAYER, version: 4, score: 500, level: 1, supplies: { sponge: 6, 'toilet-brush': 6 } } });
+  await page.locator('#btn-clean').click();
+  const btn = page.locator('#btn-clean-shop');
+  await expect(btn).toBeVisible();
+  await expect(btn).toHaveAttribute('aria-label', 'Schoonmaakspullen kopen');
+  await expect(btn.locator('use')).toHaveAttribute('href', /#shopping-cart$/);
+  // een klein knopje: kleiner dan de middelen ernaast, en zonder tekst
+  const [small, option] = await Promise.all([btn.boundingBox(), page.locator('.clean-option').first().boundingBox()]);
+  expect(small.width).toBeLessThan(option.width);
+  expect((await btn.innerText()).trim()).toBe('');
+  if (info.project.name === 'phone-portrait') await page.screenshot({ path: 'tests/screenshots/s11-01-schoonmaakla-winkelknop.png' });
+
+  // midden in het schoonmaken: de knop stopt de schoonmaakstand en opent de winkel
+  await page.locator('.clean-option[data-cleaner="toilet-brush"]').click();
+  await expect(page.locator('body')).toHaveAttribute('data-cleaning', 'toilet-brush');
+  await page.locator('#btn-clean').click();
+  await btn.click();
+  await expect(page.locator('#shop-screen')).toBeVisible();
+  await expect(page.locator('#clean-tray')).toBeHidden();
+  await expect(page.locator('body')).not.toHaveAttribute('data-cleaning', /.+/);
+  const care = page.locator('.shop-category[data-cat="care"]');
+  await expect(care.locator('.shop-category-header')).toHaveAttribute('aria-expanded', 'true');
+  await expect(care.locator('.shop-category-header')).toContainText('Schoonmaak & Reparatie');
+  await expect(care.locator('.shop-category-header')).toBeInViewport();
+  await expect(card(page, 'mop')).toBeVisible();
+  // geen melding "je spullen zijn op": dat klopt hier niet
+  await expect(page.locator('#shop-message')).not.toContainText('Hier koop je nieuwe');
+  if (info.project.name === 'phone-portrait') await page.screenshot({ path: 'tests/screenshots/s11-02-winkel-schoonmaak.png' });
+
+  // kopen en sluiten: terug in het spel, met de nieuwe voorraad in de la
+  await card(page, 'mop').click();
+  await page.locator('#btn-shop-close').click();
+  await expect(page.locator('#shop-screen')).toBeHidden();
+  await expect(page.locator('body')).not.toHaveAttribute('data-screen', 'shop');
+  await expect(page.locator('#flush-btn')).toBeVisible();
+  await expect(page.locator('#clean-count')).toHaveText('18');
+  const before = (await snap(page)).stats.totalFlushes;
+  await page.locator('#flush-btn').click();
+  expect((await snap(page)).stats.totalFlushes).toBe(before + 1);
+  expectNoProblems(problems);
+});

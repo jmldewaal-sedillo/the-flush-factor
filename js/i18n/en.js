@@ -87,6 +87,7 @@ export default {
   'care.cleaned': 'Clean!',
   'care.penalty': '−{pct}% dirty',
   'care.open': 'Cleaning supplies',
+  'care.buy': 'Buy cleaning supplies',
   'care.stock': 'Cleaning supplies: {n} uses left',
   'care.stockEmpty': 'Cleaning supplies: all gone. To the shop.',
   'care.shopHint': 'Your cleaning supplies are all gone. Buy new ones here.',

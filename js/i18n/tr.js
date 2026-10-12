@@ -87,6 +87,7 @@ export default {
   'care.cleaned': 'Tertemiz!',
   'care.penalty': '−%{pct} kirli',
   'care.open': 'Temizlik malzemeleri',
+  'care.buy': 'Temizlik malzemesi satın al',
   'care.stock': 'Temizlik malzemeleri: {n} kullanım kaldı',
   'care.stockEmpty': 'Temizlik malzemeleri: bitti. Mağazaya.',
   'care.shopHint': 'Temizlik malzemelerin bitti. Yenilerini buradan al.',

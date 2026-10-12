@@ -87,6 +87,7 @@ export default {
   'care.cleaned': 'Bersih!',
   'care.penalty': '−{pct}% kotor',
   'care.open': 'Alat kebersihan',
+  'care.buy': 'Beli alat kebersihan',
   'care.stock': 'Alat kebersihan: sisa {n} kali pakai',
   'care.stockEmpty': 'Alat kebersihan: habis. Ke toko.',
   'care.shopHint': 'Alat kebersihanmu habis. Beli yang baru di sini.',

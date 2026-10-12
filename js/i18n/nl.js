@@ -95,6 +95,7 @@ export default {
   'care.cleaned': 'Schoon!',
   'care.penalty': '−{pct}% vies',
   'care.open': 'Schoonmaakspullen',
+  'care.buy': 'Schoonmaakspullen kopen',
   'care.stock': 'Schoonmaakspullen: nog {n} keer te gebruiken',
   'care.stockEmpty': 'Schoonmaakspullen: op. Naar de winkel.',
   'care.shopHint': 'Je schoonmaakspullen zijn op. Hier koop je nieuwe.',
