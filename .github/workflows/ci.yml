@@ -1,7 +1,8 @@
 name: Testen en publiceren
 
 # Elke push draait twee dingen naast elkaar:
-#   rook  de korte rooktest (laden, geen fouten, kernfuncties; telefoon en tablet; doel: onder 10 minuten)
+#   rook  eerst de controle op privégegevens (blocklist), dan de korte rooktest (laden, geen fouten,
+#         kernfuncties; telefoon en tablet; doel: onder 10 minuten)
 #   test  de volledige suite (vier formaten, ongeveer een uur op de runner van GitHub)
 #
 # Test-repo (the-flush-factor-test), branch main: is de ROOKTEST groen, dan gaat de testversie meteen naar
@@ -10,6 +11,7 @@ name: Testen en publiceren
 # Live-repo (the-flush-factor): deze workflow publiceert daar NIET. Het live adres wordt door GitHub Pages
 #   rechtstreeks vanaf branch main gevuld. main blijft achter de volledige suite: mergen naar main alleen na
 #   akkoord van Jenn en alleen als de job "test" groen is op de commit die gemerged wordt.
+# De controle op privégegevens draait ook bij pushes met alleen documentatie: zie privacy.yml.
 # Zie README.md ("Testen en publiceren") en docs/testversie.md.
 
 on:
@@ -28,6 +30,20 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      # Vangnet: geen privégegevens (huisadres) online (Apps/CLAUDE.md sectie 11, punt 6). De lijst komt uit het
+      # geheim PRIVATE_BLOCKLIST en wordt nooit getoond. Ontbreekt het geheim in een van onze eigen repo's, dan
+      # faalt de run: zonder lijst controleert deze stap niets. (Bij een pull request vanuit een fork zijn er
+      # geen geheimen; daar blijft het bij een waarschuwing.)
+      - name: Controle op privégegevens
+        env:
+          PRIVATE_BLOCKLIST: ${{ secrets.PRIVATE_BLOCKLIST }}
+        run: |
+          if [ -z "$PRIVATE_BLOCKLIST" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "::error::Het geheim PRIVATE_BLOCKLIST ontbreekt in deze repo. Zet het met Apps/tools/sync-blocklist.sh (zie docs/testversie.md)."
+            exit 1
+          fi
+          python3 tests/no-private-data.py --ci
 
       - uses: actions/setup-node@v4
         with:
@@ -116,6 +132,14 @@ jobs:
 
       - name: Testversie klaarzetten (noindex)
         run: node tools/bouw-site.mjs _site "${{ github.event.repository.name }}" "$GITHUB_SHA"
+
+      # Ook wat er echt online komt nog een keer langs de lijst, vóór het publiceren.
+      - name: Controle op privégegevens in de testversie
+        env:
+          PRIVATE_BLOCKLIST: ${{ secrets.PRIVATE_BLOCKLIST }}
+        run: |
+          [ -n "$PRIVATE_BLOCKLIST" ] || { echo "::error::Het geheim PRIVATE_BLOCKLIST ontbreekt; er wordt niet gepubliceerd."; exit 1; }
+          python3 tools/no-private-data.py --dir _site
 
       # Zelf inpakken in plaats van actions/upload-pages-artifact: die laat bestanden die met een
       # punt beginnen weg (.nojekyll).
