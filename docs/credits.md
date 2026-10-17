@@ -11,7 +11,7 @@ Volgorde: 3D-modellen · textures en licht · iconen · geluiden en muziek · le
 |---|---|---|---|---|
 | "Toilet" | HippoStance | [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) | https://skfb.ly/6S9CM | `assets/models/toilet.glb` |
 | "Wooden Bucket" | romullus | [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/) | https://skfb.ly/6FRTz | `assets/models/buckets/wooden_bucket.glb` |
-| "Old Rusted Bucket v1" | GameDev Nick *(te bevestigen, zie onder)* | [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) | https://skfb.ly/onACK | `assets/models/buckets/rusted_bucket.glb` |
+| "Old Rusted Bucket v1" | Coozy (Sketchfab-account GameDevNick) | [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) | https://skfb.ly/onACK | `assets/models/buckets/rusted_bucket.glb` |
 | "Plastic Bucket" | MaX3Dd | [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) | https://skfb.ly/oSNCN | `assets/models/buckets/plastic_bucket.glb` |
 | "Metal bucket" | Kozlov Maksim | [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) | https://skfb.ly/6TGrU | `assets/models/buckets/metal_bucket.glb` |
 | "Pair of buckets" | Sousinho | [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) | https://skfb.ly/ozDUF | `assets/models/buckets/mop_bucket.glb` (alleen de grote emmer wordt getoond) |
@@ -22,8 +22,9 @@ geometrie ongewijzigd). De originelen staan in `assets/_unused/originals/`.
 **Share-alike:** de houten emmer valt onder CC BY-SA 4.0. De aangepaste (verkleinde) versie in deze repo is
 onder dezelfde licentie beschikbaar. Dat geldt voor het model, niet voor de spelcode.
 
-**Te bevestigen:** de metadata in het bestand van "Old Rusted Bucket v1" noemt *GameDev Nick* als maker;
-in de oorspronkelijke notitie (`credits.txt`) stond *Coozy*. Vermoedelijk dezelfde maker met een nieuwe accountnaam.
+**Bevestigd (2026-10-17):** "Old Rusted Bucket v1" staat op Sketchfab onder het account *GameDevNick*, met
+*Coozy* als weergavenaam (gecontroleerd via de Sketchfab-API: `sketchfab.com/GameDevNick`, licentie CC Attribution 4.0).
+De metadata in het bestand (*GameDev Nick*) en de oude notitie (*Coozy*) gaan dus over dezelfde maker.
 
 ## Textures en licht (CC0)
 
@@ -147,6 +148,8 @@ hoe hard het klinkt staat in `js/data/sounds.js`; het geluid per gereedschap in 
 | `scrub.mp3` | schoonmaken (één veeg) | ["toilet scrub.wav"](https://freesound.org/people/semccab/sounds/154369/) | semccab (Freesound) | CC0 1.0 | één veeg van 0,5 s uitgeknipt, harder gezet |
 | `ui-click.mp3` | knoppen | ["Interface Sounds"](https://kenney.nl/assets/interface-sounds) 1.0: `click_001.ogg` | Kenney (kenney.nl) | CC0 1.0 | alleen omgezet van ogg naar mp3 |
 | `ui-buy.mp3` | aankoop in de winkel | idem: `confirmation_001.ogg` | Kenney | CC0 1.0 | alleen omgezet |
+| `repair.mp3` | reparatie (lijm, bril, deksel) | ["Impact Sounds"](https://kenney.nl/assets/impact-sounds) 1.0: `impactMetal_light_002.ogg` en `_004.ogg` | Kenney | CC0 1.0 | de twee na elkaar gezet (0,2 s ertussen), stilte vooraan weg, volume gelijkgetrokken |
+| `level-up.mp3` | level omhoog | eigen werk (2026-10-17): vier oplopende tonen (C–E–G–C), gemaakt met ffmpeg | Studio Sedillo | eigen werk | — |
 
 ### Muziek
 

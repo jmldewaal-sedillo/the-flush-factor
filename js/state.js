@@ -8,12 +8,15 @@ import { DEFECTS, CLEANERS } from './data/care.js';
 import { STRINGS, deviceLanguage } from './i18n/index.js';
 import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from './data/profile.js';
 import { SOUND_GROUPS, soundDefaults } from './data/sounds.js';
+import { LEVELS } from './data/levels.js';
+import { levelFor } from './scoring.js';
 
 // Een nieuwe speler begint in een armoedig hokje (punt 79): kapot en vies toilet, roestige emmer,
 // kale muur, vieze vloer, vier stuks gereedschap.
 export function createState() {
   return {
     score: 0, highScore: 0, combo: 1, streak: 0, bestStreak: 0, level: 1,
+    earned: 0,                          // alle punten die je ooit verdiend hebt; het level volgt hieruit (punt 61)
     bucketId: DEFAULT_BUCKET,
     bucketItems: [],                    // [{ id: propId, liters }]
     cosmetics: { ...DEFAULT_COSMETICS },
@@ -40,8 +43,8 @@ export const bucketLiters = state => state.bucketItems.reduce((sum, it) => sum +
 
 export function saveState(state) {
   const data = {
-    version: 4,
-    score: state.score, highScore: state.highScore, combo: state.combo,
+    version: 5,
+    score: state.score, highScore: state.highScore, earned: state.earned, combo: state.combo,
     streak: state.streak, bestStreak: state.bestStreak, level: state.level,
     bucketId: state.bucketId, bucketItems: state.bucketItems,
     cosmetics: state.cosmetics, decor: state.decor,
@@ -58,7 +61,18 @@ export function saveState(state) {
 const LEGACY_PROP_ICONS = { 'rubber-duck': 'duck', smartphone: 'phone', 'teddy-bear': 'teddy', lego: 'brick' };
 
 function migrate(data) {
-  return migrateV4(migrateV3(data.version >= 2 ? data : migrateV2(data)));
+  return migrateV5(migrateV4(migrateV3(data.version >= 2 ? data : migrateV2(data))));
+}
+
+// Versie 4 → 5 (punt 61). De prijzen in de winkel zijn ×5 gegaan (en punten verdienen gaat trager); wie al
+// speelde krijgt zijn saldo ×5, zodat hij er evenveel voor kan kopen. Het level volgde uit het saldo en volgt
+// nu uit alles wat je ooit verdiend hebt; het hoogste saldo ooit is daarvan de beste schatting.
+// Niemand zakt een level: dat regelt loadState().
+function migrateV5(data) {
+  if (data.version >= 5) return data;
+  const score = Number.isFinite(data.score) ? data.score * 5 : 0;
+  const highScore = Number.isFinite(data.highScore) ? data.highScore * 5 : 0;
+  return { ...data, version: 5, score, highScore, earned: Math.max(score, highScore) };
 }
 
 // Versie 3 → 4 (punt 92). Schoonmaakspullen raken voortaan op. Wie ze al had gekocht toen ze nog
@@ -117,7 +131,10 @@ export function loadState(state) {
   state.combo = num(data.combo, 1);
   state.streak = num(data.streak, 0);
   state.bestStreak = num(data.bestStreak, 0);
-  state.level = num(data.level, 1);
+  // Het level zakt nooit, en wat je verdiend hebt is minstens de drempel van je level.
+  state.earned = Math.max(0, num(data.earned, 0));
+  state.level = Math.min(LEVELS.length, Math.max(num(data.level, 1), levelFor(state.earned).level));
+  state.earned = Math.max(state.earned, LEVELS[state.level - 1].minScore);
   state.purchased = new Set(data.purchased || []);
   state.bucketId = BUCKETS.some(b => b.id === data.bucketId) ? data.bucketId : DEFAULT_BUCKET;
   state.bucketItems = (data.bucketItems || [])

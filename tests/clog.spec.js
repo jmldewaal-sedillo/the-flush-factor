@@ -1,6 +1,6 @@
 // Punt 54: verstopping met voorwerp in de pot, belletjes, waterfases, chaos, overlopen met plas.
 const { test, expect } = require('@playwright/test');
-const { openGame, until, expectNoProblems, watch, seen } = require('./helpers');
+const { openGame, until, expectNoProblems, watch, seen, OLD } = require('./helpers');
 
 const snap = page => page.evaluate(() => window.__game.snapshot());
 
@@ -64,7 +64,7 @@ test('overlopen: plas op de vloer, puntenaftrek, verstopping blijft', async ({ p
   await until(page, () => window.__game.snapshot().overflowing);
   await until(page, () => window.__game.three.puddle());
   const s = await snap(page);
-  expect(s.score).toBe(270);
+  expect(s.score).toBe(300 * OLD * 0.9);                                        // 10% eraf
   expect(s.clogged).toBe(true);
   // daarna alsnog op te lossen
   await until(page, () => !window.__game.snapshot().overflowing);

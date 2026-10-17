@@ -1,6 +1,6 @@
 // Punten 80 en 83: kapot en vies toilet, repareren, schoonmaken, troep na herhaald overlopen.
 const { test, expect } = require('@playwright/test');
-const { openGame, until, tapScene, setView, expectNoProblems, NEW_PLAYER, watch, seen } = require('./helpers');
+const { openGame, until, tapScene, setView, expectNoProblems, NEW_PLAYER, OLD, watch, seen } = require('./helpers');
 
 const snap = page => page.evaluate(() => window.__game.snapshot());
 const cond = page => page.evaluate(() => window.__game.three.toiletCondition());
@@ -39,18 +39,18 @@ test('repareren: elk gebrek heeft zijn eigen reparatie, met overgang in beeld, e
 
   await page.locator('#btn-shop').click();
   await openCat(page, 'care');
-  await card(page, 'new-seat').click();                                         // 120
+  await card(page, 'new-seat').click();                                         // 600
   await expect(card(page, 'new-seat').locator('.badge-owned')).toContainText('Gerepareerd');
   expect((await snap(page)).toilet.defects).toEqual({ seat: false, lid: true, chip: true });
   // de overgang loopt: de bril draait terug (niet in één klap)
   await until(page, () => { const c = window.__game.three.toiletCondition(); return c.seatSkew === 0 && c.settled; });
   expect(await cond(page)).toMatchObject({ seatSkew: 0, lidSkew: 1, crackVisible: true, chipVisible: true });
 
-  await card(page, 'new-lid').click();                                          // 150
-  await card(page, 'repair-kit').click();                                       // 60
+  await card(page, 'new-lid').click();                                          // 750
+  await card(page, 'repair-kit').click();                                       // 300
   await until(page, () => { const c = window.__game.three.toiletCondition(); return c.settled && !c.crackVisible && !c.chipVisible; });
   const s = await snap(page);
-  expect(s.score).toBe(1000 - 120 - 150 - 60);
+  expect(s.score).toBe(1000 * OLD - 600 - 750 - 300);
   expect(s.broken).toBe(false);
   // nog een keer tikken kost niets
   await card(page, 'new-lid').click();
@@ -70,7 +70,7 @@ test('een ander toiletmodel kan pas als het toilet heel en schoon is', async ({ 
   await openCat(page, 'toilets');
   await expect(card(page, 'toilet-golden').locator('.badge-locked')).toContainText('Eerst heel en schoon');
   await card(page, 'toilet-golden').click();
-  expect((await snap(page)).score).toBe(5000);
+  expect((await snap(page)).score).toBe(5000 * OLD);
   expect((await snap(page)).cosmetics.toilet).toBe('toilet-standard');
 });
 

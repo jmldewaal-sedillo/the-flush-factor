@@ -29,13 +29,13 @@ export const WATER_PHASES = [
 
 export const SCORING = {
   flushPoints: 10,
-  comboWindowMs: 1800,
-  comboStep: 0.5,
-  comboMax: 8,
+  comboWindowMs: 3000,
+  comboStep: 0.25,
+  comboMax: 2,
   unclogBonusPerLevel: 20,
   bucketFullPenalty: 30,
   overflowPenaltyPct: 0.1,
-  overflowPenaltyMax: 100,
+  overflowPenaltyMax: 500,
 };
 
 // Intensiteit van 3D-effecten per kwaliteitsniveau (punt 54).

@@ -9,34 +9,33 @@ Webportals: nog geen
 
 **Besluit van Jenn, 2026-10-11 (`Apps/CLAUDE.md`, sectie 11):** eerst de Android-app en webportals; geen app-website op een subdomein tot "lanceren web". Het plan "verhuizen naar flushfactor.studiosedillo.com" en de TWA zijn vervallen.
 
-Werk in uitvoering staat op de branch `sprint-9` (Sprint 9, 10 en 11), nog niet gemerged naar `main`.
+Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de testversie), nog niet gemerged naar `main`. Sprint 13 staat op de branch `sprint-13` (vanaf `sprint-9`), nog niet op de testversie.
 
 ## Nu bezig
 
-- [x] **Sprint 10 (punten 89–95)** en **Sprint 11 (punten 96–101)**: zie de secties onderaan. Klaar op de branch, wacht op testen door Jenn.
+- [ ] **Sprint 9 t/m 12 testen door Jenn** op het testadres (branch `sprint-9`), daarna "zet live".
+- [ ] **Spoelicoon kiezen (punt 75):** vijf varianten op `spoelicoon-preview.html` (komt op het testadres met Sprint 13). Jenn kiest een letter; daarna doorvoeren.
 - [ ] **Geluiden en muziek beluisteren (punten 102–106).** Claude kan niet luisteren: de zestien gereedschapsgeluiden, de plons, het legen van de emmer en de muziek zijn gekozen op titel, omschrijving, duur en gemeten volume. Jenn beoordeelt ze op het testadres; per geluid vervangen of harder/zachter kan in `js/data/sounds.js`.
 
 ## Volgende
 
-- [ ] **61 (en 88). Puntenbalans opnieuw nakijken.** Er is veel bijgekomen (opbouw, schoonmaakspullen die opraken). Neem de aantallen in `js/data/care.js` mee: hoeveel spelen kost een spons, en loont schoonmaken dan nog?
+- [x] **61 (en 88). Puntenbalans opnieuw nakijken.** *Gedaan in Sprint 13:* zie `docs/puntenbalans.md`.
 - [ ] **Omzetten naar één codebase met drie bouwdoelen** (`Apps/CLAUDE.md`, sectie 11; voorbeeld: de template `studio-sedillo-app-template` en Sudoku Kids): een dunne laag per bouwdoel (opslag, advertenties, SDK, terugknop), `android` met Capacitor (alle bestanden in de app, zonder service worker, package `com.studiosedillo.flushfactor`), `webportals` als upload-zip zonder service worker en zonder externe links, en de testversie op github.io met noindex. Wat van het oude plan was (subdomein, TWA, `assetlinks.json`) is al weg; `tools/bouw-site.mjs` (testversie voor github.io) gaat dan op in `tools/bouw.mjs`.
-- [ ] ~~Verhuizen naar flushfactor.studiosedillo.com~~ **Vervallen** (besluit 2026-10-11): geen subdomein en geen DNS-records tot "lanceren web".
-- [x] Test-repo `the-flush-factor-test` aangemaakt (2026-10-11, na akkoord), met deploy naar github.io na groene tests.
 - [ ] Op een echte telefoon testen via het testadres (nog nooit gedaan).
 - [ ] Merge `sprint-9` naar `main` na akkoord ("zet live").
 
 ## Later / ideeën
 
-- [ ] 58. Geluiden, het laatste restje (level-up, repareren) · 60. Echte betaling voor punten · 63. Aankleden (zie "Toekomst" verderop)
+- [ ] 60. Echte betaling voor punten · 63. Aankleden (zie "Toekomst" verderop)
 - [ ] **Aankopen via een server controleren zodra er accounts komen (bij punt 59; besluit van Jenn, 2026-10-12):** elke aankoop bij Google laten bevestigen door een eigen server (Google Play Developer API), en terugbetaalde of teruggedraaide aankopen intrekken (de punten weer afschrijven). Tot die tijd vertrouwt het spel het antwoord van Google Play Billing op het toestel. Zie "Capacitor: betalen, inloggen en offline", onderdeel 1.
 - [ ] 59. Echt inloggen met Google/Facebook. **Eerst** privacyverklaring en Data Safety bijwerken (CLAUDE.md §5).
-- [ ] 44, 72–75: zie "Toekomstplan" en "Toekomst (vastgelegd, nog niet bouwen)" verderop. (Punt 77 bestaat niet: het nummer is overgeslagen.)
+- [ ] 44, 74, 75 en de tutorial uit 73: zie "Toekomstplan" en "Toekomst (vastgelegd, nog niet bouwen)" verderop. 72 en de rest van 73 staan onder "Voor publicatie". (Punt 77 bestaat niet: het nummer is overgeslagen.)
 - [ ] Meer dan 16 gereedschappen (het menu is erop voorbereid).
 
 ## Voor publicatie in Google Play
 
 - [ ] **Vertalingen laten nakijken door moedertaalsprekers**: alle tien talen in `js/i18n/` (spel) en `js/i18n/legal/` (privacyverklaring en verwijderpagina). Ze zijn door Claude geschreven en nog door niemand nagelezen; vooral de grappen en de juridische tekst.
-- [ ] Doelgroep en leeftijd vastleggen (aanname nu: geen kinder-app; zie `CLAUDE.md` van deze app).
+- [ ] Doelgroep en leeftijd vastleggen (aanname nu: geen kinder-app; zie `CLAUDE.md` van deze app). Hoort ook bij punt 72 ("Doelgroep en content" in de Play Console).
 - [ ] Privacyverklaring en verwijderpagina **live** op https://studiosedillo.com/the-flush-factor/privacy en `/delete` (de URL's voor de Play Store; minimaal EN en NL). De pagina's zelf zijn er (Sprint 10); ze moeten nog naar de hoofdsite.
 - [ ] **Privacytekst laten nakijken** (door iemand met verstand van de AVG): de verklaring en de verwijderpagina in `js/i18n/legal/`, in elk geval Nederlands en Engels. Door Claude geschreven, door niemand nagekeken.
 - [ ] Vlak voor publicatie opnieuw controleren of het EU-U.S. Data Privacy Framework nog geldt voor GitHub en Google (de tekst noemt het). Stand op 2026-10-12: van kracht; het Gerecht van de EU heeft het op 3 september 2025 in stand gelaten, het hoger beroep (zaak C-703/25 P, Latombe/Commissie) loopt nog bij het Hof van Justitie. Vernietigt het Hof het besluit, dan moet die alinea eruit of anders.
@@ -51,6 +50,9 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9, 10 en 11), nog niet 
 - [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
 
 ## Logboek
+
+### 2026-10-17
+- **Sprint 13 (punten 107–111)** op de branch `sprint-13` (vanaf `sprint-9`; nog niet op de testversie, zodat die gelijk blijft tijdens het testen door Jenn): puntenbalans opnieuw (punt 61), geluid bij level-up en repareren (rest van punt 58), keuzepagina voor het spoelicoon (punt 75), maker van "Old Rusted Bucket" bevestigd, roadmap opgeruimd.
 
 ### 2026-10-13
 - **Sprint 12 (punten 102–106)** op de branch `sprint-9`, na het beluisteren door Jenn: geluid op het moment van het spel-event (ook een plons bij het verstopt raken), geluid bij het legen van de emmer, elk van de zestien gereedschappen een eigen geluid, een rustige deep-house-lus als muziek (zachter bij spoelen en ontstoppen, stil op de achtergrond), en geluidsinstellingen met een regelaar per groep plus "Alle geluid uit". Alles CC0; bronnen in `docs/credits.md`.
@@ -320,10 +322,10 @@ Ook in deze sprint (uit de audit): code opgesplitst in data (`js/data/`), logica
 
 ## Toekomst (alleen vastgelegd, nog niet bouwen)
 
-- [ ] **58. Geluiden** — *Gedaan in de punten 96 en 102–106:* spoelen, verstopt raken, overlopen, ontstopt, een eigen geluid per gereedschap, voorwerpen in de emmer, emmer legen, schoonmaken, knoppen, aankoop, muziek, en een regelaar per groep. **Nog te doen:** level-up en repareren.
+- [x] **58. Geluiden** — *Gedaan in de punten 96 en 102–106:* spoelen, verstopt raken, overlopen, ontstopt, een eigen geluid per gereedschap, voorwerpen in de emmer, emmer legen, schoonmaken, knoppen, aankoop, muziek, en een regelaar per groep. *Level-up en repareren gedaan in Sprint 13 (punt 108); nog door Jenn te beluisteren.*
 - [ ] **59. Profiel** — *Fase 1 (lokaal gastprofiel, naam, avatar, statistieken) is gedaan in punt 69.* Nog te doen: echt koppelen met Google/Facebook/e-mail om te synchroniseren, gastvoortgang overzetten, account verwijderen. *Bijgewerkt 2026-10-11 voor Capacitor:* in de Android-app kan inloggen niet met een webvenster (pop-up of omleiding), maar via een plug-in die het inlogscherm van Android zelf opent; `authService` in `js/auth.js` blijft het enige koppelpunt. Zie "Capacitor: betalen, inloggen en offline" hieronder en de aangepaste stappen in het stappenplan bij Sprint 8. *(Vervangt punt 40.)*
 - [ ] **60. Echte betaling voor punten** — Google Play Billing via een Capacitor-plug-in, achter `purchaseService.buy()` in `js/purchases.js`. ~~Digital Goods API + Payment Request API in de TWA~~ is vervallen (besluit 2026-10-11). Uitwerking: "Capacitor: betalen, inloggen en offline" hieronder. Voorwaarden vooraf: het KvK-postadres en akkoord van Jenn (sectie 11, punt 5), en de privacyverklaring en Data Safety bijgewerkt. **Besluit van Jenn (2026-10-12):** bij puntenpakketten voorlopig het antwoord van Google Play Billing op het toestel vertrouwen, zonder eigen server; elke aankoop netjes bevestigen (acknowledge) en verbruiken (consume). Zodra er accounts komen (punt 59): controle via een server toevoegen, inclusief het intrekken van terugbetaalde aankopen. *(Vervangt punt 41.)*
-- [ ] **61. Logische puntenbalans** — Eén doordacht systeem voor punten per spoelbeurt/combo/ontstopping/level en prijzen, met een overzicht "hoeveel minuten spelen voor item X"; straffen in verhouding. Alle getallen staan al bij elkaar in `js/data/`.
+- [x] **61. Logische puntenbalans** — *Gedaan in Sprint 13, zie `docs/puntenbalans.md`.* Eén doordacht systeem voor punten per spoelbeurt/combo/ontstopping/level en prijzen, met een overzicht "hoeveel minuten spelen voor item X"; straffen in verhouding. Alle getallen staan al bij elkaar in `js/data/`.
 - [x] **62. Meerdere talen** — *Gedaan in punt 94 (tien talen).* Oorspronkelijk: Alle teksten naar taalbestanden (nl, en), taalkeuze in het menu, standaard de toesteltaal. Voorbereid: teksten uit JavaScript staan in `js/data/texts.js`.
 - [ ] **63. Aankleden** — Toilet en hokje aankleden (wc-hoes, matjes, handdoeken, spiegels, kastjes, planten, posters, verlichting) op de ankerpunten; thema-sets; items plaatsen, verschuiven en weghalen. Basis ligt er: ankerpunten in `js/data/room.js`, decoratie in `js/data/cosmetics.js`.
 
@@ -537,7 +539,7 @@ Het Facebook App-geheim hoef je mij niet te geven; dat vul je zelf in bij Fireba
     geen druk op kinderen, herroepingsrecht bij digitale inhoud (vervalt pas na uitdrukkelijke instemming), bestelknop met
     betalingsverplichting. De labels bij de puntenpakketten nalopen.
   - **Licenties**: alle assets en hun naamsvermelding nalopen tegen `CREDITS.md` (CC BY, CC BY-SA van de houten emmer,
-    ISC, MIT); maker van "Old Rusted Bucket" bevestigen.
+    ISC, MIT); ~~maker van "Old Rusted Bucket" bevestigen~~ *bevestigd 2026-10-17: Coozy, Sketchfab-account GameDevNick (zie `docs/credits.md`).*
   - **Spelregels / tutorial** bij de eerste start, na het welkomstscherm: in drie of vier stappen uitleggen hoe je spoelt,
     wat een verstopping is, het verschil tussen werkend en chaos-gereedschap, en de emmer legen. Overslaan moet kunnen;
     later terug te vinden in het menu.
@@ -551,7 +553,7 @@ Het Facebook App-geheim hoef je mij niet te geven; dat vul je zelf in bij Fireba
     schoonmaakspullen (punt 76).
   - Wat weg kan: `assets/_unused/` verhuizen naar een aparte branch of release-bijlage, zodat de repo klein blijft.
 
-- [ ] **75. Ander spoelicoon**
+- [ ] **75. Ander spoelicoon** — *Varianten staan klaar op `spoelicoon-preview.html` (Sprint 13, punt 109); wacht op de keuze van Jenn.*
   - Nieuw ontwerp voor de spoelknop (de draaikolk vervangen). Drie tot vijf varianten laten zien, naast elkaar op de echte
     knop in blauw en in rood (verstopt): bijvoorbeeld een spoelhendel, een druppel met kolk, een stortbak met pijl,
     een drukknop met twee standen. Bestaand icoon uit een vrije set of zelf getekend (dan zonder andermans naam erbij).
@@ -621,3 +623,16 @@ Branch `sprint-9` (nog niet gemerged). Feedback van Jenn na het beluisteren van 
 - [x] **104. Elk gereedschap een eigen geluid** — Zestien gereedschappen, zestien geluiden. Werkend: eigen geluid tijdens gebruik, daarna het algemene ontstopt-geluid. Chaos: alleen het eigen geluid. Per gereedschap vastgelegd in `js/data/tools.js`; een test eist dat elk gereedschap een geluid heeft en dat geen twee hetzelfde bestand delen. *Keuze: het ontstopt-geluid volgt 0,25 s na het gereedschap (`UNCLOG_AFTER_TOOL`), zodat je eerst het gereedschap hoort; de animatie van het ontstoppen begint wel meteen.*
 - [x] **105. Rustig house-deuntje** — Rustige deep-house-lus als achtergrondmuziek, naadloos herhalend, standaard aan. Vrije licentie, bron in `docs/credits.md` en het credits-scherm. Zachter tijdens spoelen en ontstoppen, stil op de achtergrond, klein bestand, pas geladen na het startscherm. *Gekozen: "Deep House.wav" van Johnnie_Holiday (Freesound, CC0), ingekort tot 16 maten en vertraagd van 128 naar ±118 tellen per minuut; 0,46 MB. Andere kandidaten staan in het logboek.*
 - [x] **106. Geluidsinstellingen** — Per profiel een schuif en aan/uit voor Muziek, Toilet & water, Gereedschap, Emmer & schoonmaak en Interface, plus de hoofdschakelaar "Alle geluid uit". Onthouden na herladen. Test: elke regelaar raakt alleen zijn eigen groep. *In een eigen venster (menuknop → Geluid). Erbij gekomen voor de groepen: een veeg-geluid bij schoonmaken, een klik op knoppen en een geluid bij een aankoop. Wie punt 96 al had ingesteld houdt zijn stand (uit blijft uit, het volume geldt voor de effecten).*
+
+---
+
+## Sprint 13 (punten 107–111)
+
+Branch `sprint-13` (vanaf `sprint-9`, nog niet gemerged en nog niet op de testversie). Gedaan zonder input van Jenn, terwijl zij Sprint 9–12 test.
+
+- [x] **107. Puntenbalans (punt 61, met 88)** — Gemeten met een simulatie die het spel naspeelt met de echte regels (`tools/balans.mjs`, `npm run balans`). Vóór: een gemiddelde speler had level 5 na ongeveer 1 minuut en de hele winkel na 6 minuten, door de combo tot ×8; het level volgde uit het saldo, dus kopen zette je terug. Nu: combo tot ×2 die doorspelen beloont (venster 3 s), prijzen ×5 (de pakketten met echt geld ook, zodat ze evenveel waard blijven), nieuwe level-drempels, en het level volgt uit alles wat je ooit verdiend hebt. Gemiddelde speler: level 2 na ±3 min, level 5 na ±45 min, alles na ±1 u 40. Bestaande spelers: saldo ×5, level blijft. Regels in `js/scoring.js` (gedeeld door spel en simulatie); uitleg, streefwaarden en "minuten spelen per item" in `docs/puntenbalans.md`; bewaakt door `tests/balans.spec.js`.
+- [x] **108. Geluid bij level-up en repareren (rest van punt 58)** — Level-up: vier oplopende tonen, eigen werk (gemaakt met ffmpeg, 0,8 s, groep Interface, muziek even zachter). Repareren: twee metalen tikjes (Kenney Impact Sounds, CC0, 0,4 s, groep Emmer & schoonmaak). Allebei aan de eventbus (`level:up`, `toilet:condition` met `repair`). *Nog door Jenn te beluisteren.*
+- [x] **109. Keuzepagina spoelicoon (punt 75)** — `spoelicoon-preview.html`: het huidige icoon (A) en vier zelfgetekende varianten (B spoelhendel, C druppel met kolk, D stortbak met pijl, E drukknop met twee standen) op de echte knop: blauw, rood (verstopt), ingedrukt en klein. Gaat mee naar de testversie (noindex), niet in de service worker. Wacht op de keuze van Jenn.
+- [x] **110. Maker "Old Rusted Bucket" bevestigd (punt 73)** — Volgens de Sketchfab-API staat het model onder het account *GameDevNick*, weergavenaam *Coozy*, licentie CC BY 4.0: dezelfde maker. Credits bijgewerkt ("Coozy (GameDevNick)").
+- [x] **111. Tests en documentatie** — `tests/balans.spec.js` (nieuw), `ci.spec.js` (keuzepagina), bestaande tests bijgewerkt voor de nieuwe prijzen (oudere opslag rekent met saldo ×5: `OLD` in `tests/helpers.js`); README, `docs/credits.md`, `docs/privacy-audit.md` (totaal verdiende punten in de spelstand).
+

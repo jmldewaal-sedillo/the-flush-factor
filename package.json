@@ -9,6 +9,7 @@
     "assets": "bash tools/optimize-assets.sh",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
+    "balans": "node --no-warnings tools/balans.mjs --items",
     "test:rook": "playwright test tests/rook.spec.js --project=phone-portrait --project=tablet-landscape"
   },
   "devDependencies": {

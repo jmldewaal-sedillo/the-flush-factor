@@ -1,7 +1,7 @@
 // Punten 91–93: de knop voor schoonmaakspullen staat altijd in beeld, spullen raken op, en een open menu
 // gaat dicht bij een tik ernaast zonder dat die tik iets anders doet.
 const { test, expect } = require('@playwright/test');
-const { openGame, until, tapScene, setView, expectNoProblems, NEW_PLAYER } = require('./helpers');
+const { openGame, until, tapScene, setView, expectNoProblems, NEW_PLAYER, OLD } = require('./helpers');
 
 const snap = page => page.evaluate(() => window.__game.snapshot());
 const card = (page, id) => page.locator(`.shop-card[data-id="${id}"]`);
@@ -114,15 +114,15 @@ test('schoonmaakspullen raken op: elke veeg telt af, na de laatste verdwijnt het
   await page.locator('#btn-shop').click();
   const head = page.locator('.shop-category[data-cat="care"] .shop-category-header');
   if (await head.getAttribute('aria-expanded') !== 'true') await head.click();
-  await expect(card(page, 'sponge').locator('.price-tag')).toContainText('60');
+  await expect(card(page, 'sponge').locator('.price-tag')).toContainText('300');
   await expect(card(page, 'sponge').locator('.shop-card-detail')).toHaveText('6× te gebruiken');
   await expect(card(page, 'mop').locator('.badge-owned')).toContainText('Nog 6 van 6');
   await expect(card(page, 'mop').locator('.uses-bar')).toBeVisible();
   // wat je nog hebt koop je niet dubbel
   await card(page, 'mop').click();
-  expect((await snap(page)).score).toBe(300);
+  expect((await snap(page)).score).toBe(300 * OLD);
   await card(page, 'sponge').click();
-  expect(await snap(page)).toMatchObject({ score: 240, supplies: { sponge: 6, mop: 6 } });
+  expect(await snap(page)).toMatchObject({ score: 300 * OLD - 300, supplies: { sponge: 6, mop: 6 } });
   expectNoProblems(problems);
 });
 

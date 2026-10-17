@@ -56,8 +56,10 @@ manifest.webmanifest, sw.js   PWA: installeerbaar en offline speelbaar
 css/                  tokens.css (HET designbestand: kleuren, letters, randen, schaduwen), style.css, animations.css, pages.css
 style-preview.html    Stijlvoorbeelden (drie richtingen; gekozen door Jenn: A · Sticker).
                       Hoort niet bij het spel; staat wel op het testadres.
+spoelicoon-preview.html  Vijf spoelicoontjes op de echte knop om uit te kiezen (punt 75); idem.
 js/
   game.js             Coördinator: spelregels, game-loop, koppeling logica ↔ weergave
+  scoring.js          Puntenregels: combo, punten per spoelbeurt, bonus, straffen, level (geen DOM, geen 3D)
   state.js            Spelstand, laden en bewaren, migratie van oudere versies
   storage.js          DE ENIGE plek die iets bewaart (prefix flushfactor.), overzetten, wissen, oude sleutels overzetten
   i18n/               Talen: index.js + één bestand per taal (nl is de bron); legal/ = privacytekst per taal
@@ -83,9 +85,9 @@ assets/
   icons/              lucide/, game-icons/ (bron-SVG's), sprite.svg (gegenereerd), app/ (app-iconen)
   fonts/              Lilita One + Nunito (spel) en vier lettertypen voor de stijlvoorbeelden; elk met OFL.txt
   _unused/            originelen en niet-gebruikte modellen (worden niet geladen)
-tools/                serve, build-icons, build-sw, bouw-site (testversie voor github.io), optimize-assets, model-viewer
+tools/                serve, build-icons, build-sw, bouw-site (testversie voor github.io), optimize-assets, model-viewer, balans (puntensimulatie)
 tests/                Playwright-tests per onderwerp
-docs/                 credits, privacy-audit, testversie, publiceren
+docs/                 credits, privacy-audit, testversie, publiceren, puntenbalans
 store/                materiaal voor Google Play (begin)
 ```
 
@@ -110,8 +112,7 @@ Alles staat in `js/data/`:
 | Avatars | `profile.js` | een icoonnaam |
 | Winkelcategorieën (met eigen kleur) | `shop.js` | een regel |
 | Kleuren, lettertypen, randen, schaduwen | `css/tokens.css` | — |
-| Teksten | `texts.js` | — |
-| Punten, straffen, waterfases, effect-intensiteit | `config.js` | — |
+| Punten, combo, straffen, waterfases, effect-intensiteit | `config.js` | — (de regels zelf staan in `js/scoring.js`) |
 | Iconen | `tools/icons.config.json` | naam toevoegen en `npm run icons` |
 
 ## Bediening in de scène
@@ -148,6 +149,10 @@ npm run assets   # modellen/textures opnieuw comprimeren uit assets/_unused/orig
 
 Draai `npm run build` na elke wijziging in `js/`, `css/` of `assets/`; de test `sw.spec.js` faalt als je het vergeet.
 
+**Puntenbalans.** Na een wijziging in prijzen, levels of punten: `npm run balans`. Dat speelt het spel na met drie
+soorten spelers en toont hoe lang het duurt tot elk level, tot alles gekocht is, en hoeveel minuten spelen elk item
+kost. De streefwaarden en het waarom staan in `docs/puntenbalans.md`; `tests/balans.spec.js` bewaakt ze.
+
 ## Tests
 
 ```bash
@@ -179,7 +184,8 @@ npx playwright test shop          # één onderwerp
 | `sw.spec.js` | service worker in een submap, volledige cache, offline, geen herlaad; manifest |
 | `screenshots.spec.js` | screenshots van alle toestanden in `tests/screenshots/<formaat>/` om na te kijken |
 | `sound.spec.js` | geluiden en muziek: vooraf geladen na de eerste tik, start binnen 50 ms na het event, elk gereedschap een eigen geluid, muzieklus met ducking, regelaar per groep onthouden, klein, met bron en licentie |
-| `ci.spec.js` | de controle op privégegevens (blocklist) staat in de workflows en werkt; de testversie bevat `style-preview.html`, noindex |
+| `ci.spec.js` | de controle op privégegevens (blocklist) staat in de workflows en werkt; de testversie bevat `style-preview.html` en `spoelicoon-preview.html`, noindex |
+| `balans.spec.js` | puntenbalans binnen de streefwaarden (simulatie), level volgt uit wat je verdiend hebt, oudere opslag gaat mee naar de nieuwe prijzen |
 | `rook.spec.js` | de rooktest: kort en breed, draait vóór publicatie van de testversie (`npm run test:rook`) |
 | `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |
 

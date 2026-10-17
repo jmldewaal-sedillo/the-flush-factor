@@ -1,6 +1,6 @@
 // Laden: geen fouten, geen 404's, niets van buiten, en een lichte eerste laadbeurt.
 const { test, expect } = require('@playwright/test');
-const { openGame, expectNoProblems, until } = require('./helpers');
+const { openGame, expectNoProblems, until, OLD } = require('./helpers');
 
 test('laadt zonder console-fouten, 404\'s of externe verzoeken', async ({ page }) => {
   const problems = await openGame(page);
@@ -66,7 +66,7 @@ test('opslag van de oude versie (manden, iconen, één decoratie) wordt overgeno
   await page.locator('#profile-submit').click();
   const s = await page.evaluate(() => window.__game.snapshot());
   expect(s).toMatchObject({
-    score: 777, level: 2, bucketId: 'bucket-plastic', bucketItems: ['duck', 'sock', 'brick'],
+    score: 777 * OLD, level: 2, bucketId: 'bucket-plastic', bucketItems: ['duck', 'sock', 'brick'],
     cosmetics: { toilet: 'toilet-golden', tiles: 'tiles-stars', floor: 'floor-lava' }, decor: { wallBack: 'deco-mirror' },
   });
   expect(s.ownedTools).toContain('magic-wand');

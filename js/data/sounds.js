@@ -32,9 +32,11 @@ export const SOUNDS = {
   'bucket-heavy': { group: 'bucket', files: ['bucket-heavy-1.mp3', 'bucket-heavy-2.mp3', 'bucket-heavy-3.mp3'], gain: 1 },
   'bucket-empty': { group: 'bucket', files: ['bucket-empty.mp3'], gain: 0.9 },
   scrub:          { group: 'bucket', files: ['scrub.mp3'], gain: 0.7, restart: true },
+  repair:         { group: 'bucket', files: ['repair.mp3'], gain: 0.8 },                         // tok-tok bij een reparatie (punt 58)
   // ── interface ──
   'ui-click':     { group: 'ui', files: ['ui-click.mp3'], gain: 0.6 },
   'ui-buy':       { group: 'ui', files: ['ui-buy.mp3'], gain: 0.8 },
+  'level-up':     { group: 'ui', files: ['level-up.mp3'], gain: 0.8, duck: true },               // oplopend akkoordje (punt 58)
   // ── gereedschap: elk een eigen geluid (punt 104). De sleutel is tool-<id van het gereedschap>. ──
   'tool-plunger':          { group: 'tools', files: ['tool-plunger.mp3'], gain: 1 },
   'tool-hot-water':        { group: 'tools', files: ['tool-hot-water.mp3'], gain: 0.9 },

@@ -6,9 +6,9 @@ export const DEFECTS = { seat: {}, lid: {}, chip: {} };
 
 // Reparaties: één keer te gebruiken. Kopen = meteen uitvoeren (met animatie in de scène); daarna is hij op.
 export const REPAIRS = [
-  { id: 'repair-kit', icon: 'repair-kit', price: 60, minLevel: 1, fixes: 'chip', uses: 1 },
-  { id: 'new-seat', icon: 'new-seat', price: 120, minLevel: 1, fixes: 'seat', uses: 1 },
-  { id: 'new-lid', icon: 'new-lid', price: 150, minLevel: 1, fixes: 'lid', uses: 1 },
+  { id: 'repair-kit', icon: 'repair-kit', price: 300, minLevel: 1, fixes: 'chip', uses: 1 },
+  { id: 'new-seat', icon: 'new-seat', price: 600, minLevel: 1, fixes: 'seat', uses: 1 },
+  { id: 'new-lid', icon: 'new-lid', price: 750, minLevel: 1, fixes: 'lid', uses: 1 },
 ];
 
 // Schoonmaakspullen raken op (punt 92).
@@ -17,13 +17,13 @@ export const REPAIRS = [
 // telt als één keer. Duurdere spullen gaan langer mee én halen meer weg per veeg.
 //   vegen per vlek = 1 / power (afgerond naar boven) → vlekken per aankoop = uses / dat aantal
 export const CLEANERS = [
-  { id: 'sponge', icon: 'sponge', price: 60, minLevel: 1, targets: ['wall'], power: 0.34, uses: 6 },                      // 2 vlekken
-  { id: 'toilet-brush', icon: 'toilet-brush', price: 80, minLevel: 1, targets: ['toilet'], power: 0.34, uses: 6 },        // 2 keer het toilet
-  { id: 'mop', icon: 'mop', price: 100, minLevel: 1, targets: ['floor'], power: 0.34, uses: 6 },                          // 2 vlekken
-  { id: 'spray', icon: 'spray', price: 250, minLevel: 2, targets: ['wall'], power: 0.6, uses: 10 },                       // 5 vlekken
-  { id: 'toilet-cleaner', icon: 'toilet-cleaner', price: 300, minLevel: 2, targets: ['toilet'], power: 1, uses: 5 },      // 5 keer het toilet
-  { id: 'scrubber', icon: 'scrubber', price: 800, minLevel: 4, targets: ['floor'], power: 1, uses: 12 },                  // 12 vlekken
-  { id: 'pressure-washer', icon: 'pressure-washer', price: 1200, minLevel: 4, targets: ['wall', 'floor'], power: 1, uses: 20 },   // 20 vlekken
+  { id: 'sponge', icon: 'sponge', price: 300, minLevel: 1, targets: ['wall'], power: 0.34, uses: 6 },                      // 2 vlekken
+  { id: 'toilet-brush', icon: 'toilet-brush', price: 400, minLevel: 1, targets: ['toilet'], power: 0.34, uses: 6 },        // 2 keer het toilet
+  { id: 'mop', icon: 'mop', price: 500, minLevel: 1, targets: ['floor'], power: 0.34, uses: 6 },                          // 2 vlekken
+  { id: 'spray', icon: 'spray', price: 1250, minLevel: 2, targets: ['wall'], power: 0.6, uses: 10 },                       // 5 vlekken
+  { id: 'toilet-cleaner', icon: 'toilet-cleaner', price: 1500, minLevel: 2, targets: ['toilet'], power: 1, uses: 5 },      // 5 keer het toilet
+  { id: 'scrubber', icon: 'scrubber', price: 4000, minLevel: 4, targets: ['floor'], power: 1, uses: 12 },                  // 12 vlekken
+  { id: 'pressure-washer', icon: 'pressure-washer', price: 6000, minLevel: 4, targets: ['wall', 'floor'], power: 1, uses: 20 },   // 20 vlekken
 ];
 
 export const CARE = {

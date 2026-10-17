@@ -13,7 +13,7 @@ const snap = page => page.evaluate(() => window.__game.snapshot());
 const placeholders = text => [...String(text).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join(',');
 // Rijk gevulde spelstand: alles wat tekst toont is er (vuil, voorraad, gereedschap, decoratie).
 const RICH = {
-  version: 4, score: 1450, highScore: 20500, level: 3, streak: 4, bestStreak: 31,
+  version: 4, score: 1450, highScore: 2000, level: 3, streak: 4, bestStreak: 31,
   toilet: { defects: { seat: true }, dirt: 1 }, purchased: ['sponge', 'toilet-brush', 'mop', 'spray', 'bucket-wood', 'deco-mirror'],
   supplies: { sponge: 4, 'toilet-brush': 6, mop: 2, spray: 10 }, decor: { wallBack: 'deco-mirror' },
   ownedTools: ['plunger', 'hot-water', 'rubber-duck', 'confetti-cannon', 'flamingo', 'toilet-snake', 'magic-wand', 'disco-ball'],
@@ -175,7 +175,7 @@ for (const [code, name] of LANGUAGES) {
     await page.keyboard.press('Escape');
 
     // banners: level-up (met "nieuw in de winkel") en ontstopt
-    await page.evaluate(() => window.__game.setScore(1600));
+    await page.evaluate(() => window.__game.setScore(24000));                     // level 4
     await expect(page.locator('#levelup-banner')).toContainText(strings['level.4'].toLocaleUpperCase(code));
     await check('level-up');
     await setView(page, 'bucket');

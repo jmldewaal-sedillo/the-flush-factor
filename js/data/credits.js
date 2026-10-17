@@ -7,7 +7,7 @@ export const CREDITS = [
   { group: 'models', items: [
     { title: 'Toilet', author: 'HippoStance', license: 'CC BY 4.0', url: 'https://skfb.ly/6S9CM' },
     { title: 'Wooden Bucket', author: 'romullus', license: 'CC BY-SA 4.0', url: 'https://skfb.ly/6FRTz' },
-    { title: 'Old Rusted Bucket v1', author: 'GameDev Nick', license: 'CC BY 4.0', url: 'https://skfb.ly/onACK' },
+    { title: 'Old Rusted Bucket v1', author: 'Coozy (GameDevNick)', license: 'CC BY 4.0', url: 'https://skfb.ly/onACK' },
     { title: 'Plastic Bucket', author: 'MaX3Dd', license: 'CC BY 4.0', url: 'https://skfb.ly/oSNCN' },
     { title: 'Metal bucket', author: 'Kozlov Maksim', license: 'CC BY 4.0', url: 'https://skfb.ly/6TGrU' },
     { title: 'Pair of buckets', author: 'Sousinho', license: 'CC BY 4.0', url: 'https://skfb.ly/ozDUF' },

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Flush Factor — spoelicoon kiezen</title>
+<!--
+  Keuzepagina voor het spoelicoon (ROADMAP punt 75). Hoort niet bij het spel zelf.
+  A is het huidige icoon (game-icons.net, Lorc, CC BY 3.0, uit de sprite). B t/m E zijn zelf getekend voor dit
+  spel (geen naamsvermelding nodig). Alle kleuren komen uit css/tokens.css, net als in het spel.
+-->
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--tiles); color: var(--ink); font-family: var(--font-body); padding: 20px 16px 60px; }
+h1 { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 6px; }
+.intro { max-width: 720px; line-height: 1.5; margin-bottom: 20px; font-weight: 600; }
+.variants { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; max-width: 1100px; }
+.variant { background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 14px 16px; }
+.variant:nth-child(odd) { transform: rotate(var(--tilt-alt)); }
+.variant h2 { font-family: var(--font-display); font-size: 1.25rem; margin-bottom: 2px; }
+.variant p { font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; min-height: 2.4em; }
+.row { display: flex; align-items: flex-end; justify-content: space-around; gap: 8px; }
+.cell { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 800; color: var(--muted); }
+
+/* zoals #flush-btn in css/style.css */
+.btn {
+  --size: 86px;
+  width: var(--size); height: var(--size); border-radius: 50%;
+  --btn-bg: var(--blue);
+  background: var(--btn-bg); color: var(--on-color);
+  border: 4px solid var(--ink); box-shadow: 5px 5px 0 var(--ink);
+  display: flex; align-items: center; justify-content: center;
+}
+.btn .ic { width: 44px; height: 44px; }
+.btn.clogged { --btn-bg: var(--plunger); }
+.btn.pressed { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--ink); }
+.btn.pressed .ic { transform: rotate(-120deg); }
+.btn.small { --size: 66px; box-shadow: 3px 3px 0 var(--ink); }
+.btn.small .ic { width: 34px; height: 34px; }
+</style>
+</head>
+<body>
+<h1>Spoelicoon kiezen (punt 75)</h1>
+<p class="intro">Vijf iconen op de echte spoelknop: blauw (normaal), rood (verstopt), ingedrukt (het icoon draait mee,
+zoals in het spel) en klein (telefoon liggend). A is het huidige icoon. Laat weten welke letter je wilt; dan wordt
+die doorgevoerd in het spel. Het draaien bij indrukken hoort bij de kolk; bij B t/m E krijgt de knop dan een eigen
+beweging (de hendel kantelt, de drukknop zakt in).</p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- B · Spoelhendel: hendel aan de stortbak, met twee bewegingsboogjes -->
+  <symbol id="v-lever" viewBox="0 0 48 48">
+    <circle cx="13" cy="17" r="7" fill="currentColor"/>
+    <path d="M15 20 L35 31" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <circle cx="37" cy="32" r="5" fill="currentColor"/>
+    <path d="M38 19 a11 11 0 0 1 6 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M33 39 a11 11 0 0 0 9 -2" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+  </symbol>
+  <!-- C · Druppel met kolk -->
+  <symbol id="v-drop" viewBox="0 0 48 48">
+    <path d="M24 3 C24 3 9 20 9 30 a15 15 0 0 0 30 0 C39 20 24 3 24 3 Z" fill="currentColor"/>
+    <!-- binnenlijn in de kleur van de knop zelf (blauw of rood); een variabele erft door tot in <use> -->
+    <path style="stroke: var(--btn-bg)" d="M24 31 a2.5 2.5 0 1 1 2.5 -2.5 a5.5 5.5 0 1 1 -5.5 -5.5 a8.5 8.5 0 0 1 8.5 8.5" stroke-width="3" stroke-linecap="round" fill="none"/>
+  </symbol>
+  <!-- D · Stortbak met pijl naar de pot -->
+  <symbol id="v-tank" viewBox="0 0 48 48">
+    <rect x="11" y="3" width="26" height="11" rx="3" fill="currentColor"/>
+    <path d="M24 17 V27 M18 22 L24 28 L30 22" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M9 32 H39 A15 12 0 0 1 9 32 Z" fill="currentColor"/>
+  </symbol>
+  <!-- E · Drukknop met twee standen (grote en kleine spoeling) -->
+  <symbol id="v-dual" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="3.5" fill="none"/>
+    <path d="M22 10 a14 14 0 0 0 0 28 Z" fill="currentColor"/>
+    <path d="M26 15 a9 9 0 0 1 0 18 Z" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<div class="variants" id="variants"></div>
+
+<script>
+const VARIANTS = [
+  { id: 'A', name: 'Draaikolk (huidig)', note: 'De kolk van nu (game-icons.net, Lorc).', use: 'assets/icons/sprite.svg#flush' },
+  { id: 'B', name: 'Spoelhendel', note: 'Ouderwetse hendel aan de stortbak; past bij het kapotte begin.', use: '#v-lever' },
+  { id: 'C', name: 'Druppel met kolk', note: 'Water dat wegdraait; ook klein goed leesbaar.', use: '#v-drop' },
+  { id: 'D', name: 'Stortbak met pijl', note: 'Stortbak, pijl naar beneden, pot: het meest letterlijk.', use: '#v-tank' },
+  { id: 'E', name: 'Drukknop met twee standen', note: 'De moderne spoelknop met grote en kleine spoeling.', use: '#v-dual' },
+];
+const STATES = [['', 'normaal'], ['clogged', 'verstopt'], ['pressed', 'ingedrukt'], ['small', 'klein']];
+const icon = use => `<svg class="ic" aria-hidden="true"><use href="${use}"/></svg>`;
+document.getElementById('variants').innerHTML = VARIANTS.map(v => `
+  <section class="variant" data-variant="${v.id}">
+    <h2>${v.id} · ${v.name}</h2>
+    <p>${v.note}</p>
+    <div class="row">${STATES.map(([cls, label]) => `
+      <div class="cell"><div class="btn ${cls}" role="img" aria-label="${v.name}, ${label}">${icon(v.use)}</div>${label}</div>`).join('')}
+    </div>
+  </section>`).join('');
+</script>
+</body>
+</html>

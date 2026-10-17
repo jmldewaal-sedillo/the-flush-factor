@@ -104,7 +104,11 @@ const domText = page => page.evaluate(() => {
 // Een nieuwe speler (Sprint 9: armoedige start) die het welkomstscherm al gehad heeft. Vul aan met score, level, …
 const NEW_PLAYER = { version: 3, toilet: { defects: { seat: true, lid: true, chip: true }, dirt: 1 } };
 
+// Opslag van vóór versie 5 (punt 61): het saldo gaat bij het laden ×5, mee met de prijzen in de winkel.
+// De standen hierboven en in openGame() zijn oudere versies; reken een opgeslagen score dus ×OLD.
+const OLD = 5;
+
 /** Zet een spelstand klaar in de opslag (voor een herlaad midden in een test). */
 const seedSave = (page, data) => page.evaluate(([key, d]) => localStorage.setItem(key, JSON.stringify(d)), [SAVE_KEY, { version: 2, profile: PROFILE, ...data }]);
 
-module.exports = { NEW_PLAYER, PROFILE, tapScene, watch, seen, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, seedSave, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };
+module.exports = { NEW_PLAYER, OLD, PROFILE, tapScene, watch, seen, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, seedSave, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };

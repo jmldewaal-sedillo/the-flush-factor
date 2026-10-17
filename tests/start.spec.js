@@ -1,6 +1,6 @@
 // Punten 79 en 81: armoedige start voor nieuwe spelers, vrijspelen per level, bestaande spelers houden alles.
 const { test, expect } = require('@playwright/test');
-const { openGame, until, expectNoProblems, NEW_PLAYER } = require('./helpers');
+const { openGame, until, expectNoProblems, NEW_PLAYER, OLD } = require('./helpers');
 
 const snap = page => page.evaluate(() => window.__game.snapshot());
 const three = (page, fn) => page.evaluate(name => window.__game.three[name](), fn);
@@ -40,22 +40,23 @@ test('level 1: alleen spullen van level 1 te koop; de rest staat op slot met het
   await expect(card(page, 'drain-cleaner')).toBeDisabled();                     // level 2
   await expect(card(page, 'drain-cleaner').locator('.badge-locked')).toContainText('Vanaf level 2');
   await expect(card(page, 'robot-arm').locator('.badge-locked')).toContainText('Vanaf level 5');
-  await expect(card(page, 'bucket-wood').locator('.price-tag')).toHaveText('150');   // de houten emmer is nu een upgrade
+  await expect(card(page, 'bucket-wood').locator('.price-tag')).toHaveText('750');   // de houten emmer is nu een upgrade
   await expect(card(page, 'bucket-rusty').locator('.badge-active')).toBeVisible();
   await expect(card(page, 'tiles-default')).toBeDisabled();
   await expect(card(page, 'floor-basic')).toBeEnabled();
 
   await card(page, 'bucket-wood').click();
   await until(page, () => window.__game.three.bucketId() === 'bucket-wood');
-  expect((await snap(page)).score).toBe(30);
+  expect((await snap(page)).score).toBe(180 * OLD - 750);
   await page.locator('#btn-shop-close').click();
   await expect(page.locator('#bucket-liters')).toHaveText('0,0 / 20 L');
 });
 
 test('level-up speelt spullen vrij: melding, teller op de winkelknop, "Nieuw!" in de winkel, daarna gezien', async ({ page }) => {
-  await openGame(page, { save: { ...NEW_PLAYER, score: 195, level: 1 } });
+  // opslag van nu (versie 5): verdiend 2.495, net onder level 2 (vanaf 2.500)
+  await openGame(page, { save: { ...NEW_PLAYER, version: 5, score: 2495, earned: 2495, level: 1 } });
   await expect(page.locator('#shop-badge')).toBeHidden();
-  await page.locator('#flush-btn').click();                                     // 195 + 9 = level 2 (vanaf 200)
+  await page.locator('#flush-btn').click();                                     // 2.495 + 9 (vies) = level 2
   await until(page, () => window.__game.snapshot().level === 2);
   const fresh = (await snap(page)).newItems;
   expect(fresh).toEqual(expect.arrayContaining(['drain-cleaner', 'disco-ball', 'megaphone', 'tiny-elephant', 'tiles-default', 'bucket-plastic', 'spray', 'toilet-cleaner']));
@@ -96,7 +97,7 @@ test('bestaande speler op level 4 houdt alles en krijgt de start-staat niet opge
   const problems = await openGame(page, { save: old });
   const s = await snap(page);
   expect(s).toMatchObject({
-    score: 2600, level: 4, bucketId: 'bucket-plastic', bucketItems: ['duck', 'teddy'],
+    score: 2600 * OLD, level: 4, bucketId: 'bucket-plastic', bucketItems: ['duck', 'teddy'],
     cosmetics: { toilet: 'toilet-golden', tiles: 'tiles-default', floor: 'floor-marble' },
     decor: { wallBack: 'deco-mirror', floorLeft: 'deco-plant' },
     toilet: { defects: { seat: false, lid: false, chip: false }, dirt: 0 }, broken: false, pointsFactor: 1, stains: [],
@@ -120,14 +121,14 @@ test('bestaande speler op level 4 houdt alles en krijgt de start-staat niet opge
   await expect(card(page, 'new-seat').locator('.badge-owned')).toContainText('Is nog heel');
   // terugwisselen naar iets wat ze al hadden kost niets
   await card(page, 'bucket-wood').click();
-  expect((await snap(page)).score).toBe(2600);
+  expect((await snap(page)).score).toBe(2600 * OLD);
 
   // en het blijft zo na opslaan en herladen (nu als versie 3)
   await page.locator('#btn-shop-close').click();
   await page.reload();
   await until(page, () => window.__game?.ready);
   const again = await snap(page);
-  expect(again).toMatchObject({ score: 2600, level: 4, bucketId: 'bucket-wood', cosmetics: s.cosmetics, toilet: s.toilet });
+  expect(again).toMatchObject({ score: 2600 * OLD, level: 4, bucketId: 'bucket-wood', cosmetics: s.cosmetics, toilet: s.toilet });
   expect(again.ownedTools).toEqual(old.ownedTools);
   expect(again.purchased).toEqual(expect.arrayContaining([...old.purchased, 'bucket-wood', 'tiles-default', 'floor-basic']));
   expectNoProblems(problems);

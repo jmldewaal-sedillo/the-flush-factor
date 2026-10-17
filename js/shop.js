@@ -134,8 +134,9 @@ export class Shop {
     const s = this.state;
     const next = LEVELS.find(l => l.level === s.level + 1);
     const cur = LEVELS.find(l => l.level === s.level);
-    const levelPct = next ? Math.min(100, Math.max(0, (s.score - cur.minScore) / (next.minScore - cur.minScore) * 100)) : 100;
-    const levelText = next ? t('shop.levelNext', { pts: fmt(Math.max(0, next.minScore - s.score)), n: next.level }) : t('shop.levelMax');
+    // Voortgang telt alles wat je verdiend hebt, niet je saldo: kopen zet je niet terug (punt 61).
+    const levelPct = next ? Math.min(100, Math.max(0, (s.earned - cur.minScore) / (next.minScore - cur.minScore) * 100)) : 100;
+    const levelText = next ? t('shop.levelNext', { pts: fmt(Math.max(0, next.minScore - s.earned)), n: next.level }) : t('shop.levelMax');
 
     let goal = null;
     for (const cat of SHOP_CATEGORIES) {

@@ -1,7 +1,7 @@
 // Punt 51: alle winkelcategorieën zichtbaar en uitklapbaar, met werkende aankopen.
 // (Sinds Sprint 9 zijn het er acht: "Schoonmaak & Reparatie" is erbij gekomen.)
 const { test, expect } = require('@playwright/test');
-const { openGame, until, expectNoProblems, watch, seen } = require('./helpers');
+const { openGame, until, expectNoProblems, watch, seen, OLD } = require('./helpers');
 
 const CATEGORIES = ['Punten kopen', 'Gereedschap', 'Schoonmaak & Reparatie', 'Toiletmodellen', 'Tegelpatronen', 'Vloeren', 'Decoratie', 'Emmers'];
 const MIN_ITEMS = { buy: 4, tools: 12, care: 10, toilets: 4, tiles: 5, floors: 5, decoration: 6, buckets: 5 };
@@ -71,20 +71,20 @@ test('punten kopen: melding bij élke tik, saldo verandert niet', async ({ page 
     await seen(page, '#shop-message.visible');
     await expect(page.locator('#shop-message')).toHaveText('Binnenkort beschikbaar');
   }
-  expect((await page.evaluate(() => window.__game.snapshot())).score).toBe(123);
+  expect((await page.evaluate(() => window.__game.snapshot())).score).toBe(123 * OLD);
 });
 
 test('gereedschap kopen: punten eraf, knop erbij; te duur of te laag level kan niet', async ({ page }) => {
-  await openShop(page, { score: 400, level: 3 });
+  await openShop(page, { score: 400, level: 3 });                                // 2.000 nu
   await openCat(page, 'tools');
   const tools = cat(page, 'tools');
   await expect(tools.locator('[data-id="robot-arm"]')).toBeDisabled();           // level 5 nodig
-  await tools.locator('[data-id="super-plunger"]').click();                       // 600 > 400
+  await tools.locator('[data-id="super-plunger"]').click();                       // 3.000 > 2.000
   await expect(page.locator('#shop-message')).toContainText('Niet genoeg punten');
-  await tools.locator('[data-id="magic-wand"]').click();                          // 200
+  await tools.locator('[data-id="magic-wand"]').click();                          // 1.000
   await expect(tools.locator('[data-id="magic-wand"] .badge-owned')).toBeVisible();
   const snap = await page.evaluate(() => window.__game.snapshot());
-  expect(snap.score).toBe(200);
+  expect(snap.score).toBe(400 * OLD - 1000);
   expect(snap.ownedTools).toContain('magic-wand');
   await page.locator('#btn-shop-close').click();
   await expect(page.locator('.tool-btn[data-id="magic-wand"]')).toBeVisible();

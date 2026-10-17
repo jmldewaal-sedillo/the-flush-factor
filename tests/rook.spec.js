@@ -3,7 +3,7 @@
 // en doen de kernfuncties het. De volledige suite (npm test) blijft de eis voor main.
 //   npm run test:rook
 const { test, expect } = require('@playwright/test');
-const { openGame, until, clogAndFix, expectNoProblems, NEW_PLAYER } = require('./helpers');
+const { openGame, until, clogAndFix, expectNoProblems, NEW_PLAYER, OLD } = require('./helpers');
 
 const snap = page => page.evaluate(() => window.__game.snapshot());
 
@@ -54,7 +54,7 @@ test('rook: winkel, repareren, schoonmaken, menu en taal', async ({ page }) => {
   await page.locator('.shop-card[data-id="toilet-brush"]').click();
   await page.locator('.shop-card[data-id="new-seat"]').click();
   let s = await snap(page);
-  expect(s.score).toBe(500 - 80 - 120);
+  expect(s.score).toBe(500 * OLD - 400 - 600);                                  // wc-borstel en nieuwe bril
   expect(s.supplies).toEqual({ 'toilet-brush': 6 });
   expect(s.toilet.defects.seat).toBe(false);
   await page.locator('#btn-shop-close').click();

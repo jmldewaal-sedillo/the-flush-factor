@@ -3,12 +3,12 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { openGame, until, ready, expectNoProblems, PROFILE, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY } = require('./helpers');
+const { openGame, until, ready, expectNoProblems, PROFILE, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, OLD } = require('./helpers');
 
 const ROOT = path.join(__dirname, '..');
 const snap = page => page.evaluate(() => window.__game.snapshot());
 const allKeys = page => page.evaluate(() => Object.keys(localStorage).sort());
-const PROGRESS = { version: 4, score: 1234, highScore: 2000, level: 3, purchased: ['bucket-wood', 'sponge'], supplies: { sponge: 4 }, bucketId: 'bucket-wood', toilet: { defects: {}, dirt: 0 }, stats: { totalFlushes: 77 } };
+const PROGRESS = { version: 5, score: 1234, highScore: 2000, earned: 9500, level: 3, purchased: ['bucket-wood', 'sponge'], supplies: { sponge: 4 }, bucketId: 'bucket-wood', toilet: { defects: {}, dirt: 0 }, stats: { totalFlushes: 77 } };
 async function openData(page) {
   await page.locator('#score-bubble').click();
   await expect(page.locator('#profile-data-block')).toBeVisible();
@@ -69,7 +69,7 @@ test('migratie: de oude sleutels (flushfactor_v1 enz.) worden overgezet en daarn
   }, [LEGACY_SAVE_KEY, old]);
   const problems = await openGame(page, { firstStart: true });        // de eigen opslag hierboven blijft staan
   const s = await snap(page);
-  expect(s).toMatchObject({ score: 4321, level: 4, bucketId: 'bucket-plastic', language: 'de', profile: { name: PROFILE.name, avatar: PROFILE.avatar } });
+  expect(s).toMatchObject({ score: 4321 * OLD, level: 4, bucketId: 'bucket-plastic', language: 'de', profile: { name: PROFILE.name, avatar: PROFILE.avatar } });
   expect(s.ownedTools).toEqual(old.ownedTools);
   expect(s.supplies).toEqual({ spray: 10 });
   expect(s.stats.totalFlushes).toBe(555);
@@ -87,7 +87,7 @@ test('migratie: de oude sleutels (flushfactor_v1 enz.) worden overgezet en daarn
   // na herladen is alles er nog, zonder de oude sleutel
   await page.reload();
   await until(page, () => window.__game?.ready);
-  expect(await snap(page)).toMatchObject({ score: 4321, level: 4, language: 'de' });
+  expect(await snap(page)).toMatchObject({ score: 4321 * OLD, level: 4, language: 'de' });
   expectNoProblems(problems);
 });
 

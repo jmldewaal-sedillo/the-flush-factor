@@ -74,6 +74,10 @@ test('testversie: style-preview.html gaat mee (noindex), zit niet in de service 
   // alles waar de pagina naar verwijst staat ook echt in de testversie
   for (const ref of new Set(html.match(/assets\/[\w./-]+\.(?:woff2|svg)/g))) expect(fs.existsSync(path.join(out, ref)), ref).toBe(true);
   expect(fs.readFileSync(path.join(out, 'sw.js'), 'utf8')).not.toContain('style-preview');
+  // punt 75: de keuzepagina voor het spoelicoon ook
+  const icons = fs.readFileSync(path.join(out, 'spoelicoon-preview.html'), 'utf8');
+  expect(icons).toContain('<meta name="robots" content="noindex, nofollow">');
+  expect(fs.readFileSync(path.join(out, 'sw.js'), 'utf8')).not.toContain('spoelicoon-preview');
   expect(fs.existsSync(path.join(out, 'CNAME'))).toBe(false);
   // geluiden gaan mee; documentatie en tests niet
   expect(fs.readdirSync(path.join(out, 'assets/sounds')).sort()).toEqual(fs.readdirSync(path.join(ROOT, 'assets/sounds')).sort());
@@ -89,5 +93,20 @@ test('style-preview.html: drie richtingen naast elkaar, zonder fouten of ontbrek
   await expect(page.locator('h2')).toHaveText([/A · /, /B · /, /C · /]);
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: 'tests/screenshots/s11-03-style-preview.png', fullPage: true });
+  expect(problems).toEqual([]);
+});
+
+// Punt 75: keuzepagina voor het spoelicoon, op de echte knop in alle standen.
+test('spoelicoon-preview.html: vijf varianten in vier standen, zonder fouten of ontbrekende bestanden', async ({ page }) => {
+  const problems = [];
+  page.on('pageerror', e => problems.push(e.message));
+  page.on('response', r => { if (r.status() >= 400) problems.push(`${r.status()}: ${r.url()}`); });
+  await page.goto('./spoelicoon-preview.html');
+  await expect(page.locator('.variant h2')).toHaveText([/A · /, /B · /, /C · /, /D · /, /E · /]);
+  await expect(page.locator('.variant .btn')).toHaveCount(20);
+  // elk icoon tekent echt iets (niet leeg)
+  for (const box of await page.locator('.variant .btn .ic').evaluateAll(els => els.map(e => { const b = e.getBBox(); return { width: b.width, height: b.height }; }))) expect(box.width * box.height).toBeGreaterThan(0);
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: 'tests/screenshots/s13-01-spoelicoon-preview.png', fullPage: true });
   expect(problems).toEqual([]);
 });

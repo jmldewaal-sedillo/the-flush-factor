@@ -2,7 +2,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { openGame, until, expectNoProblems, NEW_PLAYER, watch, seen } = require('./helpers');
+const { openGame, until, expectNoProblems, NEW_PLAYER, OLD, watch, seen } = require('./helpers');
 
 const ROOT = path.join(__dirname, '..');
 const css = sel => page => page.locator(sel).first().evaluate(el => { const s = getComputedStyle(el); return { font: s.fontFamily, border: `${s.borderTopWidth} ${s.borderTopStyle}`, shadow: s.boxShadow, radius: s.borderTopLeftRadius, bg: s.backgroundColor, color: s.borderTopColor }; });
@@ -54,12 +54,12 @@ test('welkomstscherm in de nieuwe stijl; inlogknoppen tonen "Binnenkort"', async
 });
 
 test('winkel: uitgelicht item, voortgang naar het volgende level, collectie per categorie', async ({ page }) => {
-  await openGame(page, { save: { ...NEW_PLAYER, score: 130, level: 1 } });
+  await openGame(page, { save: { ...NEW_PLAYER, score: 130, level: 1 } });     // 650 nu (×OLD), level 2 vanaf 2.500
   await page.locator('#btn-shop').click();
-  await expect(page.locator('#shop-level')).toContainText('Nog 70 punten tot level 2');
+  await expect(page.locator('#shop-level')).toContainText('Nog 1.850 punten tot level 2');
   const levelBar = await page.locator('#shop-level .bar-fill').evaluate(el => el.style.width);
-  expect(levelBar).toBe('65%');
-  // uitgelicht = het goedkoopste dat je nu kunt kopen (lijm, 60 punten); je kunt het al betalen
+  expect(levelBar).toBe('26%');                                                 // 650 van 2.500
+  // uitgelicht = het goedkoopste dat je nu kunt kopen (lijm, 300 punten); je kunt het al betalen
   const featured = page.locator('#shop-featured');
   await expect(featured).toHaveAttribute('data-id', 'repair-kit');
   await expect(featured).toContainText('Uitgelicht');
@@ -80,17 +80,17 @@ test('winkel: "Bijna betaalbaar!", feestje bij kopen, en na de aankoop een nieuw
   await page.locator('#btn-shop').click();
   await page.locator('.shop-category[data-cat="buckets"] .shop-category-header').click();
   await page.locator('.shop-category[data-cat="care"] .shop-category-header').click();
-  // houten emmer kost 150; met 130 punten (87%) is hij bijna betaalbaar
+  // houten emmer kost 750; met 650 punten (87%) is hij bijna betaalbaar
   await expect(page.locator('.shop-card[data-id="bucket-wood"] .tag-almost')).toHaveText('Bijna betaalbaar!');
-  await expect(page.locator('.shop-card[data-id="mop"] .tag-almost')).toHaveCount(0);           // 100: al betaalbaar
+  await expect(page.locator('.shop-card[data-id="mop"] .tag-almost')).toHaveCount(0);           // 500: al betaalbaar
   await expect(page.locator('.shop-card[data-id="new-lid"] .tag-almost')).toHaveText('Bijna betaalbaar!');
 
   await watch(page, '#shop-fx .shop-confetti');
   await page.locator('.shop-card[data-id="repair-kit"]').click();
   await seen(page, '#shop-fx .shop-confetti');
   expect(await page.evaluate(() => window.__seen['#shop-fx .shop-confetti'])).toBe(true);
-  await expect(page.locator('#shop-score')).toContainText('70');
-  await expect(page.locator('#shop-featured')).toHaveAttribute('data-id', 'sponge');           // volgende goedkoopste (60)
+  await expect(page.locator('#shop-score')).toContainText(String(130 * OLD - 300));            // reparatieset 300
+  await expect(page.locator('#shop-featured')).toHaveAttribute('data-id', 'sponge');           // volgende goedkoopste (300)
   await expect(page.locator('#shop-featured')).toContainText('Je kunt Spons kopen!');
   await until(page, () => document.getElementById('shop-fx').childElementCount === 0);         // feestje ruimt zichzelf op
 });

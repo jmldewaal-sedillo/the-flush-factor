@@ -1,6 +1,6 @@
 // Punten 39, 52, 56: emmer vullen, bekijken en legen; hengsel; emmerweergave.
 const { test, expect } = require('@playwright/test');
-const { openGame, until, setView, clogAndFix, expectNoProblems } = require('./helpers');
+const { openGame, until, setView, clogAndFix, expectNoProblems, OLD } = require('./helpers');
 
 const count = page => page.evaluate(() => window.__game.three.bucketItemCount());
 const overlap = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
@@ -43,7 +43,8 @@ test('volle emmer: voorwerp past niet, kost punten, teller blijft staan', async 
   await clogAndFix(page, 'duck');
   await expect(page.locator('#bucket-liters')).toHaveText('20,0 / 20 L');
   expect(await count(page)).toBe(10);
-  expect((await page.evaluate(() => window.__game.snapshot())).score).toBe(500 + 20 - 30);
+  // 500 oude punten = 2.500 nu, en daarmee level 2: bonus 2 × 20, emmer vol −30
+  expect((await page.evaluate(() => window.__game.snapshot())).score).toBe(500 * OLD + 2 * 20 - 30);
 });
 
 test('emmerweergave: hengsel weg, gereedschap en spoelknop weg, Terug zonder overlap', async ({ page }) => {

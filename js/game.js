@@ -1,6 +1,7 @@
 // THE FLUSH FACTOR — hoofdcoördinator: spelregels, game-loop en koppeling tussen logica en weergave.
 import { SCORING, WATER_PHASES } from './data/config.js';
 import { LEVELS } from './data/levels.js';
+import { nextCombo, flushPoints, unclogBonus, overflowPenalty, levelFor } from './scoring.js';
 import { CLOG_PROPS } from './data/clog-props.js';
 import { ANCHORS, DEFAULT_VIEW } from './data/room.js';
 import { t, pick, num, itemName, setLanguage, missingKeys, getLanguage } from './i18n/index.js';
@@ -43,10 +44,12 @@ let saving = true;
 const save = () => { if (saving) saveState(state); };
 
 // ──────── SCORE EN LEVEL ────────
+// Het level volgt uit alles wat je ooit verdiend hebt (`earned`), niet uit je saldo: kopen kost geen voortgang (punt 61).
 function addScore(pts) {
   state.score += pts;
+  state.earned += Math.max(0, pts);
   state.highScore = Math.max(state.highScore, state.score);
-  const cfg = LEVELS.filter(l => state.score >= l.minScore).pop();
+  const cfg = levelFor(state.earned);
   if (cfg.level > state.level) {
     // Alles wat op de tussenliggende levels vrijkomt is "nieuw" in de winkel (punt 81).
     const fresh = [];
@@ -54,6 +57,7 @@ function addScore(pts) {
     state.newItems = [...new Set([...state.newItems, ...fresh])];
     state.level = cfg.level;
     clog.setLevel(cfg);
+    bus.emit('level:up', { level: cfg.level });
     hud.level(state.level);
     hud.levelUpBanner(cfg.level, t(`level.${cfg.level}`), fresh.length);
     hud.shopBadge(state.newItems.length);
@@ -76,13 +80,11 @@ function flush() {
   state.stats.totalFlushes++;
 
   const now = Date.now();
-  state.combo = now - state.lastFlushTime < SCORING.comboWindowMs
-    ? Math.min(state.combo + SCORING.comboStep, SCORING.comboMax)
-    : Math.max(1, state.combo - SCORING.comboStep);
+  state.combo = nextCombo(state.combo, now - state.lastFlushTime);
   state.lastFlushTime = now;
 
   // Vies kost punten (punt 83).
-  const pts = Math.max(1, Math.round(SCORING.flushPoints * state.combo * care.pointsFactor()));
+  const pts = flushPoints(state.combo, care.pointsFactor());
   addScore(pts);
   hud.pointPopup(pts);
   hud.message(pick('m.flush'));
@@ -118,7 +120,7 @@ clog.on('resolved', () => {
   hud.unclogBanner(pick('m.unclog'));
   state.stats.totalUnclogs++;
 
-  const bonus = SCORING.unclogBonusPerLevel * state.level;
+  const bonus = unclogBonus(state.level);
   addScore(bonus);
   hud.pointPopup(bonus);
   state.combo = Math.max(1, state.combo - 1);
@@ -139,7 +141,7 @@ clog.on('resolved', () => {
 
 clog.on('overflow', () => {
   state.stats.totalOverflows++;
-  const penalty = Math.round(Math.min(state.score * SCORING.overflowPenaltyPct, SCORING.overflowPenaltyMax));
+  const penalty = overflowPenalty(state.score);
   losePoints(penalty);
   hud.message(pick('m.overflow') + (penalty ? t('penalty', { pts: penalty }) : ''));
   hud.overflowShake();
@@ -265,6 +267,8 @@ function bindSounds() {
   cue('scrubbed', 'scrub');
   cue('ui:click', 'ui-click');
   cue('ui:buy', 'ui-buy');
+  cue('level:up', 'level-up');
+  cue('toilet:condition', ({ animate }) => animate === 'repair' ? 'repair' : null);
   // Interface: elke knop, behalve de knoppen die zelf al een geluid maken (spoelen, gereedschap, emmer legen).
   document.addEventListener('click', e => {
     const el = e.target.closest('button, select, a, label.file-btn');
@@ -478,7 +482,7 @@ window.__game = {
   ready: false,
   three: null,
   snapshot: () => ({
-    score: state.score, level: state.level, streak: state.streak, combo: state.combo,
+    score: state.score, earned: state.earned, level: state.level, streak: state.streak, combo: state.combo,
     bucketId: state.bucketId, bucketItems: state.bucketItems.map(i => i.id), bucketLiters: bucketLiters(state),
     cosmetics: { ...state.cosmetics }, decor: { ...state.decor }, ownedTools: [...state.ownedTools],
     profile: state.profile ? { ...state.profile } : null, stats: { ...state.stats, bestStreak: state.bestStreak },
@@ -489,7 +493,8 @@ window.__game = {
   }),
   forceClog(propId) { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(); },
   setWater(pct) { clog.waterLevel = pct; },
-  setScore(n) { state.score = n; addScore(0); save(); },
+  // Zet het saldo; wat je verdiend hebt groeit mee (het level volgt daaruit), maar zakt nooit.
+  setScore(n) { state.score = n; state.earned = Math.max(state.earned, n); addScore(0); save(); },
   resetCooldowns() { inv.getAll().forEach(t => { t.cooldownRemaining = 0; }); },
   pauseClogs(on = true) { clog.paused = on; },
   // Schoonmaken zonder te mikken (tests): doet precies wat een veeg over die plek doet.

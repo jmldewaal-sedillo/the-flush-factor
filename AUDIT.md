@@ -644,3 +644,33 @@ tweede test zet de beveiligingen uit en controleert dat de test de oude fout dan
 - De naam en omschrijving in `manifest.webmanifest` zijn vast (Nederlands); een manifest kan niet per
   taal wisselen.
 - Echte telefoon: nog niet getest. Daarvoor is het testadres er nu.
+
+---
+
+# Deel 7 — Sprint 13 (punten 107–111), branch `sprint-13`
+
+## Keuzes die ik zelf heb gemaakt (stel gerust bij)
+
+- **Prijzen ×5 in plaats van minder punten per spoelbeurt.** Met minder punten per spoelbeurt (bijvoorbeeld 2)
+  verdwijnt de straf voor vuil in de afronding (10% van 2 is 0). Daarom blijft een spoelbeurt 10 punten en gaan de
+  prijzen, de pakketten en de drempels omhoog.
+- **Pakketten met echt geld meegeschaald** (2.500 punten voor € 0,99 enz.), zodat ze evenveel waard blijven als
+  voorheen. Of dat de goede prijs is, is een keuze voor vlak voor punt 60. De product-id's zijn mee hernoemd
+  (`pack_2500` …); ze staan nog niet in de Play Console.
+- **Bestaande spelers krijgen hun saldo ×5** en houden hun level. Zonder die stap zou een oude speler met de nieuwe
+  prijzen een vijfde kunnen kopen van wat hij had.
+- **De combo beloont doorspelen**: wie binnen 3 s opnieuw spoelt bouwt combo op, tot ×2. Zo haalt ook een
+  rustige speler combo en levert zo snel mogelijk tikken niet meer tien keer zoveel op.
+- **De testversie is niet bijgewerkt.** Sprint 13 staat op een eigen branch, zodat de testlink gelijk blijft terwijl
+  Jenn Sprint 9–12 test.
+
+## Gecontroleerd
+
+- Maker van "Old Rusted Bucket v1" via de openbare Sketchfab-API (`/v3/models/4712f95b…`): gebruikersnaam
+  `GameDevNick`, weergavenaam `Coozy`, licentie CC Attribution 4.0. Dit sluit §0-D en het punt bij §8 (punt 73).
+
+## Nog open
+
+- Level-up- en reparatiegeluid zijn niet beluisterd (Claude kan niet luisteren).
+- De simulatie gebruikt geen chaos-gereedschap en laat het niet tot troep op de muren komen; echte spelers zullen
+  iets trager zijn dan de "gemiddelde" uit de tabel.
