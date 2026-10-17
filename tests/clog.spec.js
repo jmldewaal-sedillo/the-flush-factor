@@ -2,6 +2,9 @@
 const { test, expect } = require('@playwright/test');
 const { openGame, until, expectNoProblems, watch, seen, OLD } = require('./helpers');
 
+const path = require('path');
+const { pathToFileURL } = require('url');
+const load = file => import(pathToFileURL(path.join(__dirname, '..', file)).href);
 const snap = page => page.evaluate(() => window.__game.snapshot());
 
 test('verstopping: waarschuwing, 3D-voorwerp in de pot, belletjes, fases geel-oranje-rood', async ({ page }) => {
@@ -53,7 +56,8 @@ test('ontstoppen: banner, bonus, voorwerp belandt als 3D-object in de emmer', as
   await expect(page.locator('.tool-btn[data-id="plunger"] .tool-badge')).toHaveAttribute('data-kind', 'working');
   await until(page, () => window.__game.three.bucketItemCount() === 1 && !window.__game.three.propInBowl());
   const s = await snap(page);
-  expect(s).toMatchObject({ clogged: false, score: 20, bucketItems: ['brick'] });
+  const { unclogBonus } = await load('js/scoring.js');
+  expect(s).toMatchObject({ clogged: false, score: unclogBonus(1), bucketItems: ['brick'] });
   await expect(page.locator('#bucket-liters')).toHaveText('1,5 / 20 L');
   await expect(page.locator('#clog-warning')).toBeHidden();
 });

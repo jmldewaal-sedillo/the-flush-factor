@@ -10,6 +10,7 @@ import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from './data/profile.js';
 import { SOUND_GROUPS, soundDefaults } from './data/sounds.js';
 import { LEVELS } from './data/levels.js';
 import { levelFor } from './scoring.js';
+import { canUpgrade, MAX_STARS } from './upgrades.js';
 
 // Een nieuwe speler begint in een armoedig hokje (punt 79): kapot en vies toilet, roestige emmer,
 // kale muur, vieze vloer, vier stuks gereedschap.
@@ -24,6 +25,7 @@ export function createState() {
     purchased: new Set(),
     ownedTools: STARTING_TOOLS.map(t => t.id),
     toolDiscovery: {},                  // { toolId: 'working' | 'chaos' }
+    toolUpgrades: {},                   // { toolId: aantal sterren 1–3 } (punt 115)
     stats: { totalFlushes: 0, totalClogs: 0, totalUnclogs: 0, totalLiters: 0, totalOverflows: 0, toolsUsed: 0 },
     profile: null,                      // { name, avatar, mode: 'guest', createdAt } — null = eerste start
     toilet: { defects: Object.fromEntries(Object.keys(DEFECTS).map(k => [k, true])), dirt: 1 },   // dirt 0–1
@@ -49,7 +51,7 @@ export function saveState(state) {
     bucketId: state.bucketId, bucketItems: state.bucketItems,
     cosmetics: state.cosmetics, decor: state.decor,
     purchased: [...state.purchased], ownedTools: state.ownedTools,
-    toolDiscovery: state.toolDiscovery, stats: state.stats, profile: state.profile,
+    toolDiscovery: state.toolDiscovery, toolUpgrades: state.toolUpgrades, stats: state.stats, profile: state.profile,
     toilet: state.toilet, stains: state.stains, overflowStreak: state.overflowStreak, newItems: state.newItems,
     supplies: state.supplies, sound: state.sound,
   };
@@ -152,6 +154,12 @@ export function loadState(state) {
   const owned = (data.ownedTools || []).filter(id => known.has(id));
   state.ownedTools = owned.length ? owned : STARTING_TOOLS.map(t => t.id);
   state.toolDiscovery = data.toolDiscovery || {};
+  // Sterren alleen voor gereedschap dat je hebt en dat verbeterd kan worden, nooit meer dan het maximum.
+  state.toolUpgrades = {};
+  for (const [id, n] of Object.entries(data.toolUpgrades || {})) {
+    const def = TOOLS.find(t => t.id === id);
+    if (def && canUpgrade(def) && state.ownedTools.includes(id) && Number.isInteger(n) && n > 0) state.toolUpgrades[id] = Math.min(MAX_STARS, n);
+  }
   state.stats = { ...state.stats, ...(data.stats || {}) };
   const defects = data.toilet?.defects || {};
   state.toilet = {

@@ -70,3 +70,5 @@
 @media (prefers-reduced-motion: reduce) {
   .chaos-disco, .overflow-shake, .tool-btn.usable, .bucket-btn.full { animation: none; }
 }
+
+@keyframes rushPulse { from { transform: scale(0.97); } to { transform: scale(1.05); } }

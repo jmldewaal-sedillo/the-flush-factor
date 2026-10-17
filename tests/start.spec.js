@@ -39,7 +39,7 @@ test('level 1: alleen spullen van level 1 te koop; de rest staat op slot met het
   await expect(card(page, 'toilet-snake')).toBeEnabled();                       // level 1
   await expect(card(page, 'drain-cleaner')).toBeDisabled();                     // level 2
   await expect(card(page, 'drain-cleaner').locator('.badge-locked')).toContainText('Vanaf level 2');
-  await expect(card(page, 'robot-arm').locator('.badge-locked')).toContainText('Vanaf level 5');
+  await expect(card(page, 'robot-arm').locator('.badge-locked')).toContainText('Vanaf level 11');
   await expect(card(page, 'bucket-wood').locator('.price-tag')).toHaveText('750');   // de houten emmer is nu een upgrade
   await expect(card(page, 'bucket-rusty').locator('.badge-active')).toBeVisible();
   await expect(card(page, 'tiles-default')).toBeDisabled();

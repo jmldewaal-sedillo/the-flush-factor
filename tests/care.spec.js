@@ -1,6 +1,9 @@
 // Punten 80 en 83: kapot en vies toilet, repareren, schoonmaken, troep na herhaald overlopen.
 const { test, expect } = require('@playwright/test');
+const path = require('path');
+const { pathToFileURL } = require('url');
 const { openGame, until, tapScene, setView, expectNoProblems, NEW_PLAYER, OLD, watch, seen } = require('./helpers');
+const load = file => import(pathToFileURL(path.join(__dirname, '..', file)).href);
 
 const snap = page => page.evaluate(() => window.__game.snapshot());
 const cond = page => page.evaluate(() => window.__game.three.toiletCondition());
@@ -65,11 +68,11 @@ test('repareren: elk gebrek heeft zijn eigen reparatie, met overgang in beeld, e
 });
 
 test('een ander toiletmodel kan pas als het toilet heel en schoon is', async ({ page }) => {
-  await openGame(page, { save: { ...NEW_PLAYER, score: 5000, level: 5 } });
+  await openGame(page, { save: { ...NEW_PLAYER, score: 5000, level: 7 } });
   await page.locator('#btn-shop').click();
   await openCat(page, 'toilets');
-  await expect(card(page, 'toilet-golden').locator('.badge-locked')).toContainText('Eerst heel en schoon');
-  await card(page, 'toilet-golden').click();
+  await expect(card(page, 'toilet-space').locator('.badge-locked')).toContainText('Eerst heel en schoon');
+  await card(page, 'toilet-space').click();
   expect((await snap(page)).score).toBe(5000 * OLD);
   expect((await snap(page)).cosmetics.toilet).toBe('toilet-standard');
 });
@@ -129,9 +132,10 @@ test('toilet schoonmaken: wc-borstel kopen, boenen in drie vegen, straf weg, bew
   await expect(page.locator('#clean-count')).toHaveText('9');
   await expect(page.locator('body')).not.toHaveAttribute('data-cleaning', /.+/);
 
-  // volle punten per spoelbeurt
+  // volle punten per spoelbeurt (zonder aftrek voor vuil)
+  const { flushPoints } = await load('js/scoring.js');
   await page.locator('#flush-btn').click();
-  expect((await snap(page)).score).toBe(s.score + 10);
+  expect((await snap(page)).score).toBe(s.score + flushPoints(1, 1, s.level));
   await page.reload();
   await until(page, () => window.__game?.ready);
   expect((await snap(page)).toilet.dirt).toBe(0);

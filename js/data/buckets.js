@@ -15,10 +15,10 @@ export const BUCKETS = [
   { id: 'bucket-plastic', liters: 50, price: 2500, minLevel: 2, icon: 'bucket-plastic',
     model: { file: 'assets/models/buckets/plastic_bucket.glb', height: 0.30, handleTris: [458],
       inner: { floor: 0.013, top: 0.284, rBottom: 0.120, rTop: 0.141 } } },
-  { id: 'bucket-metal', liters: 75, price: 4500, minLevel: 3, icon: 'bucket-metal',
+  { id: 'bucket-metal', liters: 75, price: 12000, minLevel: 5, icon: 'bucket-metal',
     model: { file: 'assets/models/buckets/metal_bucket.glb', height: 0.34, handleNodes: ['ruchka_metall_lp', 'ruchka_lp'],
       inner: { floor: 0.011, top: 0.324, rBottom: 0.112, rTop: 0.148 } } },
-  { id: 'bucket-mop', liters: 100, price: 7500, minLevel: 4, icon: 'bucket-mop',
+  { id: 'bucket-mop', liters: 100, price: 40000, minLevel: 10, icon: 'bucket-mop',
     model: { file: 'assets/models/buckets/mop_bucket.glb', height: 0.22, keepNodes: ['SM_large_bucket_4', 'SM_large_bucket_handle_3'], handleNodes: ['SM_large_bucket_handle_3'],
       inner: { floor: 0.006, top: 0.205, rBottom: 0.128, rTop: 0.163 } } },
 ];

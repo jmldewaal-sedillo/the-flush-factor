@@ -78,8 +78,9 @@ test('gereedschap kopen: punten eraf, knop erbij; te duur of te laag level kan n
   await openShop(page, { score: 400, level: 3 });                                // 2.000 nu
   await openCat(page, 'tools');
   const tools = cat(page, 'tools');
-  await expect(tools.locator('[data-id="robot-arm"]')).toBeDisabled();           // level 5 nodig
-  await tools.locator('[data-id="super-plunger"]').click();                       // 3.000 > 2.000
+  await expect(tools.locator('[data-id="robot-arm"]')).toBeDisabled();           // level 11 nodig
+  await expect(tools.locator('[data-id="super-plunger"]')).toBeDisabled();       // level 4 nodig
+  await tools.locator('[data-id="ninja-unclogger"]').click();                     // 2.500 > 2.000
   await expect(page.locator('#shop-message')).toContainText('Niet genoeg punten');
   await tools.locator('[data-id="magic-wand"]').click();                          // 1.000
   await expect(tools.locator('[data-id="magic-wand"] .badge-owned')).toBeVisible();
@@ -92,7 +93,7 @@ test('gereedschap kopen: punten eraf, knop erbij; te duur of te laag level kan n
 });
 
 test('cosmetica, decoratie en emmers veranderen de 3D-scène en blijven bewaard', async ({ page }) => {
-  await openShop(page);
+  await openShop(page, { score: 120000, level: 15 });                             // 600.000 nu; de gouden troon is van level 15
   const three = () => page.evaluate(() => ({ s: window.__game.three.surfaces(), skin: window.__game.three.toiletSkin(), decor: window.__game.three.decor(), bucket: window.__game.three.bucketId() }));
 
   await openCat(page, 'tiles');   await cat(page, 'tiles').locator('[data-id="tiles-checkerboard"]').click();

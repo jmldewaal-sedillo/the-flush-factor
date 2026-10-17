@@ -200,6 +200,11 @@ body[data-tools="closed"] #inventory-bar { display: none; }
 }
 .tool-badge[data-kind="working"] { background: var(--ok); color: #fff; }
 .tool-badge[data-kind="chaos"] { background: var(--plunger); color: #fff; }
+/* Sterren van verbeterd gereedschap (punt 115) */
+.tool-stars {
+  position: absolute; top: -8px; left: -6px; pointer-events: none; letter-spacing: -1px;
+  font-size: 0.78rem; line-height: 1; color: var(--duck); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill;
+}
 #tool-tip {
   position: fixed !important; transform: translateY(-50%) rotate(var(--tilt)); z-index: 6; pointer-events: none !important;
   background: var(--ink); color: #fff; padding: 5px 12px; border-radius: var(--radius-pill);
@@ -247,6 +252,17 @@ body[data-tools="closed"] #inventory-bar { display: none; }
 #flush-btn:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--ink); }
 #flush-btn:active .ic { transform: rotate(-120deg); transition: transform 0.25s; }
 body.is-clogged #flush-btn { background: var(--plunger); }
+/* Spitsuur (punt 114): resterende tijd boven de spoelknop */
+#rush-pill {
+  display: flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--radius-pill);
+  background: var(--plunger); color: var(--on-color); border: var(--border-thin); box-shadow: var(--shadow-sm);
+  font-family: var(--font-display); font-size: 0.95rem; white-space: nowrap;
+  animation: rushPulse 0.6s ease-in-out infinite alternate;
+}
+#rush-pill[hidden] { display: none; }
+#rush-pill .bar { width: 52px; height: 8px; }
+#rush-pill .bar-fill { background: var(--duck); transition: none; }
+body[data-view="bucket"] #rush-pill { display: none; }
 #combo-display { display: flex; align-items: center; gap: 4px; min-height: 22px; font-family: var(--font-display); font-size: 1.05rem; color: var(--duck); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; text-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
 
 /* Rechtsonder: emmer */
@@ -284,14 +300,19 @@ body[data-zoom] #btn-back { display: inline-flex; }
 }
 #status-msg { top: calc(var(--sat) + var(--msg-top)); background: var(--paper); border: var(--border-thin); box-shadow: var(--shadow-sm); z-index: 2; }
 #status-msg.visible { animation: msgFade 2.1s forwards; }
+/* Verstopt: de waarschuwing staat bovenaan, de melding (soms twee of drie regels) eronder, zodat ze elkaar niet bedekken */
+body.is-clogged #status-msg { top: calc(var(--sat) + var(--msg-top) + 52px); }
 #clog-warning {
-  top: calc(var(--sat) + var(--msg-top) + 48px); background: var(--plunger); color: var(--on-color);
+  top: calc(var(--sat) + var(--msg-top)); background: var(--plunger); color: var(--on-color); z-index: 3;
   border: var(--border); box-shadow: var(--shadow);
   display: none; align-items: center; gap: 8px; white-space: nowrap; opacity: 1;
   font-family: var(--font-display); font-weight: 400; font-size: 1.2rem;
 }
+/* Soort verstopping (punt 113): bijzondere soorten in het geel, mega in het zwart */
+#clog-warning:not([data-kind="normal"]) { background: var(--duck); color: var(--ink); }
+#clog-warning[data-kind="mega"] { background: var(--ink); color: var(--duck); }
 #clog-warning.visible { display: inline-flex; animation: clogWarningPulse 0.7s ease-in-out infinite alternate; }
-#unclog-banner, #levelup-banner {
+#unclog-banner, #levelup-banner, #rush-banner {
   left: 50%; transform: translateX(-50%);
   display: none; flex-direction: column; align-items: center; gap: 2px; white-space: nowrap;
   padding: 10px 22px; border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
@@ -299,9 +320,13 @@ body[data-zoom] #btn-back { display: inline-flex; }
   pointer-events: none !important; z-index: 4;
 }
 #unclog-banner > span, #levelup-banner > span, #unclog-banner { align-items: center; }
+#rush-banner { flex-direction: row; gap: 8px; align-items: center; top: 46%; font-size: 1.35rem; background: var(--plunger); }
+#rush-banner.visible { display: inline-flex; animation: levelUpBanner 2.6s ease forwards; }
 #unclog-banner { flex-direction: row; gap: 10px; top: 32%; font-size: 1.8rem; background: var(--ok); }
 #levelup-banner { top: 22%; font-size: 1.25rem; background: var(--duck); color: var(--ink); }
-#levelup-banner > span { display: inline-flex; gap: 8px; }
+#levelup-banner > span { display: inline-flex; align-items: center; gap: 8px; }
+/* Lange levelnamen en spitsuurteksten breken af in plaats van buiten het scherm te vallen */
+#levelup-banner, #rush-banner { max-width: calc(100vw - 32px); white-space: normal; text-align: center; line-height: 1.15; }
 #levelup-banner small { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-body); font-weight: 800; font-size: 0.8rem; }
 #unclog-banner.visible { display: inline-flex; animation: unclogBanner 1.8s ease forwards; }
 #levelup-banner.visible { display: inline-flex; animation: levelUpBanner 3s ease forwards; }
@@ -507,6 +532,7 @@ body[data-zoom] #btn-back { display: inline-flex; }
 .shop-card-name { font-family: var(--font-display); font-size: 1rem; line-height: 1.12; max-width: 100%; overflow-wrap: anywhere; hyphens: auto; }
 .shop-card .uses-bar { width: 70%; height: 8px; }
 .shop-card .uses-bar .bar-fill { background: var(--cat); }
+.shop-card-stars { font-size: 0.9rem; line-height: 1; letter-spacing: 1px; color: var(--duck); -webkit-text-stroke: 0.8px var(--ink); paint-order: stroke fill; }
 .shop-card-detail { font-size: 0.76rem; font-weight: 800; color: var(--cat); filter: brightness(0.8); }
 .shop-card-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.3; max-width: 100%; overflow-wrap: anywhere; }
 .shop-card-price { margin-top: auto; padding-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; align-items: center; }

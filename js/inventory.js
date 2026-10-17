@@ -1,5 +1,6 @@
 // Gereedschap: bezit, cooldowns, gebruik en ontdekking (werkt / chaos). Geen DOM, geen 3D.
 import { TOOLS } from './data/tools.js';
+import { toolStats, upgradeTier } from './upgrades.js';
 
 export class InventorySystem {
   constructor(state, clog) {
@@ -9,8 +10,21 @@ export class InventorySystem {
     TOOLS.forEach(def => { if (state.ownedTools.includes(def.id)) this._add(def); });
   }
 
+  // Verbeterd gereedschap (punt 115) heeft meer kracht en een kortere afkoeltijd.
   _add(def) {
-    this.tools.push({ ...def, cooldownRemaining: 0, discovered: this.state.toolDiscovery[def.id] || null });
+    const stars = this.state.toolUpgrades[def.id] || 0;
+    this.tools.push({ ...def, ...toolStats(def, stars), stars, cooldownRemaining: 0, discovered: this.state.toolDiscovery[def.id] || null });
+  }
+
+  // Volgende ster. Prijs en level controleert de winkel.
+  upgrade(id) {
+    const tool = this.get(id), def = TOOLS.find(t => t.id === id);
+    const stars = (this.state.toolUpgrades[id] || 0) + 1;
+    if (!tool || !upgradeTier(def, stars)) return false;
+    this.state.toolUpgrades[id] = stars;
+    Object.assign(tool, toolStats(def, stars), { stars });
+    tool.cooldownRemaining = Math.min(tool.cooldownRemaining, tool.cooldown);
+    return true;
   }
 
   addTool(id) {

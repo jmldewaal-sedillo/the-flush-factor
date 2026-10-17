@@ -674,3 +674,29 @@ tweede test zet de beveiligingen uit en controleert dat de test de oude fout dan
 - Level-up- en reparatiegeluid zijn niet beluisterd (Claude kan niet luisteren).
 - De simulatie gebruikt geen chaos-gereedschap en laat het niet tot troep op de muren komen; echte spelers zullen
   iets trager zijn dan de "gemiddelde" uit de tabel.
+
+---
+
+# Deel 8 — Sprint 14 (punten 112–116), meer diepte
+
+## Keuzes die ik zelf heb gemaakt (stel gerust bij)
+
+- **Streeftijd: level 15 na ±15 uur** voor een gemiddelde speler (rustig ±26 uur, fanatiek ±9,5 uur). Bij een
+  kwartier per dag is dat een paar maanden spelen. Alles staat in `js/data/levels.js`; `npm run balans` laat het
+  effect van een wijziging meteen zien.
+- **Spanning zonder "game over".** Overlopen kost punten (10% van je saldo, hooguit 250 × level) en maakt de boel
+  vies, maar je raakt nooit je level of je spullen kwijt.
+- **Het spitsuur is een spelelement, geen winkeltruc**: het staat los van de winkel en er hangt geen aankoop aan.
+- **Spullen verschoven naar hogere levels** (o.a. robotarm 5 → 11, gouden troon 5 → 15, met hogere prijzen), zodat
+  elk level iets nieuws brengt. Wie iets al gekocht had, houdt het.
+- **Sterren alleen voor werkend gereedschap uit de winkel**, niet voor de plopper en het hete water waarmee je
+  begint en niet voor chaos-gereedschap.
+- **Puntenpakketten (echt geld) niet aangepast.** Met 15 levels is een pakket relatief minder waard; dat is een
+  keuze voor vlak voor punt 60.
+
+## Nog open
+
+- De sirene van het spitsuur is niet beluisterd (Claude kan niet luisteren).
+- De nagespeelde speler loopt bijna nooit over; of de hoge levels voor echte spelers spannend genoeg (of te
+  moeilijk) zijn, moet blijken op de telefoon.
+

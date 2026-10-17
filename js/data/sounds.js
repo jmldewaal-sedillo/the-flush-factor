@@ -37,6 +37,7 @@ export const SOUNDS = {
   'ui-click':     { group: 'ui', files: ['ui-click.mp3'], gain: 0.6 },
   'ui-buy':       { group: 'ui', files: ['ui-buy.mp3'], gain: 0.8 },
   'level-up':     { group: 'ui', files: ['level-up.mp3'], gain: 0.8, duck: true },               // oplopend akkoordje (punt 58)
+  rush:           { group: 'ui', files: ['rush.mp3'], gain: 0.7, duck: true },                   // sirene bij het begin van het spitsuur (punt 114)
   // ── gereedschap: elk een eigen geluid (punt 104). De sleutel is tool-<id van het gereedschap>. ──
   'tool-plunger':          { group: 'tools', files: ['tool-plunger.mp3'], gain: 1 },
   'tool-hot-water':        { group: 'tools', files: ['tool-hot-water.mp3'], gain: 0.9 },

@@ -11,30 +11,44 @@ const load = file => import(pathToFileURL(path.join(__dirname, '..', file)).href
 const MIN = 60000;
 const snap = page => page.evaluate(() => window.__game.snapshot());
 
+// De simulatie één keer draaien voor alle tests hieronder (±10 s).
+let results = null;
+const balance = async () => results ||= (await load('tools/balans.mjs')).runBalance(6);
+const HOUR = 60 * MIN;
+
 test.describe('simulatie', () => {
   test.beforeEach(({}, info) => test.skip(info.project.name !== 'phone-portrait', 'hoeft maar één keer'));
+  test.describe.configure({ timeout: 120_000 });
 
   test('streefwaarden: levels en "alles gekocht" binnen de afgesproken tijden', async () => {
-    const { runBalance } = await load('tools/balans.mjs');
-    const [rustig, gemiddeld, fanatiek] = await runBalance(10);
-    // gemiddelde speler (tikt elke 1,2 s): level 2 binnen een paar minuten, level 5 rond driekwart uur
+    const [rustig, gemiddeld, fanatiek] = await balance();
+    // gemiddelde speler (tikt elke 1,2 s): level 2 binnen een paar minuten, level 5 rond drie kwartier,
+    // level 10 na een paar uur, level 15 pas na een flink aantal uren (punt 112)
     expect(gemiddeld.levels[2] / MIN).toBeGreaterThan(1.5);
     expect(gemiddeld.levels[2] / MIN).toBeLessThan(6);
-    expect(gemiddeld.levels[5] / MIN).toBeGreaterThan(30);
-    expect(gemiddeld.levels[5] / MIN).toBeLessThan(90);
-    expect(gemiddeld.done / MIN).toBeGreaterThan(60);
-    expect(gemiddeld.done / MIN).toBeLessThan(240);
+    expect(gemiddeld.levels[5] / MIN).toBeGreaterThan(25);
+    expect(gemiddeld.levels[5] / MIN).toBeLessThan(70);
+    expect(gemiddeld.levels[10] / HOUR).toBeGreaterThan(3);
+    expect(gemiddeld.levels[10] / HOUR).toBeLessThan(8);
+    expect(gemiddeld.levels[15] / HOUR).toBeGreaterThan(10);
+    expect(gemiddeld.levels[15] / HOUR).toBeLessThan(25);
+    expect(gemiddeld.done / HOUR, 'alles gekocht en level 15').toBeLessThan(30);
     // ook een rustige speler komt overal, en snel tikken loont, maar niet buiten proportie
-    expect(rustig.done, 'rustige speler koopt binnen 10 uur alles').not.toBeNull();
+    expect(rustig.done, 'rustige speler is binnen 50 uur klaar').not.toBeNull();
     expect(rustig.done / fanatiek.done).toBeLessThan(4);
   });
 
-  test('werkend gereedschap is binnen een kwartier spelen te betalen zodra het vrijkomt', async () => {
-    const { runBalance } = await load('tools/balans.mjs');
+  test('werkend gereedschap is binnen een uur te betalen zodra het vrijkomt, elke ster binnen anderhalf uur', async () => {
     const { TOOLS } = await load('js/data/tools.js');
-    const [, gemiddeld] = await runBalance(10);
+    const { upgradeTier, canUpgrade } = await load('js/upgrades.js');
+    const [, gemiddeld] = await balance();
     for (const tool of TOOLS.filter(t => t.effect === 'working' && !t.starting)) {
-      expect(tool.price / gemiddeld.rate[tool.minLevel], tool.id).toBeLessThan(15);
+      expect(tool.price / gemiddeld.rate[tool.minLevel], tool.id).toBeLessThan(60);
+      if (!canUpgrade(tool)) continue;
+      for (const n of [1, 2, 3]) {
+        const tier = upgradeTier(tool, n);
+        expect(tier.price / gemiddeld.rate[tier.level], `${tool.id} ★${n}`).toBeLessThan(90);
+      }
     }
   });
 
@@ -48,6 +62,8 @@ test.describe('simulatie', () => {
     expect(combo).toBe(SCORING.comboMax);
     // vies kost ook bij de laagste combo zichtbaar punten
     expect(flushPoints(1, 0.9)).toBeLessThan(flushPoints(1, 1));
+    // een hoger level geeft meer per spoelbeurt
+    expect(flushPoints(1, 1, 15)).toBeGreaterThan(flushPoints(1, 1, 1));
   });
 });
 

@@ -64,7 +64,9 @@ js/
   storage.js          DE ENIGE plek die iets bewaart (prefix flushfactor.), overzetten, wissen, oude sleutels overzetten
   i18n/               Talen: index.js + één bestand per taal (nl is de bron); legal/ = privacytekst per taal
   pages.js            Toont de privacyverklaring en de verwijderpagina
-  clog.js             Verstoppingen: kans, waterstand, overloop          (geen DOM, geen 3D)
+  clog.js             Verstoppingen: kans, waterstand, overloop, soort    (geen DOM, geen 3D)
+  rush.js             Spitsuur: wanneer, hoe lang, bonus                 (geen DOM, geen 3D)
+  upgrades.js         Gereedschap verbeteren: sterren, kracht, prijs      (geen DOM, geen 3D)
   care.js             Schoonmaak en reparatie: toiletstaat, vlekken, straf, voorraad (geen DOM, geen 3D)
   inventory.js        Gereedschap: bezit, cooldown, gebruik              (geen DOM, geen 3D)
   shop.js             Winkel met uitklapbare categorieën
@@ -102,7 +104,8 @@ Alles staat in `js/data/`:
 |---|---|---|
 | Gereedschap | `tools.js` | een regel (effect `working` met `power`, of `chaos`; `starting` of `price` + `minLevel`) |
 | Schoonmaakspullen, reparaties, straf bij vuil | `care.js` | een regel (`targets`, `power`, `uses` = hoe vaak te gebruiken) |
-| Levels | `levels.js` | een regel met drempel en moeilijkheid |
+| Levels (15) | `levels.js` | een regel met drempel, moeilijkheid en de mix van soorten verstoppingen |
+| Soorten verstoppingen, spitsuur, sterren voor gereedschap | `config.js` (`CLOG_KINDS`, `RUSH`, `UPGRADE`) | — (prijzen van de sterren: `upgradePrices` in `tools.js`) |
 | Emmers (capaciteit in liters, binnenmaat) | `buckets.js` | een regel + GLB in `assets/models/buckets/`; binnenmaat meten met `__game.three.bucketMeasure()` |
 | Voorwerpen in de verstopping | `clog-props.js` | een regel + bouwfunctie in `three/props.js` |
 | Toiletten, tegels, vloeren, decoratie | `cosmetics.js` | een regel (decoratie: + bouwfunctie in `three/decor.js`) |
@@ -185,6 +188,7 @@ npx playwright test shop          # één onderwerp
 | `screenshots.spec.js` | screenshots van alle toestanden in `tests/screenshots/<formaat>/` om na te kijken |
 | `sound.spec.js` | geluiden en muziek: vooraf geladen na de eerste tik, start binnen 50 ms na het event, elk gereedschap een eigen geluid, muzieklus met ducking, regelaar per groep onthouden, klein, met bron en licentie |
 | `ci.spec.js` | de controle op privégegevens (blocklist) staat in de workflows en werkt; de testversie bevat `style-preview.html` en `spoelicoon-preview.html`, noindex |
+| `diepte.spec.js` | 15 levels die elk iets vrijspelen, soorten verstoppingen, spitsuur, gereedschap verbeteren in de winkel en bewaard na herladen |
 | `balans.spec.js` | puntenbalans binnen de streefwaarden (simulatie), level volgt uit wat je verdiend hebt, oudere opslag gaat mee naar de nieuwe prijzen |
 | `rook.spec.js` | de rooktest: kort en breed, draait vóór publicatie van de testversie (`npm run test:rook`) |
 | `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |

@@ -12,12 +12,13 @@ import { t, num, money, itemName, itemDesc } from './i18n/index.js';
 import { icon } from './ui/icons.js';
 import { purchaseService } from './purchases.js';
 import { storage } from './storage.js';
+import { canUpgrade, upgradeTier, toolStats, MAX_STARS } from './upgrades.js';
 
 const fmt = n => num(n);
 const $ = id => document.getElementById(id);
 
 export class Shop {
-  // actions: activateCosmetic(slot, id), toggleDecor(def), setBucket(id), addTool(id), repair(id),
+  // actions: activateCosmetic(slot, id), toggleDecor(def), setBucket(id), addTool(id), upgradeTool(id), repair(id),
   //          cleanerBought(id), usesLeft(id), toiletReady(), seen(ids), changed(), bought(item)
   constructor(state, actions) {
     this.state = state;
@@ -68,6 +69,13 @@ export class Shop {
         items: SHOP_TOOLS,
         owned: i => s.ownedTools.includes(i.id),
         onBuy: i => { this.actions.addTool(i.id); return t('shop.toolAdded', { name: itemName(i) }); },
+        // werkend gereedschap: kracht en afkoeltijd, met de sterren erbij (punt 115)
+        detail: i => {
+          if (i.effect !== 'working') return null;
+          const st = toolStats(i, s.toolUpgrades[i.id] || 0);
+          return t('shop.toolStats', { p: st.power, s: num(st.cooldown / 1000, { maximumFractionDigits: 1 }) });
+        },
+        upgrade: i => (canUpgrade(i) && s.ownedTools.includes(i.id) ? this._upgradeInfo(i) : null),
       };
       case 'care': return {
         items: [...REPAIRS, ...CLEANERS],
@@ -107,6 +115,19 @@ export class Shop {
     }
   }
 
+  // Gereedschap verbeteren (punt 115): hoeveel sterren, en wat de volgende kost en vanaf welk level.
+  _upgradeInfo(item) {
+    const s = this.state;
+    const stars = s.toolUpgrades[item.id] || 0;
+    const next = upgradeTier(item, stars + 1);
+    const open = !!next && next.level <= s.level;
+    return {
+      stars, next, locked: !!next && !open,
+      affordable: open && s.score >= next.price,
+      almost: open && s.score < next.price && s.score >= next.price * ALMOST_AFFORDABLE,
+    };
+  }
+
   // Wat een speler nu met dit item kan: gekocht, op slot (level of voorwaarde), betaalbaar…
   _status(item, src) {
     const s = this.state;
@@ -138,15 +159,20 @@ export class Shop {
     const levelPct = next ? Math.min(100, Math.max(0, (s.earned - cur.minScore) / (next.minScore - cur.minScore) * 100)) : 100;
     const levelText = next ? t('shop.levelNext', { pts: fmt(Math.max(0, next.minScore - s.earned)), n: next.level }) : t('shop.levelMax');
 
+    // Ook de volgende ster van je gereedschap telt als doel (punt 115).
     let goal = null;
     for (const cat of SHOP_CATEGORIES) {
       if (cat.source === 'packages') continue;
       const src = this._source(cat);
       for (const item of src.items) {
-        if (!this._status(item, src).buyable) continue;
-        if (!goal || item.price < goal.item.price) goal = { item, cat, src };
+        const st = this._status(item, src);
+        const up = st.owned ? src.upgrade?.(item) : null;
+        const price = st.buyable ? item.price : up?.next && !up.locked ? up.next.price : null;
+        if (price === null) continue;
+        if (!goal || price < goal.price) goal = { item, cat, src, price, stars: st.buyable ? 0 : up.next.stars };
       }
     }
+    const goalName = goal ? itemName(goal.item) + (goal.stars ? ` ★${goal.stars}` : '') : '';
 
     this.top.innerHTML = `
       <div class="shop-progress" id="shop-level">
@@ -158,11 +184,11 @@ export class Shop {
         <span class="featured-tag">${icon('star', 13)}${t('shop.featured')}</span>
         <span class="featured-icon">${icon(goal.item.icon, 40)}</span>
         <span class="featured-text">
-          <span class="featured-name">${itemName(goal.item)}</span>
-          <span class="featured-goal">${s.score >= goal.item.price ? t('shop.goalReady', { name: itemName(goal.item) }) : t('shop.goalNext', { pts: fmt(goal.item.price - s.score), name: itemName(goal.item) })}</span>
-          <span class="bar"><span class="bar-fill" style="width:${Math.min(100, s.score / goal.item.price * 100).toFixed(0)}%"></span></span>
+          <span class="featured-name">${goalName}</span>
+          <span class="featured-goal">${s.score >= goal.price ? t('shop.goalReady', { name: goalName }) : t('shop.goalNext', { pts: fmt(goal.price - s.score), name: goalName })}</span>
+          <span class="bar"><span class="bar-fill" style="width:${Math.min(100, s.score / goal.price * 100).toFixed(0)}%"></span></span>
         </span>
-        <span class="price-tag">${icon('coins', 14)}${fmt(goal.item.price)}</span>
+        <span class="price-tag">${icon('coins', 14)}${fmt(goal.price)}</span>
       </button>` : `<div class="shop-progress"><span class="shop-progress-label">${icon('circle-check', 16)}<span>${t('shop.allOwned')}</span></span></div>`}`;
 
     const featured = $('shop-featured');
@@ -242,8 +268,10 @@ export class Shop {
 
   _card(item, src) {
     const st = this._status(item, src);
+    const up = st.owned ? src.upgrade?.(item) || null : null;
     const card = document.createElement('button');
-    card.className = ['shop-card', (st.levelLocked || st.blocked) && 'locked', st.owned && 'owned', st.active && 'active', st.buyable && !st.affordable && 'expensive', st.isNew && 'is-new', st.almost && 'is-almost'].filter(Boolean).join(' ');
+    card.className = ['shop-card', (st.levelLocked || st.blocked) && 'locked', st.owned && 'owned', st.active && 'active', st.buyable && !st.affordable && 'expensive', st.isNew && 'is-new', (st.almost || up?.almost) && 'is-almost',
+      up?.next && !up.locked && 'can-upgrade', up?.next && !up.locked && !up.affordable && 'expensive'].filter(Boolean).join(' ');
     card.dataset.id = item.id;
     card.disabled = st.levelLocked;
 
@@ -251,16 +279,22 @@ export class Shop {
     if (st.levelLocked) status = `<span class="badge badge-locked">${icon('lock', 12)} ${t('shop.lockedLevel', { n: item.minLevel })}</span>`;
     else if (st.blocked) status = `<span class="badge badge-locked">${icon('lock', 12)} ${st.blocked}</span>`;
     else if (st.active) status = `<span class="badge badge-active">${src.activeLabel || t('shop.active')}</span>`;
+    else if (up && !up.next) status = `<span class="badge badge-owned">${icon('check', 12)} ${t('shop.upgradeMax')}</span>`;
+    else if (up?.locked) status = `<span class="badge badge-owned">${icon('check', 12)} ${t('shop.owned')}</span><span class="badge badge-locked">${icon('lock', 12)} ${t('shop.upgradeLocked', { n: up.next.stars, l: up.next.level })}</span>`;
+    else if (up) status = `<span class="price-tag upgrade-tag">${icon('star', 14)}${up.next.stars} · ${fmt(up.next.price)}</span>`;
     else if (st.owned) status = `<span class="badge badge-owned">${icon('check', 12)} ${src.ownedLabel ? src.ownedLabel(item) : t('shop.owned')}</span>`;
     else status = `<span class="price-tag">${icon('coins', 14)}${fmt(item.price)}</span>`;
 
-    const tag = st.isNew ? `<span class="tag tag-new">${t('shop.isNew')}</span>` : st.almost ? `<span class="tag tag-almost">${t('shop.almost')}</span>` : '';
+    const tag = st.isNew ? `<span class="tag tag-new">${t('shop.isNew')}</span>` : (st.almost || up?.almost) ? `<span class="tag tag-almost">${t('shop.almost')}</span>` : '';
+    const detail = src.detail?.(item);
+    const stars = up ? `<span class="shop-card-stars" aria-label="${t('shop.stars', { n: up.stars, max: MAX_STARS })}">${'★'.repeat(up.stars)}${'☆'.repeat(MAX_STARS - up.stars)}</span>` : '';
     const meter = st.owned && src.meter ? src.meter(item) : null;
     card.innerHTML = `
       ${tag}
       <span class="shop-card-icon">${icon(item.icon, 36)}</span>
       <span class="shop-card-name">${itemName(item)}</span>
-      ${src.detail ? `<span class="shop-card-detail">${src.detail(item)}</span>` : ''}
+      ${stars}
+      ${detail ? `<span class="shop-card-detail">${detail}</span>` : ''}
       <span class="shop-card-desc">${itemDesc(item)}</span>
       ${meter !== null ? `<span class="bar uses-bar"><span class="bar-fill" style="width:${Math.round(meter * 100)}%"></span></span>` : ''}
       <span class="shop-card-price">${status}</span>`;
@@ -274,7 +308,16 @@ export class Shop {
     const st = this._status(item, src);
     let message = null, bought = false;
     if (st.blocked) return this.say(st.blocked);
-    if (st.owned) {
+    const up = st.owned ? src.upgrade?.(item) : null;
+    if (up?.locked) return this.say(t('shop.upgradeLocked', { n: up.next.stars, l: up.next.level }));
+    if (up?.next) {
+      if (s.score < up.next.price) return this.say(t('shop.notEnough', { price: fmt(up.next.price) }));
+      s.score -= up.next.price;
+      this.actions.upgradeTool(item.id);
+      message = t('shop.upgraded', { name: itemName(item), n: up.next.stars });
+      bought = true;
+      this.actions.bought?.(item);
+    } else if (st.owned) {
       if ((st.active && !src.toggles) || !src.onUse) return;
       message = src.onUse(item);
     } else {

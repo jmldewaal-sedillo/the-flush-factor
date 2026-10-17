@@ -9,12 +9,14 @@ Webportals: nog geen
 
 **Besluit van Jenn, 2026-10-11 (`Apps/CLAUDE.md`, sectie 11):** eerst de Android-app en webportals; geen app-website op een subdomein tot "lanceren web". Het plan "verhuizen naar flushfactor.studiosedillo.com" en de TWA zijn vervallen.
 
-Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de testversie), nog niet gemerged naar `main`. Sprint 13 staat op de branch `sprint-13` (vanaf `sprint-9`), nog niet op de testversie.
+Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de testversie), nog niet gemerged naar `main`. Sprint 13 en 14 staan op de branch `sprint-13` (vanaf `sprint-9`); die staat sinds 2026-10-17 op de testversie (akkoord van Jenn: "alles pushen naar de test versie").
 
 ## Nu bezig
 
 - [ ] **Sprint 9 t/m 12 testen door Jenn** op het testadres (branch `sprint-9`), daarna "zet live".
-- [ ] **Spoelicoon kiezen (punt 75):** vijf varianten op `spoelicoon-preview.html` (komt op het testadres met Sprint 13). Jenn kiest een letter; daarna doorvoeren.
+- [ ] **Spoelicoon kiezen (punt 75):** vijf varianten op `spoelicoon-preview.html` (staat op het testadres). Jenn kiest een letter; daarna doorvoeren.
+- [ ] **Sprint 14 uitproberen (meer diepte):** 15 levels, soorten verstoppingen, spitsuur en gereedschap verbeteren. Jenn speelt het op het testadres en zegt wat te makkelijk, te moeilijk of niet leuk is; alle getallen staan in `js/data/` (zie `docs/puntenbalans.md`).
+- [ ] **Keuze voor de volgende stap in diepte:** opdrachten per level, prestaties, of "renoveren" na level 15 (zie Sprint 14, "Voorstellen").
 - [ ] **Geluiden en muziek beluisteren (punten 102–106).** Claude kan niet luisteren: de zestien gereedschapsgeluiden, de plons, het legen van de emmer en de muziek zijn gekozen op titel, omschrijving, duur en gemeten volume. Jenn beoordeelt ze op het testadres; per geluid vervangen of harder/zachter kan in `js/data/sounds.js`.
 
 ## Volgende
@@ -52,6 +54,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 ## Logboek
 
 ### 2026-10-17
+- **Sprint 14 (punten 112–116), meer diepte** op `sprint-13`, op verzoek van Jenn ("in 2 uur uitgespeeld kan niet; meer diepte, meer levels, meer spanning"): 15 levels, vijf soorten verstoppingen, spitsuur, gereedschap verbeteren met sterren, balans opnieuw (gemiddelde speler: level 15 na ±15 uur). Sprint 13 en 14 op de testversie gezet.
 - **Sprint 13 (punten 107–111)** op de branch `sprint-13` (vanaf `sprint-9`; nog niet op de testversie, zodat die gelijk blijft tijdens het testen door Jenn): puntenbalans opnieuw (punt 61), geluid bij level-up en repareren (rest van punt 58), keuzepagina voor het spoelicoon (punt 75), maker van "Old Rusted Bucket" bevestigd, roadmap opgeruimd.
 
 ### 2026-10-13
@@ -628,11 +631,28 @@ Branch `sprint-9` (nog niet gemerged). Feedback van Jenn na het beluisteren van 
 
 ## Sprint 13 (punten 107–111)
 
-Branch `sprint-13` (vanaf `sprint-9`, nog niet gemerged en nog niet op de testversie). Gedaan zonder input van Jenn, terwijl zij Sprint 9–12 test.
+Branch `sprint-13` (vanaf `sprint-9`, nog niet gemerged; sinds 2026-10-17 op de testversie). Gedaan zonder input van Jenn, terwijl zij Sprint 9–12 test. De balans is in Sprint 14 verder uitgebreid naar 15 levels.
 
 - [x] **107. Puntenbalans (punt 61, met 88)** — Gemeten met een simulatie die het spel naspeelt met de echte regels (`tools/balans.mjs`, `npm run balans`). Vóór: een gemiddelde speler had level 5 na ongeveer 1 minuut en de hele winkel na 6 minuten, door de combo tot ×8; het level volgde uit het saldo, dus kopen zette je terug. Nu: combo tot ×2 die doorspelen beloont (venster 3 s), prijzen ×5 (de pakketten met echt geld ook, zodat ze evenveel waard blijven), nieuwe level-drempels, en het level volgt uit alles wat je ooit verdiend hebt. Gemiddelde speler: level 2 na ±3 min, level 5 na ±45 min, alles na ±1 u 40. Bestaande spelers: saldo ×5, level blijft. Regels in `js/scoring.js` (gedeeld door spel en simulatie); uitleg, streefwaarden en "minuten spelen per item" in `docs/puntenbalans.md`; bewaakt door `tests/balans.spec.js`.
 - [x] **108. Geluid bij level-up en repareren (rest van punt 58)** — Level-up: vier oplopende tonen, eigen werk (gemaakt met ffmpeg, 0,8 s, groep Interface, muziek even zachter). Repareren: twee metalen tikjes (Kenney Impact Sounds, CC0, 0,4 s, groep Emmer & schoonmaak). Allebei aan de eventbus (`level:up`, `toilet:condition` met `repair`). *Nog door Jenn te beluisteren.*
 - [x] **109. Keuzepagina spoelicoon (punt 75)** — `spoelicoon-preview.html`: het huidige icoon (A) en vier zelfgetekende varianten (B spoelhendel, C druppel met kolk, D stortbak met pijl, E drukknop met twee standen) op de echte knop: blauw, rood (verstopt), ingedrukt en klein. Gaat mee naar de testversie (noindex), niet in de service worker. Wacht op de keuze van Jenn.
 - [x] **110. Maker "Old Rusted Bucket" bevestigd (punt 73)** — Volgens de Sketchfab-API staat het model onder het account *GameDevNick*, weergavenaam *Coozy*, licentie CC BY 4.0: dezelfde maker. Credits bijgewerkt ("Coozy (GameDevNick)").
 - [x] **111. Tests en documentatie** — `tests/balans.spec.js` (nieuw), `ci.spec.js` (keuzepagina), bestaande tests bijgewerkt voor de nieuwe prijzen (oudere opslag rekent met saldo ×5: `OLD` in `tests/helpers.js`); README, `docs/credits.md`, `docs/privacy-audit.md` (totaal verdiende punten in de spelstand).
+
+## Sprint 14 (punten 112–116): meer diepte
+
+Branch `sprint-13`, op de testversie. Aanleiding: Jenn, 2026-10-17: "Dan zou je het spel in 2 uur al hebben uitgespeeld? Dat kan natuurlijk niet. Er moet meer diepte in, meer levels, meer spanning, zodat het leuk blijft."
+
+- [x] **112. 15 levels** — Van 5 naar 15, met namen in alle tien talen (Afvoerheld, Ontstopkoning … Flush Factor). Elk level: sneller stijgend water, vaker verstoppingen, een eigen mix van soorten. Elk level speelt iets vrij (een item, een ster of een nieuwe soort verstopping; een test eist dat). De duurdere spullen zijn over de levels 4–15 verspreid; de gouden troon is de beloning van level 15. Meer punten per spoelbeurt op een hoger level (+5% per level).
+- [x] **113. Soorten verstoppingen** — Snel (water stijgt ×1,5), hardnekkig (gereedschap werkt half), dubbel (meteen een tweede erachteraan) en mega (snel én hardnekkig). De waarschuwing zegt welke soort het is (geel, mega zwart) en de melding legt het uit; een moeilijkere soort geeft een grotere bonus. De waarschuwing staat nu boven de melding, zodat een lange melding hem niet meer bedekt.
+- [x] **114. Spitsuur** — Vanaf level 3 af en toe 30 s lang punten ×2 en drie keer zo vaak verstoppingen; balkje met aftellen boven de spoelknop, banner en een eigen sirene (eigen werk). Zonder overlopen doorstaan: bonus 150 × level.
+- [x] **115. Gereedschap verbeteren** — Werkend gereedschap uit de winkel krijgt tot drie sterren (+20% kracht, −15% afkoeltijd per ster), te koop op de kaart in de winkel vanaf level 5, 9 en 13. Sterren staan op de kaart en op de knop in het spel; de kaart toont kracht en afkoeltijd. Ook een ster telt als "uitgelicht" doel. Bewaard in de spelstand (`toolUpgrades`).
+- [x] **116. Balans, tests en documentatie** — Simulatie uitgebreid (soorten, spitsuur, sterren, 50 uur): gemiddelde speler level 5 na ±40 min, level 10 na ±5 uur, level 15 na ±15 uur, alles na ±16 uur. `tests/diepte.spec.js` (nieuw), `balans.spec.js` met nieuwe streefwaarden, `i18n.spec.js` controleert ook de waarschuwingen, het spitsuur en de langste levelnaam per taal. Kleine fix: de combo kwam sinds Sprint 13 nooit meer in beeld (drempel stond nog op ×4).
+
+### Voorstellen voor een volgende stap (nog niet bouwen; Jenn kiest)
+
+- [ ] **Opdrachten per level** — drie korte opdrachten per level ("ontstop 5 hardnekkige", "doorsta een spitsuur", "spoel 50 keer zonder overlopen") met een bonus; geeft elke sessie een doel.
+- [ ] **Prestaties / trofeeën** — blijvende mijlpalen in het profiel (1.000 keer gespoeld, eerste mega, alle sterren).
+- [ ] **Renoveren na level 15** — opnieuw beginnen op level 1 met een blijvende puntenbonus en een ster bij je naam; het hokje en de collectie blijven.
+- [ ] **Dagelijkse uitdaging** — elke dag één speciale verstopping of spitsuur met een eigen beloning (eerlijk: zonder "laatste kans"-druk).
 

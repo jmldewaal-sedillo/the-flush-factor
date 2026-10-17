@@ -150,6 +150,7 @@ hoe hard het klinkt staat in `js/data/sounds.js`; het geluid per gereedschap in 
 | `ui-buy.mp3` | aankoop in de winkel | idem: `confirmation_001.ogg` | Kenney | CC0 1.0 | alleen omgezet |
 | `repair.mp3` | reparatie (lijm, bril, deksel) | ["Impact Sounds"](https://kenney.nl/assets/impact-sounds) 1.0: `impactMetal_light_002.ogg` en `_004.ogg` | Kenney | CC0 1.0 | de twee na elkaar gezet (0,2 s ertussen), stilte vooraan weg, volume gelijkgetrokken |
 | `level-up.mp3` | level omhoog | eigen werk (2026-10-17): vier oplopende tonen (C–E–G–C), gemaakt met ffmpeg | Studio Sedillo | eigen werk | — |
+| `rush.mp3` | begin van het spitsuur | eigen werk (2026-10-17): sirene van twee tonen (880 en 660 Hz), gemaakt met ffmpeg | Studio Sedillo | eigen werk | — |
 
 ### Muziek
 

@@ -25,7 +25,7 @@ const RICH = {
 // Tekst die buiten zijn vak valt: elke regel tekst moet binnen het scherm staan en binnen het dichtstbijzijnde
 // "vak" (knop, kaart, label, menu, paneel). → lijst met overtredingen.
 function overflowing() {
-  const BOX = 'button, select, .tag, .featured-tag, .badge, .price-tag, .popover, .shop-card, .shop-category-header, .shop-featured, .shop-progress, #score-bubble, #status-msg, #shop-message, #clog-warning, #unclog-banner, #levelup-banner, #dirt-pill, #bucket-liters, .count-badge, .uses, #tool-tip, #clean-tray, #profile-content, #credits-content, .menu-item, .auth-btn, .soon, #fatal, .dialog-panel, .data-btn, textarea, .field-label';
+  const BOX = 'button, select, .tag, .featured-tag, .badge, .price-tag, .popover, .shop-card, .shop-category-header, .shop-featured, .shop-progress, #score-bubble, #status-msg, #shop-message, #clog-warning, #unclog-banner, #levelup-banner, #rush-banner, #rush-pill, #dirt-pill, #bucket-liters, .count-badge, .uses, #tool-tip, #clean-tray, #profile-content, #credits-content, .menu-item, .auth-btn, .soon, #fatal, .dialog-panel, .data-btn, textarea, .field-label';
   const visible = el => { for (let e = el; e && e !== document.body; e = e.parentElement) { const s = getComputedStyle(e); if (e.hidden || s.display === 'none' || s.visibility === 'hidden' || +s.opacity === 0) return false; } return true; };
   const out = [], vw = innerWidth, TOL = 1.5;
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -174,9 +174,26 @@ for (const [code, name] of LANGUAGES) {
     await check('schoonmaakmenu');
     await page.keyboard.press('Escape');
 
-    // banners: level-up (met "nieuw in de winkel") en ontstopt
-    await page.evaluate(() => window.__game.setScore(24000));                     // level 4
-    await expect(page.locator('#levelup-banner')).toContainText(strings['level.4'].toLocaleUpperCase(code));
+    // soorten verstoppingen (punt 113): elke waarschuwing past
+    for (const kind of ['fast', 'stubborn', 'mega']) {
+      await page.evaluate(k => window.__game.forceClog('duck', k), kind);
+      await expect(page.locator('#clog-warning')).toHaveText(strings[`kind.${kind}`]);
+      await check(`verstopping ${kind}`);
+      await page.evaluate(() => { window.__game.resetCooldowns(); window.__game.setWater(1); window.__game.useTool('hot-water'); });
+      await until(page, () => !window.__game.snapshot().clogged);
+      await page.evaluate(() => window.__game.resetCooldowns());       // het aftellen hangt bewust onder de knop
+    }
+    // spitsuur (punt 114): balkje en banner
+    await page.evaluate(() => window.__game.startRush());
+    await expect(page.locator('#rush-pill')).toContainText(strings['rush.pill'].split(' ')[0]);
+    await check('spitsuur');
+    await page.evaluate(() => window.__game.endRush());
+
+    // banners: level-up met de langste levelnaam (met "nieuw in de winkel") en ontstopt
+    const longest = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].sort((a, b) => strings[`level.${b}`].length - strings[`level.${a}`].length)[0];
+    const thresholds = await page.evaluate(async () => (await import('./js/data/levels.js')).LEVELS.map(l => l.minScore));
+    await page.evaluate(n => window.__game.setScore(n), thresholds[longest - 1]);
+    await expect(page.locator('#levelup-banner')).toContainText(strings[`level.${longest}`].toLocaleUpperCase(code));
     await check('level-up');
     await setView(page, 'bucket');
     await check('emmerweergave');

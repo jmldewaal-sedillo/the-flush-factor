@@ -1,6 +1,6 @@
 // Alles wat over de 3D-scène zweeft: score, gereedschap, waterbalk, meldingen, menu's.
 // Alleen DOM; krijgt gegevens aangereikt van game.js.
-import { t, num, itemName, itemShort, LANGUAGES } from '../i18n/index.js';
+import { t, num, itemName, itemShort, LANGUAGES, getLanguage } from '../i18n/index.js';
 import { CAMERA_VIEWS } from '../data/room.js';
 import { CREDITS, STUDIO } from '../data/credits.js';
 import { icon } from './icons.js';
@@ -55,7 +55,30 @@ export const hud = {
     $('fx-layer').appendChild(el);
     setTimeout(() => el.remove(), 900);
   },
-  clogWarning(on) { $('clog-warning').classList.toggle('visible', on); },
+  // kind: soort verstopping (punt 113); een bijzondere soort zegt in de waarschuwing wat hij is.
+  clogWarning(on, kind = 'normal') {
+    const el = $('clog-warning');
+    if (on) {
+      el.dataset.kind = kind;
+      el.querySelector('span').textContent = kind === 'normal' ? t('clogWarning') : t(`kind.${kind}`);
+    }
+    el.classList.toggle('visible', on);
+  },
+  // Spitsuur (punt 114): balkje met de resterende tijd boven de spoelknop; 0 = weg.
+  rush(durationMs) {
+    const el = $('rush-pill');
+    el.hidden = !durationMs;
+    document.body.toggleAttribute('data-rush', !!durationMs);
+    if (durationMs) { this._rushTotal = durationMs; this.rushTime(durationMs); }
+  },
+  rushTime(ms) {
+    const el = $('rush-pill');
+    const secs = Math.max(0, Math.ceil(ms / 1000));
+    if (el._secs === secs) return;
+    el._secs = secs;
+    el.innerHTML = `${icon('zap', 16)}<span>${t('rush.pill', { s: secs })}</span><span class="bar"><span class="bar-fill" style="width:${Math.round(ms / this._rushTotal * 100)}%"></span></span>`;
+  },
+  rushBanner(text) { this.banner('rush-banner', `${icon('zap', 22)} <span>${text}</span>`, 2600); },
   banner(id, html, ms) {
     const el = $(id);
     el.innerHTML = html;
@@ -66,7 +89,7 @@ export const hud = {
   unclogBanner(text) { this.banner('unclog-banner', `${icon('circle-check', 26)} ${text}`, 1800); },
   levelUpBanner(level, name, newCount = 0) {
     const extra = newCount ? `<small>${icon('gift', 14)} ${t('levelUpNew', { n: newCount })}</small>` : '';
-    this.banner('levelup-banner', `<span>${icon('sparkles', 20)} ${t('levelUp', { n: level, name: name.toLocaleUpperCase() })}</span>${extra}`, 3000);
+    this.banner('levelup-banner', `<span>${icon('sparkles', 20)} ${t('levelUp', { n: level, name: name.toLocaleUpperCase(getLanguage()) })}</span>${extra}`, 3000);
   },
   shopBadge(n) { $('shop-badge').hidden = n <= 0; $('shop-badge').textContent = n > 0 ? String(n) : ''; },
   // Vies kost punten: toon hoeveel (punt 83).
@@ -159,7 +182,8 @@ export const hud = {
       btn.innerHTML = `
         <svg class="cd-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="cd-track" cx="30" cy="30" r="24"/><circle class="cd-fill" cx="30" cy="30" r="24"/></svg>
         ${icon(tool.icon, 28, 'tool-icon')}
-        <span class="cd-secs"></span><span class="tool-badge"></span>`;
+        <span class="cd-secs"></span><span class="tool-badge"></span>
+        ${tool.stars ? `<span class="tool-stars" aria-hidden="true">${'★'.repeat(tool.stars)}</span>` : ''}`;
       let timer = 0, held = false;
       const hide = () => { clearTimeout(timer); tip.hidden = true; };
       btn.addEventListener('pointerdown', () => {

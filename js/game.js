@@ -1,5 +1,5 @@
 // THE FLUSH FACTOR — hoofdcoördinator: spelregels, game-loop en koppeling tussen logica en weergave.
-import { SCORING, WATER_PHASES } from './data/config.js';
+import { SCORING, WATER_PHASES, CLOG_KINDS, RUSH } from './data/config.js';
 import { LEVELS } from './data/levels.js';
 import { nextCombo, flushPoints, unclogBonus, overflowPenalty, levelFor } from './scoring.js';
 import { CLOG_PROPS } from './data/clog-props.js';
@@ -9,6 +9,7 @@ import { bus } from './events.js';
 import { createState, loadState, saveState, bucketDef, bucketLiters } from './state.js';
 import { storage, migrateLegacy } from './storage.js';
 import { ClogSystem } from './clog.js';
+import { RushSystem } from './rush.js';
 import { CareSystem } from './care.js';
 import { CLEANERS, DEFECTS } from './data/care.js';
 import { unlockedAt } from './data/catalog.js';
@@ -33,6 +34,7 @@ setLanguage(state.language);
 sound.configure(state.sound);
 sound.arm();                   // laden en afspelen pas na de eerste tik (punt 96)
 const clog = new ClogSystem();
+const rush = new RushSystem();
 const inv = new InventorySystem(state, clog);
 const care = new CareSystem(state);
 clog.chanceFactor = care.clogFactor();
@@ -71,6 +73,7 @@ function losePoints(pts) {
 }
 
 // ──────── SPOELEN ────────
+const COMBO_SHOWN = 1 + (SCORING.comboMax - 1) / 2;      // de combo komt in beeld vanaf halverwege
 function flush() {
   if (state.isFlushing) return;
   if (clog.isClogged) return hud.message(pick('m.alreadyClogged'));
@@ -83,12 +86,12 @@ function flush() {
   state.combo = nextCombo(state.combo, now - state.lastFlushTime);
   state.lastFlushTime = now;
 
-  // Vies kost punten (punt 83).
-  const pts = flushPoints(state.combo, care.pointsFactor());
+  // Vies kost punten (punt 83), spitsuur geeft dubbel (punt 114), een hoger level meer per beurt.
+  const pts = flushPoints(state.combo, care.pointsFactor() * rush.pointsFactor, state.level);
   addScore(pts);
   hud.pointPopup(pts);
   hud.message(pick('m.flush'));
-  hud.combo(state.combo >= 4 ? state.combo : 0);
+  hud.combo(state.combo >= COMBO_SHOWN ? state.combo : 0);
 
   state.streak++;
   state.bestStreak = Math.max(state.bestStreak, state.streak);
@@ -99,28 +102,30 @@ function flush() {
 }
 
 // ──────── VERSTOPPING ────────
-clog.on('clog', () => {
+// Soorten verstoppingen (punt 113): de waarschuwing zegt welke soort het is; een bijzondere soort legt
+// in de melding uit wat er anders is.
+clog.on('clog', ({ kind, second }) => {
   state.stats.totalClogs++;
   care.onClogStart();
   state.streak = 0;
   state.currentProp = state.forcedProp || rnd(CLOG_PROPS);
   state.forcedProp = null;
   hud.streak(state.streak, state.bestStreak);
-  hud.message(pick('m.clogStart'));
-  hud.clogWarning(true);
-  bus.emit('clog', { propId: state.currentProp.id });
+  hud.message(second ? t('kind.double.second') : kind === 'normal' ? pick('m.clogStart') : t(`kind.${kind}.msg`));
+  hud.clogWarning(true, second ? 'double' : kind);
+  bus.emit('clog', { propId: state.currentProp.id, kind });
   save();
 });
 
-clog.on('resolved', () => {
+clog.on('resolved', ({ kind, followUp }) => {
   const prop = state.currentProp;
   state.currentProp = null;
   care.onResolved();
   hud.clogWarning(false);
-  hud.unclogBanner(pick('m.unclog'));
+  hud.unclogBanner(followUp ? t('kind.double.next') : pick('m.unclog'));
   state.stats.totalUnclogs++;
 
-  const bonus = unclogBonus(state.level);
+  const bonus = unclogBonus(state.level, kind);
   addScore(bonus);
   hud.pointPopup(bonus);
   state.combo = Math.max(1, state.combo - 1);
@@ -141,7 +146,8 @@ clog.on('resolved', () => {
 
 clog.on('overflow', () => {
   state.stats.totalOverflows++;
-  const penalty = overflowPenalty(state.score);
+  rush.onOverflow();
+  const penalty = overflowPenalty(state.score, state.level);
   losePoints(penalty);
   hud.message(pick('m.overflow') + (penalty ? t('penalty', { pts: penalty }) : ''));
   hud.overflowShake();
@@ -154,6 +160,27 @@ clog.on('overflow', () => {
     if (added.mess.length) { hud.message(t('care.mess')); bus.emit('mess'); }
     refreshDirt();
   }
+  save();
+});
+
+// ──────── SPITSUUR (punt 114) ────────
+rush.on('start', ({ durationMs }) => {
+  clog.rush = true;
+  hud.rush(durationMs);
+  hud.rushBanner(t('rush.start', { x: RUSH.pointsFactor }));
+  bus.emit('rush:start');
+});
+rush.on('end', ({ survived }) => {
+  clog.rush = false;
+  hud.rush(0);
+  if (survived) {
+    const bonus = rush.bonus(state.level);
+    addScore(bonus);
+    hud.pointPopup(bonus);
+    hud.rushBanner(t('rush.survived', { pts: num(bonus) }));
+    state.stats.rushesSurvived = (state.stats.rushesSurvived || 0) + 1;
+  } else hud.message(t('rush.over'));
+  bus.emit('rush:end', { survived });
   save();
 });
 
@@ -268,6 +295,8 @@ function bindSounds() {
   cue('ui:click', 'ui-click');
   cue('ui:buy', 'ui-buy');
   cue('level:up', 'level-up');
+  cue('rush:start', 'rush');
+  cue('rush:end', ({ survived }) => survived ? 'level-up' : null);
   cue('toilet:condition', ({ animate }) => animate === 'repair' ? 'repair' : null);
   // Interface: elke knop, behalve de knoppen die zelf al een geluid maken (spoelen, gereedschap, emmer legen).
   document.addEventListener('click', e => {
@@ -300,6 +329,8 @@ function loop(ts) {
   const dt = Math.min(ts - lastTs, 100);
   lastTs = ts;
   clog.update(dt);
+  if (!clog.paused) rush.update(dt, state.level);    // geen spitsuur op het welkomstscherm of in tests met ?clogs=off
+  if (rush.active) hud.rushTime(rush.remaining);
   inv.update(dt);
   const phase = waterPhase(clog.waterLevel, clog.isClogged);
   hud.water(clog.waterLevel, phase, clog.isClogged);
@@ -324,6 +355,7 @@ async function init() {
     },
     setBucket(id) { state.bucketId = id; bus.emit('bucket:set', { id }); updateBucket(); },
     addTool(id) { inv.addTool(id); hud.buildInventory(inv.getAll(), useTool); },
+    upgradeTool(id) { inv.upgrade(id); hud.buildInventory(inv.getAll(), useTool); },
     repair,
     cleanerBought(id) { care.restock(id); showCleaning(); },
     usesLeft: id => care.usesLeft(id),
@@ -489,9 +521,14 @@ window.__game = {
     toilet: toiletCondition(), broken: care.isBroken(), stains: state.stains.map(st => ({ ...st })), dirtCount: care.dirtCount(), pointsFactor: care.pointsFactor(),
     overflowStreak: state.overflowStreak, newItems: [...state.newItems], purchased: [...state.purchased], cleaner,
     supplies: { ...state.supplies }, language: getLanguage(), sound: JSON.parse(JSON.stringify(state.sound)),
+    toolUpgrades: { ...state.toolUpgrades }, clogKind: clog.kind, rush: { active: rush.active, remaining: rush.remaining },
+    tools: inv.getAll().map(x => ({ id: x.id, power: x.power, cooldown: x.cooldown, stars: x.stars || 0 })),
     clogged: clog.isClogged, waterLevel: clog.waterLevel, overflowing: clog.isOverflowing, currentProp: state.currentProp?.id ?? null,
   }),
-  forceClog(propId) { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(); },
+  forceClog(propId, kind = 'normal') { state.forcedProp = CLOG_PROPS.find(p => p.id === propId) || null; clog.forceClog(CLOG_KINDS[kind] ? kind : 'normal'); },
+  // Spitsuur (punt 114) meteen beginnen of beëindigen.
+  startRush() { rush.start(); },
+  endRush() { rush.end(); },
   setWater(pct) { clog.waterLevel = pct; },
   // Zet het saldo; wat je verdiend hebt groeit mee (het level volgt daaruit), maar zakt nooit.
   setScore(n) { state.score = n; state.earned = Math.max(state.earned, n); addScore(0); save(); },
