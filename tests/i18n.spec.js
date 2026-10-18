@@ -190,8 +190,8 @@ for (const [code, name] of LANGUAGES) {
     await page.evaluate(() => window.__game.endRush());
 
     // banners: level-up met de langste levelnaam (met "nieuw in de winkel") en ontstopt
-    const longest = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].sort((a, b) => strings[`level.${b}`].length - strings[`level.${a}`].length)[0];
     const thresholds = await page.evaluate(async () => (await import('./js/data/levels.js')).LEVELS.map(l => l.minScore));
+    const longest = thresholds.map((_, i) => i + 1).filter(n => n >= 5).sort((a, b) => strings[`level.${b}`].length - strings[`level.${a}`].length)[0];
     await page.evaluate(n => window.__game.setScore(n), thresholds[longest - 1]);
     await expect(page.locator('#levelup-banner')).toContainText(strings[`level.${longest}`].toLocaleUpperCase(code));
     await check('level-up');

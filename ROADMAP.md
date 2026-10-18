@@ -33,6 +33,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] 59. Echt inloggen met Google/Facebook. **Eerst** privacyverklaring en Data Safety bijwerken (CLAUDE.md §5).
 - [ ] 44, 74, 75 en de tutorial uit 73: zie "Toekomstplan" en "Toekomst (vastgelegd, nog niet bouwen)" verderop. 72 en de rest van 73 staan onder "Voor publicatie". (Punt 77 bestaat niet: het nummer is overgeslagen.)
 - [ ] Meer dan 16 gereedschappen (het menu is erop voorbereid).
+- [ ] **Uitbreidingen na publicatie** (meer levels, gereedschap en accessoires na ±6 maanden en ±1 jaar): zie "Na publicatie: uitbreidingen" onderaan.
 
 ## Voor publicatie in Google Play
 
@@ -52,6 +53,9 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
 
 ## Logboek
+
+### 2026-10-18
+- To-do vastgelegd voor uitbreidingen na publicatie (±6 maanden en ±1 jaar: levels, gereedschap, accessoires), plus de regels om levels veilig toe te voegen. Leveltests rekenen nu met het aantal levels in de lijst in plaats van een vast getal 15.
 
 ### 2026-10-17
 - **Sprint 14 (punten 112–116), meer diepte** op `sprint-13`, op verzoek van Jenn ("in 2 uur uitgespeeld kan niet; meer diepte, meer levels, meer spanning"): 15 levels, vijf soorten verstoppingen, spitsuur, gereedschap verbeteren met sterren, balans opnieuw (gemiddelde speler: level 15 na ±15 uur). Sprint 13 en 14 op de testversie gezet.
@@ -655,4 +659,25 @@ Branch `sprint-13`, op de testversie. Aanleiding: Jenn, 2026-10-17: "Dan zou je 
 - [ ] **Prestaties / trofeeën** — blijvende mijlpalen in het profiel (1.000 keer gespoeld, eerste mega, alle sterren).
 - [ ] **Renoveren na level 15** — opnieuw beginnen op level 1 met een blijvende puntenbonus en een ster bij je naam; het hokje en de collectie blijven.
 - [ ] **Dagelijkse uitdaging** — elke dag één speciale verstopping of spitsuur met een eigen beloning (eerlijk: zonder "laatste kans"-druk).
+
+## Na publicatie: uitbreidingen (vastgelegd 2026-10-18, nog niet bouwen)
+
+Verzoek van Jenn, 2026-10-18: de levels later uitbreiden en een to-do voor ongeveer 6 maanden en 1 jaar na publicatie, met extra gereedschap en accessoires. De data in de lijsten hieronder rekenen vanaf de dag dat de app in de Play Store staat; vul ze in zodra die datum bekend is.
+
+**Hoe levels erbij komen (zo blijft het veilig):** levels worden alleen *achteraan* toegevoegd in `js/data/levels.js` (16, 17, …), nooit weggehaald of hernummerd, want spelstanden onthouden het level en het totaal verdiende punten. Per nieuw level: een `minScore` hoger dan het vorige, water en verstoppingen even zwaar of zwaarder, een naam in alle tien talen (`level.16` enz. in `js/i18n/`), en minstens één nieuw item of nieuwe ster om vrij te spelen (`tests/diepte.spec.js` eist dat). Daarna `node tools/balans.mjs` draaien en de streefwaarden in `tests/balans.spec.js` en `docs/puntenbalans.md` bijwerken. De tests rekenen al met het aantal levels in de lijst en niet met een vast getal 15. Wie al op level 15 zit, gaat vanzelf door naar level 16 zodra die genoeg punten heeft.
+
+### Update na ±6 maanden (datum: publicatie + 6 maanden)
+- [ ] **Speeldata bekijken** voordat er iets gebouwd wordt: hoeveel spelers level 10 en 15 halen en waar ze stoppen. Alleen als er (anonieme) statistieken zijn met akkoord van Jenn en een bijgewerkte privacyverklaring; anders op basis van reviews en feedback.
+- [ ] **5 levels erbij (16–20)**, met namen in tien talen; eventueel een zesde soort verstopping (idee: "verstopt + vies": eerst schoonmaken, dan ontstoppen).
+- [ ] **2–3 nieuwe gereedschappen** voor de levels 16–20, met eigen geluid (eigen werk of CC0; Jenn keurt het geluid). Het gereedschapsmenu kan al meer dan 16 stuks aan.
+- [ ] **Nieuwe accessoires:** 1–2 toiletmodellen, 1–2 tegels en vloeren, 2–3 decoraties en een emmer, verspreid over de nieuwe levels.
+- [ ] Een vierde ster voor gereedschap overwegen (`MAX_STARS` in `js/upgrades.js`), alleen als de balans dat toelaat.
+- [ ] Store-tekst en screenshots bijwerken ("nieuw: …"), plus de vertalingen van alle nieuwe teksten laten nakijken.
+
+### Update na ±1 jaar (datum: publicatie + 12 maanden)
+- [ ] **Weer levels erbij (21–25 of meer)**, of "renoveren na het laatste level" als dat dan nog niet gebouwd is (zie de voorstellen hierboven).
+- [ ] **Een themaset gereedschap en accessoires**, bijvoorbeeld ruimte, onderwater of een kasteel: een toilet, tegels, vloer, decoratie, emmer en 1–2 gereedschappen die bij elkaar horen.
+- [ ] **Seizoensdecoraties** (winter, zomer, Halloween) als gewone aankoop. Eerlijke winkel: niets dat "maar kort te koop" is en geen aftellende timers.
+- [ ] Bij betaalde inhoud: eerst `Apps/CLAUDE.md` (aankopen, privacy) en akkoord van Jenn.
+- [ ] Balans en `docs/puntenbalans.md` opnieuw nakijken met alles erbij.
 

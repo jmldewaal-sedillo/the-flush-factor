@@ -21,7 +21,9 @@ test.describe('regels', () => {
     const { unlockedAt } = await load('js/data/catalog.js');
     const { TOOLS } = await load('js/data/tools.js');
     const { upgradeTier, canUpgrade } = await load('js/upgrades.js');
-    expect(LEVELS).toHaveLength(15);
+    // minstens 15; later uitbreiden mag (alleen achteraan toevoegen, nooit weghalen: spelstanden onthouden het level)
+    expect(LEVELS.length).toBeGreaterThanOrEqual(15);
+    LEVELS.forEach((l, i) => expect(l.level).toBe(i + 1));
     for (let i = 1; i < LEVELS.length; i++) {
       const a = LEVELS[i - 1], b = LEVELS[i];
       expect(b.minScore, `level ${b.level}`).toBeGreaterThan(a.minScore);
@@ -90,6 +92,7 @@ test.describe('regels', () => {
   test('verbeteren: drie sterren, elk sterker en sneller, en nooit eerder dan het gereedschap zelf', async () => {
     const { TOOLS } = await load('js/data/tools.js');
     const { canUpgrade, upgradeTier, toolStats } = await load('js/upgrades.js');
+    const { LEVELS } = await load('js/data/levels.js');
     const working = TOOLS.filter(t => t.effect === 'working' && !t.starting);
     for (const def of working) {
       expect(canUpgrade(def), def.id).toBe(true);
@@ -97,7 +100,7 @@ test.describe('regels', () => {
       for (const n of [1, 2, 3]) {
         const tier = upgradeTier(def, n), st = toolStats(def, n);
         expect(tier.level, `${def.id} ★${n}`).toBeGreaterThan(prevTier.level);
-        expect(tier.level).toBeLessThanOrEqual(15);
+        expect(tier.level).toBeLessThanOrEqual(LEVELS.length);
         expect(tier.price).toBeGreaterThan(prevTier.price);
         expect(st.power).toBeGreaterThan(prev.power);
         expect(st.cooldown).toBeLessThan(prev.cooldown);
