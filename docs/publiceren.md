@@ -35,6 +35,8 @@ Het Play Console-account is nu persoonlijk; Jenn wil het op de KvK (eenmanszaak 
    betaalde tussenpartij gebruiken.
 3. **Telefoonnummer** dat publiek mag (zakelijk nummer).
 4. **Website verifiëren** in de Console (studiosedillo.com); pas daarna verschijnt "Account type wijzigen".
+   *Stand 2026-10-18: studiosedillo.com is geverifieerd in Google Search Console (domein-property, TXT-record
+   `google-site-verification` in Cloudflare; dat record laten staan). Nog te doen: de website in de Play Console invullen.*
 5. Het persoonlijke account moet volledig geverifieerd zijn (geen waarschuwingen op de startpagina).
 6. Ontwikkelaarsaccount > Over jou > **Account type wijzigen**: nieuw zakelijk betaalprofiel met het D-U-N-S-nummer,
    type "bedrijf", grootte, telefoon; contactgegevens voor Google en voor de winkelvermelding (met code
