@@ -43,10 +43,12 @@ kwetsende grappen. De speler wordt met "je" aangesproken.
 
 ## App-specifieke regels
 
-- **Deze app is nog niet omgezet naar de drie bouwdoelen** van sectie 11 (android met Capacitor,
-  webportals, web). Tot dat gedaan is (zie `ROADMAP.md`, "Volgende") bestaat er alleen de
-  webversie. Het oude plan (eigen subdomein en TWA) is vervallen; de bestanden daarvoor zijn weg.
-  `tools/bouw-site.mjs` zet alleen nog de testversie voor github.io klaar.
+- **Bouwdoelen (sectie 11, punt 2; Sprint 15):** `tools/bouw.mjs` met `app` (Capacitor voor Android én iOS
+  uit dezelfde bestanden, `dist/app/`, laag `platform/app.js`) en `test`/`pages` (de testversie op github.io,
+  laag `platform/web.js`). De bronbestanden in de root zijn zelf de webversie (live op github.io vanaf `main`).
+  Webportals nog niet: pas na akkoord van Jenn, dan een `platform/portal.js` en `bouw.mjs portal`. Bouwen,
+  sleutels en uitbrengen: `docs/app.md`. De spelcode vraagt aan `window.Platform` wat kan (service worker,
+  volledig scherm, terugknop) en kijkt nooit zelf naar het bouwdoel; een test bewaakt dat.
 - **Geen verhuizing naar een subdomein en geen DNS-records.** De webversie blijft staan op
   `jmldewaal-sedillo.github.io/the-flush-factor/` tot Jenn iets anders besluit; een eigen
   subdomein komt er pas bij "lanceren web". Zet **geen `CNAME`-bestand in de root**.

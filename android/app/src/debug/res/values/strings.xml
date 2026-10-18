@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Alleen de testversie (debug): herkenbaar op het startscherm, naast de echte app. -->
+<resources>
+    <string name="app_name">TEST Flush</string>
+    <string name="title_activity_main">TEST Flush Factor</string>
+</resources>

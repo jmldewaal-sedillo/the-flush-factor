@@ -26,7 +26,7 @@ test('ci.yml: de blocklist-controle draait vóór de rooktest, en de testversie 
   expect(deploy).toMatch(/needs: rook/);
   expect(deploy).toContain('python3 tools/no-private-data.py --dir _site');
   expect(deploy.indexOf('--dir _site'), 'controleren vóór publiceren').toBeLessThan(deploy.indexOf('actions/deploy-pages'));
-  expect(deploy.indexOf('bouw-site.mjs')).toBeLessThan(deploy.indexOf('--dir _site'));
+  expect(deploy.indexOf('tools/bouw.mjs pages')).toBeLessThan(deploy.indexOf('--dir _site'));
 });
 
 test('privacy.yml: draait bij elke push (ook alleen documentatie) en bekijkt de hele geschiedenis', () => {
@@ -67,7 +67,7 @@ test('het script vindt een treffer, toont het patroon niet, en slaat zonder lijs
 // Punt 100: de stijlvoorbeeldpagina (punt 78) staat op het testadres, noindex, en hoort niet bij het spel.
 test('testversie: style-preview.html gaat mee (noindex), zit niet in de service worker, en er komt geen CNAME', () => {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'site-'));
-  execFileSync('node', [path.join(ROOT, 'tools/bouw-site.mjs'), out, 'the-flush-factor-test', 'test'], { encoding: 'utf8' });
+  execFileSync('node', [path.join(ROOT, 'tools/bouw.mjs'), 'test', 'the-flush-factor-test', 'test', '--uit', out], { encoding: 'utf8' });
   const html = fs.readFileSync(path.join(out, 'style-preview.html'), 'utf8');
   expect(html).toContain('<meta name="robots" content="noindex, nofollow">');
   for (const f of ['index.html', 'privacy.html', 'delete.html']) expect(fs.readFileSync(path.join(out, f), 'utf8'), f).toContain('noindex');
@@ -81,7 +81,7 @@ test('testversie: style-preview.html gaat mee (noindex), zit niet in de service 
   expect(fs.existsSync(path.join(out, 'CNAME'))).toBe(false);
   // geluiden gaan mee; documentatie en tests niet
   expect(fs.readdirSync(path.join(out, 'assets/sounds')).sort()).toEqual(fs.readdirSync(path.join(ROOT, 'assets/sounds')).sort());
-  for (const no of ['docs', 'tests', 'tools', 'ROADMAP.md', 'AUDIT.md']) expect(fs.existsSync(path.join(out, no)), no).toBe(false);
+  for (const no of ['docs', 'tests', 'tools', 'ROADMAP.md', 'AUDIT.md', 'android', 'ios', 'dist', 'capacitor.config.json', 'platform/app.js']) expect(fs.existsSync(path.join(out, no)), no).toBe(false);
   fs.rmSync(out, { recursive: true, force: true });
 });
 

@@ -131,7 +131,7 @@ jobs:
           node-version: 22
 
       - name: Testversie klaarzetten (noindex)
-        run: node tools/bouw-site.mjs _site "${{ github.event.repository.name }}" "$GITHUB_SHA"
+        run: node tools/bouw.mjs pages "${{ github.event.repository.name }}" "$GITHUB_SHA"
 
       # Ook wat er echt online komt nog een keer langs de lijst, vóór het publiceren.
       - name: Controle op privégegevens in de testversie

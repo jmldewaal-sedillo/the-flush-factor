@@ -87,9 +87,11 @@ assets/
   icons/              lucide/, game-icons/ (bron-SVG's), sprite.svg (gegenereerd), app/ (app-iconen)
   fonts/              Lilita One + Nunito (spel) en vier lettertypen voor de stijlvoorbeelden; elk met OFL.txt
   _unused/            originelen en niet-gebruikte modellen (worden niet geladen)
-tools/                serve, build-icons, build-sw, bouw-site (testversie voor github.io), optimize-assets, model-viewer, balans (puntensimulatie)
+tools/                serve, build-icons, build-sw, bouw (app voor Android/iOS en testversie), optimize-assets, model-viewer, balans (puntensimulatie)
+platform/             dunne laag per bouwdoel: web.js (browser) en app.js (Capacitor)
+android/, ios/        de native projecten van Capacitor (docs/app.md)
 tests/                Playwright-tests per onderwerp
-docs/                 credits, privacy-audit, testversie, publiceren, puntenbalans
+docs/                 credits, privacy-audit, testversie, publiceren, puntenbalans, app (Android en iOS)
 store/                materiaal voor Google Play (begin)
 ```
 
@@ -189,6 +191,7 @@ npx playwright test shop          # één onderwerp
 | `sound.spec.js` | geluiden en muziek: vooraf geladen na de eerste tik, start binnen 50 ms na het event, elk gereedschap een eigen geluid, muzieklus met ducking, regelaar per groep onthouden, klein, met bron en licentie |
 | `ci.spec.js` | de controle op privégegevens (blocklist) staat in de workflows en werkt; de testversie bevat `style-preview.html` en `spoelicoon-preview.html`, noindex |
 | `diepte.spec.js` | 15 levels die elk iets vrijspelen, soorten verstoppingen, spitsuur, gereedschap verbeteren in de winkel en bewaard na herladen |
+| `bouwdoelen.spec.js` | Elke laag in `platform/` heeft dezelfde onderdelen; de spelcode kijkt niet naar het bouwdoel; de app (Android/iOS) bouwt zonder service worker, start, en de terugknop gaat stap voor stap terug; package-naam en permissies |
 | `balans.spec.js` | puntenbalans binnen de streefwaarden (simulatie), level volgt uit wat je verdiend hebt, oudere opslag gaat mee naar de nieuwe prijzen |
 | `rook.spec.js` | de rooktest: kort en breed, draait vóór publicatie van de testversie (`npm run test:rook`) |
 | `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |

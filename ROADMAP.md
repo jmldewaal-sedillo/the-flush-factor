@@ -3,13 +3,14 @@
 ## Status
 
 Live: https://jmldewaal-sedillo.github.io/the-flush-factor/ — versie 0.2 (branch `main`)
-Android: nog niet in de Play Store (de app is nog niet omgezet naar Capacitor)
+Android: nog niet in de Play Store; de Capacitor-app bestaat (test-APK per push, `docs/app.md`)
+iOS: nog niet in de App Store; het Xcode-project bestaat en bouwt voor de simulator (Apple Developer-account volgt)
 Test: https://jmldewaal-sedillo.github.io/the-flush-factor-test/ (noindex; repo `the-flush-factor-test`, zie `docs/testversie.md`)
 Webportals: nog geen
 
 **Besluit van Jenn, 2026-10-11 (`Apps/CLAUDE.md`, sectie 11):** eerst de Android-app en webportals; geen app-website op een subdomein tot "lanceren web". Het plan "verhuizen naar flushfactor.studiosedillo.com" en de TWA zijn vervallen.
 
-Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de testversie), nog niet gemerged naar `main`. Sprint 13 en 14 staan op de branch `sprint-13` (vanaf `sprint-9`); die staat sinds 2026-10-17 op de testversie (akkoord van Jenn: "alles pushen naar de test versie").
+Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de testversie), nog niet gemerged naar `main`. Sprint 13 en 14 staan op de branch `sprint-13` (vanaf `sprint-9`); die staat sinds 2026-10-17 op de testversie (akkoord van Jenn: "alles pushen naar de test versie"). Sprint 15 (de app voor Android en iOS) staat op `sprint-15` (vanaf `sprint-13`), ook op de testversie.
 
 ## Nu bezig
 
@@ -22,7 +23,11 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 ## Volgende
 
 - [x] **61 (en 88). Puntenbalans opnieuw nakijken.** *Gedaan in Sprint 13:* zie `docs/puntenbalans.md`.
-- [ ] **Omzetten naar één codebase met drie bouwdoelen** (`Apps/CLAUDE.md`, sectie 11; voorbeeld: de template `studio-sedillo-app-template` en Sudoku Kids): een dunne laag per bouwdoel (opslag, advertenties, SDK, terugknop), `android` met Capacitor (alle bestanden in de app, zonder service worker, package `com.studiosedillo.flushfactor`), `webportals` als upload-zip zonder service worker en zonder externe links, en de testversie op github.io met noindex. Wat van het oude plan was (subdomein, TWA, `assetlinks.json`) is al weg; `tools/bouw-site.mjs` (testversie voor github.io) gaat dan op in `tools/bouw.mjs`.
+- [x] **Omzetten naar één codebase met bouwdoelen** *Gedaan in Sprint 15 (punten 117–121): app voor Android én iOS met Capacitor, testversie via `tools/bouw.mjs`. Webportals pas na akkoord van Jenn.*
+- [ ] **Test-APK op je Android-telefoon zetten** (Jenn): zie `docs/app.md`, "Android testen zonder Play Store".
+- [ ] **Upload key maken** (Jenn) en de eerste `.aab` naar de interne test in de Play Console, niet vóór 2026-10-21 (72 uur na het omzetten van het account). Zie `docs/app.md`.
+- [ ] **iOS naar TestFlight** zodra het Apple Developer-account er is (`Apps/docs/apple-developer.md`): ondertekenen en uploaden in de workflow (Claude Code, op verzoek).
+- [ ] Privacyverklaring per bouwdoel nalopen vóór de eerste store-release: de tekst noemt nu "de Android-app"; wordt "de app voor Android en iOS", in alle tien talen.
 - [ ] Op een echte telefoon testen via het testadres (nog nooit gedaan).
 - [ ] Merge `sprint-9` naar `main` na akkoord ("zet live").
 
@@ -56,6 +61,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 ## Logboek
 
 ### 2026-10-18
+- **Sprint 15 (punten 117–121), de app voor Android en iOS** op `sprint-15`: Capacitor 8 met één set bestanden voor beide (`tools/bouw.mjs app`), laag `platform/app.js` (geen service worker, terugknop van Android), icoon en opstartscherm, workflow met test-APK en iOS-simulatorbuild, `tests/bouwdoelen.spec.js`, `docs/app.md`. `tools/bouw-site.mjs` is opgegaan in `tools/bouw.mjs`. Ook vastgelegd in de template en `Apps/CLAUDE.md`.
 - Ontwikkelaarsaccount omgezet naar zakelijk (organisatie): studiosedillo.com geverifieerd in Search Console, D-U-N-S via Altares. Niet vóór 2026-10-21 een app indienen.
 - To-do vastgelegd voor uitbreidingen na publicatie (±6 maanden en ±1 jaar: levels, gereedschap, accessoires), plus de regels om levels veilig toe te voegen. Leveltests rekenen nu met het aantal levels in de lijst in plaats van een vast getal 15.
 
@@ -682,4 +688,14 @@ Verzoek van Jenn, 2026-10-18: de levels later uitbreiden en een to-do voor ongev
 - [ ] **Seizoensdecoraties** (winter, zomer, Halloween) als gewone aankoop. Eerlijke winkel: niets dat "maar kort te koop" is en geen aftellende timers.
 - [ ] Bij betaalde inhoud: eerst `Apps/CLAUDE.md` (aankopen, privacy) en akkoord van Jenn.
 - [ ] Balans en `docs/puntenbalans.md` opnieuw nakijken met alles erbij.
+
+## Sprint 15 (punten 117–121): de app voor Android en iOS
+
+Branch `sprint-15`. Aanleiding: Jenn, 2026-10-18: "begin met de android versie … kan je een app maken voor android en ios in 1? en dit vastzetten in de infra van de apps?"
+
+- [x] **117. Bouwdoelen en platformlaag** — `tools/bouw.mjs` (`app` voor Android en iOS, `test`/`pages` voor de testversie; vervangt `tools/bouw-site.mjs`). `platform/web.js` en `platform/app.js` met dezelfde onderdelen. De spelcode vraagt aan `Platform` of er een service worker mag zijn en of "Volledig scherm" zin heeft; Escape en de terugknop van Android gaan via één functie `goBack()` (venster dicht, winkel dicht, menu dicht, uitzoomen; daarna sluit de app).
+- [x] **118. Capacitor 8** — `capacitor.config.json` (`com.studiosedillo.flushfactor`, `dist/app`), `android/` en `ios/` (Swift Package Manager) in Git. Edge-to-edge via SystemBars (de veilige zones werken al met `env(safe-area-inset-*)`). Debug-versie heet "TEST Flush" met package `…flushfactor.test`, zodat hij naast de echte app kan staan.
+- [x] **119. Icoon en opstartscherm** — uit het huidige wc-icoon gemaakt met `@capacitor/assets` (tijdelijk, tot het echte icoon er is; zie `docs/app.md`).
+- [x] **120. Workflow `app.yml`** — bij elke push in de hoofdrepo een test-APK (te downloaden onder Artifacts) en een iOS-build voor de simulator (macOS-runner, gratis voor deze publieke repo).
+- [x] **121. Tests en documentatie** — `tests/bouwdoelen.spec.js`, `docs/app.md` (Android, iOS, sleutels, icoon), README, CLAUDE.md van de app. In de infrastructuur: template `studio-sedillo-app-template` en `Apps/CLAUDE.md`, sectie 11.
 

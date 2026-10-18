@@ -38,6 +38,7 @@ const rush = new RushSystem();
 const inv = new InventorySystem(state, clog);
 const care = new CareSystem(state);
 clog.chanceFactor = care.clogFactor();
+let goBack = () => false;      // één stap terug (vensters, menu's, uitzoomen); gezet in de UI-opbouw
 let cleaner = null;            // gekozen schoonmaakmiddel (schoonmaakstand), of null
 let shop, profileScreen, three = null;
 let pickView = () => {};      // camerastand kiezen via het menu (sluit het menu)
@@ -432,14 +433,20 @@ async function init() {
   $('btn-bucket-empty').addEventListener('click', emptyBucket);
   $('btn-credits-close').addEventListener('click', () => { $('credits-modal').hidden = true; });
   $('credits-modal').addEventListener('click', e => { if (e.target === $('credits-modal')) $('credits-modal').hidden = true; });
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
+  // Eén stap terug: Escape, en de terugknop van Android (via Platform). false = niets meer terug te doen.
+  goBack = () => {
     if (dataDialogOpen()) closeDataDialogs();
     else if (profileScreen.isOpen()) profileScreen.close();
     else if (hud.soundOpen()) hud.closeSound();
     else if (!$('credits-modal').hidden) $('credits-modal').hidden = true;
+    else if (shop.isOpen()) { shop.close(); save(); }
+    else if (hud.menuOpen()) hud.closeMenus();
     else if (document.body.hasAttribute('data-zoom')) bus.emit('view:back');
-  });
+    else return false;
+    return true;
+  };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') goBack(); });
+  if (window.Platform?.VOLLEDIG_SCHERM === false) document.querySelector('#main-menu [data-action="fullscreen"]')?.remove();
 
   $('main-menu').addEventListener('click', e => {
     const action = e.target.closest('[data-action]')?.dataset.action;
@@ -477,6 +484,7 @@ async function init() {
   hud.loading(true);
   requestAnimationFrame(loop);
   registerServiceWorker();
+  window.Platform?.start({ back: () => goBack() });
 
   window.__game.three = three.debug;
   window.__game.ready = true;
@@ -503,7 +511,7 @@ function refreshTexts() {
 
 // Service worker: niet tijdens geautomatiseerde tests (tenzij ?sw=on), en nooit de pagina herladen.
 function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
+  if (!('serviceWorker' in navigator) || window.Platform?.SERVICE_WORKER === false) return;
   const mode = params.get('sw');
   if (mode === 'off' || (navigator.webdriver && mode !== 'on')) return;
   navigator.serviceWorker.register('sw.js').catch(err => console.warn('[sw] registratie mislukt:', err.message));

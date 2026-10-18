@@ -1,0 +1,92 @@
+name: App bouwen (Android en iOS)
+
+# Bouwdoel "app" (Apps/CLAUDE.md, sectie 11; docs/app.md): dezelfde bestanden (dist/app/) in twee Capacitor-apps.
+#   android  bouwt een test-APK (debug, package com.studiosedillo.flushfactor.test, "TEST Flush" op het
+#            startscherm). Te downloaden onder "Artifacts" van deze run en direct op een Android-telefoon te
+#            installeren. Niet voor de Play Store: die krijgt een ondertekende .aab die Jenn zelf maakt.
+#   ios      bouwt de app voor de iOS-simulator, zonder ondertekenen: bewijst dat het Xcode-project klopt. Voor
+#            een iPhone of de App Store is het Apple Developer-account nodig (docs/app.md, "iOS").
+# Alleen in de hoofdrepo; de test-repo (the-flush-factor-test) publiceert alleen de webversie.
+
+on:
+  push:
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android (test-APK)
+    if: github.event.repository.name == 'the-flush-factor'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Installeer dependencies
+        run: npm ci
+
+      - name: Bouwdoel app en Capacitor-sync
+        run: node tools/bouw.mjs app && npx cap sync android
+
+      - name: Test-APK bouwen
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+
+      - name: APK een herkenbare naam geven
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/app-debug.apk "out/flush-factor-test-${GITHUB_SHA::7}.apk"
+          echo "Test-APK gebouwd (${GITHUB_SHA::7}); te downloaden onder Artifacts." >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flush-factor-test-apk
+          path: out/*.apk
+          retention-days: 14
+          if-no-files-found: error
+
+  ios:
+    name: iOS (simulator, zonder ondertekenen)
+    if: github.event.repository.name == 'the-flush-factor'
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installeer dependencies
+        run: npm ci
+
+      - name: Bouwdoel app en Capacitor-sync
+        run: node tools/bouw.mjs app && npx cap sync ios
+
+      - name: Xcode-versie
+        run: xcodebuild -version
+
+      - name: Bouwen voor de simulator
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ios CODE_SIGNING_ALLOWED=NO build
+          echo "iOS-simulatorbuild geslaagd (${GITHUB_SHA::7})." >> "$GITHUB_STEP_SUMMARY"

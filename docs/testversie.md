@@ -26,7 +26,7 @@ De workflow (`.github/workflows/ci.yml`) draait twee dingen naast elkaar:
   testversie niet. Faalt hij, dan staat er een rood kruis bij de run; de testversie staat er dan al wel.
   Kijk dus na een uur nog even: `gh run list -R jmldewaal-sedillo/the-flush-factor-test --limit 1`.
 
-`tools/bouw-site.mjs` zet de site klaar: noindex in elke pagina, een `robots.txt` die alles weigert, en
+`node tools/bouw.mjs pages <repo> <commit>` zet de site klaar: noindex in elke pagina, een `robots.txt` die alles weigert, en
 "TEST" in de naam op het startscherm. De stijlvoorbeelden (punt 78) gaan mee:
 https://jmldewaal-sedillo.github.io/the-flush-factor-test/style-preview.html
 

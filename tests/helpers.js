@@ -13,9 +13,10 @@ const EMOJI = /\p{Extended_Pictographic}/gu;
  * Opent het spel en wacht tot het echt klaar is (3D geladen), zonder vaste wachttijden.
  * Verzamelt intussen alles wat niet mag: console-fouten, JS-fouten, 4xx/5xx en externe verzoeken.
  * opties: query (extra URL-parameters), save (opgeslagen spelstand vooraf), clogs (willekeurige verstoppingen aan),
- *         quality en pixelRatio (renderinstellingen), firstStart (helemaal lege opslag: het welkomstscherm verschijnt)
+ *         quality en pixelRatio (renderinstellingen), firstStart (helemaal lege opslag: het welkomstscherm verschijnt),
+ *         path (een gebouwde versie, zoals './dist/app/'; standaard de bronbestanden)
  */
-async function openGame(page, { query = '', save = null, clogs = false, quality = 'low', pixelRatio = 0.3, firstStart = false } = {}) {
+async function openGame(page, { query = '', save = null, clogs = false, quality = 'low', pixelRatio = 0.3, firstStart = false, path = './' } = {}) {
   const problems = [];
   page.on('console', m => { if (m.type() === 'error') problems.push(`console: ${m.text()}`); });
   page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
@@ -37,7 +38,7 @@ async function openGame(page, { query = '', save = null, clogs = false, quality 
   }
   // Lage renderresolutie: de testbrowser heeft geen GPU. Layout en spelregels zijn daar niet van afhankelijk.
   const q = [`quality=${quality}`, `pixelratio=${pixelRatio}`, clogs ? '' : 'clogs=off', query].filter(Boolean).join('&');
-  await page.goto(`./?${q}`);
+  await page.goto(`${path}?${q}`);
   await ready(page);
   return problems;
 }

@@ -299,9 +299,10 @@ export const hud = {
         else if (type === 'pointerup' || type === 'pointercancel') timer = setTimeout(() => { swallow = false; }, 400);
       }, { capture: true, passive: false });
     }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') menus.forEach(m => m.isOpen() && m.close()); });
+    // Escape sluit een open menu via goBack() in game.js (één stap terug per toets).
   },
   menuOpen: () => menus.some(m => m.isOpen()),
+  closeMenus: () => menus.forEach(m => m.isOpen() && m.close()),
 
   // Geluidsinstellingen (punt 106): per groep een aan/uit-knop en een schuif, plus "Alle geluid uit".
   // onChange({ muted }) · onChange({ group, on }) · onChange({ group, volume }) met het volume van 0 tot 1.

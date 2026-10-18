@@ -496,7 +496,7 @@ Het script `nieuwe-app.sh` is voor nieuwe apps; deze app bestond al. Per onderde
 | `README.md` met live- en testadres | V | Bijgewerkt. |
 | `CLAUDE.md` in de app-map | V | Nieuw: doel, doelgroep, toon, techniek, app-specifieke regels. |
 | `KINDER_APP` kiezen | deels | Aanname: geen kinder-app. Jenn beslist (staat onder "Voor publicatie"). |
-| `CNAME` met het live-subdomein | – | Geen `CNAME` (sectie 11); `tools/bouw-site.mjs` weigert er een in de testversie. |
+| `CNAME` met het live-subdomein | – | Geen `CNAME` (sectie 11); `tools/bouw.mjs` weigert er een in de testversie. |
 | `.nojekyll` | V | Nieuw. |
 | GitHub Pages via de workflow | deels | Test-repo ja (na groene tests); live-repo nog "vanaf branch main". |
 | DNS-records | – | Geen (sectie 11, punt 6). |

@@ -9,3 +9,6 @@ _site/
 # Sleutels voor de Android-app: nooit in Git
 *.keystore
 *.jks
+
+# Gebouwde bouwdoelen (tools/bouw.mjs)
+dist/
