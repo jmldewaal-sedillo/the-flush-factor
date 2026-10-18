@@ -22,7 +22,32 @@ Nog te besluiten door Jenn:
 - **Advertenties en aankopen**: uit. Pas mogelijk nadat het zakelijke postadres bij de KvK is vastgelegd en
   het bezoekadres is afgeschermd, en dan alleen na akkoord van Jenn (sectie 11, punt 5).
 
-Stand van zaken:
+## Ontwikkelaarsaccount zakelijk maken (wens van Jenn, 2026-10-18)
+
+Het Play Console-account is nu persoonlijk; Jenn wil het op de KvK (eenmanszaak Studio Sedillo). Nagekeken op
+2026-10-18 in de Play Console Help (bronnen onderaan); vlak voor het omzetten opnieuw lezen.
+
+1. **Eerst het adres.** Een organisatieaccount toont op Google Play altijd de wettelijke naam, het **adres**, het
+   e-mailadres en het **telefoonnummer**, ook zonder advertenties of aankopen. Het adres komt uit het betaalprofiel
+   (KvK-gegevens). Dus vóór het omzetten: zakelijk postadres bij de KvK vastgelegd en het bezoekadres afgeschermd
+   (`Apps/CLAUDE.md`, sectie 11, punt 5).
+2. **D-U-N-S-nummer**: verplicht. Opzoeken of gratis aanvragen bij Dun & Bradstreet (kan tot 30 dagen duren). Geen
+   betaalde tussenpartij gebruiken.
+3. **Telefoonnummer** dat publiek mag (zakelijk nummer).
+4. **Website verifiëren** in de Console (studiosedillo.com); pas daarna verschijnt "Account type wijzigen".
+5. Het persoonlijke account moet volledig geverifieerd zijn (geen waarschuwingen op de startpagina).
+6. Ontwikkelaarsaccount > Over jou > **Account type wijzigen**: nieuw zakelijk betaalprofiel met het D-U-N-S-nummer,
+   type "bedrijf", grootte, telefoon; contactgegevens voor Google en voor de winkelvermelding (met code
+   bevestigen); eventueel documenten uploaden (KvK-uittreksel). Daarna het betaalprofiel koppelen en bevestigen.
+7. **Kan niet terug.** Na het omzetten minstens 72 uur wachten voordat je een app indient.
+8. Gevolg: de gesloten test met 12 testers / 14 dagen geldt volgens meerdere (niet-Google) bronnen niet voor
+   organisatieaccounts. In de Console nakijken na het omzetten.
+
+Bronnen: https://support.google.com/googleplay/android-developer/answer/16260648 (omzetten),
+https://support.google.com/googleplay/android-developer/answer/13634885 (accounttypen, D-U-N-S),
+https://support.google.com/googleplay/android-developer/answer/13628312 (wat publiek getoond wordt),
+https://support.google.com/googleplay/android-developer/answer/14151465 (testeis).
+
 
 - [x] Privacyverklaring en verwijderpagina bestaan, in alle tien talen (`privacy.html`, `delete.html`).
 - [ ] Die pagina's op de hoofdsite (minimaal EN en NL), via `tools/hoofdsite-toevoegen.sh` na akkoord.

@@ -45,7 +45,8 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] Data Safety ingevuld (antwoorden volgen uit `docs/privacy-audit.md`).
 - [ ] Store-teksten (begin in `store/`), icoon, feature graphic 1024×500, telefoon- en tabletscreenshots.
 - [ ] Android-app gebouwd met Capacitor en getest in de interne test van de Play Console. De upload key maakt Jenn zelf. (Was: TWA met `assetlinks.json`; vervallen.)
-- [ ] Gesloten test: 12 testers, 14 dagen (eis voor een nieuw persoonlijk ontwikkelaarsaccount).
+- [ ] **Ontwikkelaarsaccount omzetten naar zakelijk (organisatie)** — wens van Jenn, 2026-10-18 (KvK aanwezig). Volgorde: (1) eerst het zakelijke postadres bij de KvK en het afgeschermde bezoekadres, want een organisatieaccount toont naam, adres en telefoonnummer altijd publiek, ook zonder advertenties; (2) D-U-N-S-nummer opzoeken of gratis aanvragen bij Dun & Bradstreet (kan tot 30 dagen duren); (3) zakelijk telefoonnummer kiezen; (4) website studiosedillo.com laten verifiëren in de Console; (5) "Account type wijzigen" onder Ontwikkelaarsaccount > Over jou, met een nieuw zakelijk betaalprofiel. Kan niet terug; daarna 72 uur wachten met indienen. Zie `docs/publiceren.md`.
+- [ ] Gesloten test: 12 testers, 14 dagen (eis voor een nieuw persoonlijk ontwikkelaarsaccount; volgens meerdere bronnen niet voor een organisatieaccount, nog na te kijken bij Google).
 - [ ] **Vóór advertenties (AdMob) of aankopen:** zakelijk postadres bij de KvK vastgelegd en het bezoekadres afgeschermd, anders toont Google het adres. AdMob via de Capacitor-plug-in, standaard uit tot akkoord van Jenn. Zonder dat: uitbrengen zonder advertenties en zonder aankopen.
 - [ ] Webportals (CrazyGames, Poki, …): eerst de voorwaarden over exclusiviteit en advertenties lezen; niets inbouwen zonder akkoord van Jenn.
 - [ ] Contentbeoordeling (IARC) ingevuld.
@@ -55,6 +56,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 ## Logboek
 
 ### 2026-10-18
+- Stappen vastgelegd om het ontwikkelaarsaccount om te zetten naar zakelijk (organisatie); eerst het postadres bij de KvK.
 - To-do vastgelegd voor uitbreidingen na publicatie (±6 maanden en ±1 jaar: levels, gereedschap, accessoires), plus de regels om levels veilig toe te voegen. Leveltests rekenen nu met het aantal levels in de lijst in plaats van een vast getal 15.
 
 ### 2026-10-17
