@@ -62,6 +62,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 
 ### 2026-10-21
 - Ontwikkelaarsaccount: het omzetten naar organisatie is nog niet af. Google mailde op 2026-10-19 dat het nieuwe betalingsprofiel geverifieerd is en gekoppeld moet worden; tot dan blijft het account persoonlijk. Jenn heeft het betalingsprofiel op 2026-10-21 gekoppeld: het account is nu een organisatieaccount, ontwikkelaarsnaam Studio Sedillo, e-mail studio.sedillo@gmail.com (geverifieerd). Niet vóór 2026-10-24 een app indienen. Roadmap en `docs/publiceren.md` aangepast.
+- De twee verklaringen bij "App maken" (programmabeleid, exportwetten) zijn een vaste regel voor alle apps (`Apps/CLAUDE.md`, sectie 11, punt 8). Stand in `docs/publiceren.md`: exportwetten klopt (`ITSAppUsesNonExemptEncryption = false` toegevoegd in `ios/App/App/Info.plist`); programmabeleid nog niet, vooral door de knoppen zonder werking.
 
 ### 2026-10-18
 - **Sprint 15 (punten 117–121), de app voor Android en iOS** op `sprint-15`: Capacitor 8 met één set bestanden voor beide (`tools/bouw.mjs app`), laag `platform/app.js` (geen service worker, terugknop van Android), icoon en opstartscherm, workflow met test-APK en iOS-simulatorbuild, `tests/bouwdoelen.spec.js`, `docs/app.md`. `tools/bouw-site.mjs` is opgegaan in `tools/bouw.mjs`. Ook vastgelegd in de template en `Apps/CLAUDE.md`.

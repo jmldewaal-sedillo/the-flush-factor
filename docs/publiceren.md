@@ -52,6 +52,21 @@ https://support.google.com/googleplay/android-developer/answer/13634885 (account
 https://support.google.com/googleplay/android-developer/answer/13628312 (wat publiek getoond wordt),
 https://support.google.com/googleplay/android-developer/answer/14151465 (testeis).
 
+## Verklaringen bij App maken
+
+Vaste regels: `Apps/CLAUDE.md`, sectie 11, punt 8. Nagekeken op 2026-10-21.
+**Conclusie: de app nog niet aanmaken.** Het programmabeleid klopt nog niet (zie de open punten).
+
+- [x] **Amerikaanse exportwetten:** geen eigen versleuteling, alleen HTTPS van het systeem;
+      `ITSAppUsesNonExemptEncryption = false` in `ios/App/App/Info.plist` (toegevoegd 2026-10-21).
+- [ ] **Programmabeleid: geen knoppen zonder werking.** De knoppen voor inloggen en punten kopen
+      staan er zonder werking: weghalen of verbergen, of echt maken (besluit van Jenn).
+- [ ] **Programmabeleid: punt 72** (Play Store-beleid, ROADMAP) nalopen, met de doelgroep vastgelegd.
+- [ ] **Programmabeleid: inhoud.** Toilethumor mag, maar telt mee in IARC.
+- [x] **Programmabeleid: eigen of vrij materiaal:** geluiden en muziek CC0, bronnen in `docs/credits.md`.
+- [ ] **Programmabeleid: gegevens:** privacy- en verwijderpagina live op de hoofdsite (zie hieronder).
+
+
 
 - [x] Privacyverklaring en verwijderpagina bestaan, in alle tien talen (`privacy.html`, `delete.html`).
 - [ ] Die pagina's op de hoofdsite (minimaal EN en NL), via `tools/hoofdsite-toevoegen.sh` na akkoord.
