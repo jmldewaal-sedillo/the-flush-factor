@@ -24,7 +24,7 @@ Nog te besluiten door Jenn:
 
 ## Ontwikkelaarsaccount zakelijk maken (wens van Jenn, 2026-10-18)
 
-**Gedaan op 2026-10-18:** het account is omgezet naar een organisatieaccount (D-U-N-S via Altares). Niet vóór 2026-10-21 een app indienen (72 uur). Nog na te kijken in de Console: of de gesloten test met 12 testers vervalt.
+**Aangevraagd op 2026-10-18** (D-U-N-S via Altares). Betalingsprofiel geverifieerd op 2026-10-19 en **gekoppeld op 2026-10-21**: het account is nu een organisatieaccount. Ontwikkelaarsnaam **Studio Sedillo** en e-mail studio.sedillo@gmail.com (geverifieerd) nagekeken op 2026-10-21. Niet vóór 2026-10-24 een app indienen (72 uur), en in de Console nakijken of de gesloten test met 12 testers vervalt.
 
 Het Play Console-account is nu persoonlijk; Jenn wil het op de KvK (eenmanszaak Studio Sedillo). Nagekeken op
 2026-10-18 in de Play Console Help (bronnen onderaan); vlak voor het omzetten opnieuw lezen.

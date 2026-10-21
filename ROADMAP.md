@@ -25,7 +25,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [x] **61 (en 88). Puntenbalans opnieuw nakijken.** *Gedaan in Sprint 13:* zie `docs/puntenbalans.md`.
 - [x] **Omzetten naar één codebase met bouwdoelen** *Gedaan in Sprint 15 (punten 117–121): app voor Android én iOS met Capacitor, testversie via `tools/bouw.mjs`. Webportals pas na akkoord van Jenn.*
 - [ ] **Test-APK op je Android-telefoon zetten** (Jenn): zie `docs/app.md`, "Android testen zonder Play Store".
-- [ ] **Upload key maken** (Jenn) en de eerste `.aab` naar de interne test in de Play Console, niet vóór 2026-10-21 (72 uur na het omzetten van het account). Zie `docs/app.md`.
+- [ ] **Upload key maken** (Jenn) en de eerste `.aab` naar de interne test in de Play Console, niet vóór 2026-10-24 (72 uur na het koppelen van het betalingsprofiel op 2026-10-21). Zie `docs/app.md`.
 - [ ] **iOS naar TestFlight** zodra het Apple Developer-account er is (`Apps/docs/apple-developer.md`): ondertekenen en uploaden in de workflow (Claude Code, op verzoek).
 - [ ] Privacyverklaring per bouwdoel nalopen vóór de eerste store-release: de tekst noemt nu "de Android-app"; wordt "de app voor Android en iOS", in alle tien talen.
 - [ ] Op een echte telefoon testen via het testadres (nog nooit gedaan).
@@ -50,7 +50,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] Data Safety ingevuld (antwoorden volgen uit `docs/privacy-audit.md`).
 - [ ] Store-teksten (begin in `store/`), icoon, feature graphic 1024×500, telefoon- en tabletscreenshots.
 - [ ] Android-app gebouwd met Capacitor en getest in de interne test van de Play Console. De upload key maakt Jenn zelf. (Was: TWA met `assetlinks.json`; vervallen.)
-- [x] **Ontwikkelaarsaccount omzetten naar zakelijk (organisatie)** *Gedaan 2026-10-18 (website geverifieerd, D-U-N-S via Altares).* — wens van Jenn, 2026-10-18 (KvK aanwezig). Volgorde: (1) eerst het zakelijke postadres bij de KvK en het afgeschermde bezoekadres, want een organisatieaccount toont naam, adres en telefoonnummer altijd publiek, ook zonder advertenties; (2) D-U-N-S-nummer opzoeken of gratis aanvragen bij Dun & Bradstreet (kan tot 30 dagen duren); (3) zakelijk telefoonnummer kiezen; (4) website studiosedillo.com laten verifiëren in de Console; (5) "Account type wijzigen" onder Ontwikkelaarsaccount > Over jou, met een nieuw zakelijk betaalprofiel. Kan niet terug; daarna 72 uur wachten met indienen. Zie `docs/publiceren.md`.
+- [x] **Ontwikkelaarsaccount omzetten naar zakelijk (organisatie)** *Aangevraagd 2026-10-18 (website geverifieerd, D-U-N-S via Altares); betalingsprofiel geverifieerd 2026-10-19 en gekoppeld 2026-10-21. Niet vóór 2026-10-24 indienen.* — wens van Jenn, 2026-10-18 (KvK aanwezig). Volgorde: (1) eerst het zakelijke postadres bij de KvK en het afgeschermde bezoekadres, want een organisatieaccount toont naam, adres en telefoonnummer altijd publiek, ook zonder advertenties; (2) D-U-N-S-nummer opzoeken of gratis aanvragen bij Dun & Bradstreet (kan tot 30 dagen duren); (3) zakelijk telefoonnummer kiezen; (4) website studiosedillo.com laten verifiëren in de Console; (5) "Account type wijzigen" onder Ontwikkelaarsaccount > Over jou, met een nieuw zakelijk betaalprofiel. Kan niet terug; daarna 72 uur wachten met indienen. Zie `docs/publiceren.md`.
 - [ ] Gesloten test: 12 testers, 14 dagen (eis voor een nieuw persoonlijk ontwikkelaarsaccount; volgens meerdere bronnen niet voor een organisatieaccount, nog na te kijken bij Google).
 - [ ] **Vóór advertenties (AdMob) of aankopen:** zakelijk postadres bij de KvK vastgelegd en het bezoekadres afgeschermd, anders toont Google het adres. AdMob via de Capacitor-plug-in, standaard uit tot akkoord van Jenn. Zonder dat: uitbrengen zonder advertenties en zonder aankopen.
 - [ ] Webportals (CrazyGames, Poki, …): eerst de voorwaarden over exclusiviteit en advertenties lezen; niets inbouwen zonder akkoord van Jenn.
@@ -59,6 +59,9 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
 
 ## Logboek
+
+### 2026-10-21
+- Ontwikkelaarsaccount: het omzetten naar organisatie is nog niet af. Google mailde op 2026-10-19 dat het nieuwe betalingsprofiel geverifieerd is en gekoppeld moet worden; tot dan blijft het account persoonlijk. Jenn heeft het betalingsprofiel op 2026-10-21 gekoppeld: het account is nu een organisatieaccount, ontwikkelaarsnaam Studio Sedillo, e-mail studio.sedillo@gmail.com (geverifieerd). Niet vóór 2026-10-24 een app indienen. Roadmap en `docs/publiceren.md` aangepast.
 
 ### 2026-10-18
 - **Sprint 15 (punten 117–121), de app voor Android en iOS** op `sprint-15`: Capacitor 8 met één set bestanden voor beide (`tools/bouw.mjs app`), laag `platform/app.js` (geen service worker, terugknop van Android), icoon en opstartscherm, workflow met test-APK en iOS-simulatorbuild, `tests/bouwdoelen.spec.js`, `docs/app.md`. `tools/bouw-site.mjs` is opgegaan in `tools/bouw.mjs`. Ook vastgelegd in de template en `Apps/CLAUDE.md`.
