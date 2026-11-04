@@ -42,6 +42,7 @@ function expectNoOverlap(b, label) {
 
 for (const [profile, safes] of Object.entries(PROFILES)) {
   test(`${profile}: alle knoppen binnen beeld, onder de uitsparing, zonder overlap`, async ({ page }) => {
+    test.setTimeout(240_000); // tablet met 16 gereedschappen duurt bij drie tegelijk ruim een minuut
     const vp = page.viewportSize();
     const safe = vp.width > vp.height ? safes.landscape : safes.portrait;
     // 16 gereedschappen: het zwaarste geval voor de linkerkolom
