@@ -3,11 +3,8 @@
 const { test, expect } = require('@playwright/test');
 const { openGame, until, setView, expectNoProblems, emojiIn, SAVE_KEY, SETTINGS_KEY } = require('./helpers');
 
-// Dezelfde lijst en volgorde als in Sudoku Kids (i18n.js daar).
-const LANGUAGES = [
-  ['nl', 'Nederlands'], ['en', 'English'], ['de', 'Deutsch'], ['fr', 'Français'], ['es', 'Español'],
-  ['pt', 'Português'], ['it', 'Italiano'], ['pl', 'Polski'], ['tr', 'Türkçe'], ['id', 'Bahasa Indonesia'],
-];
+// Dezelfde lijst en volgorde als in Sudoku Kids (i18n.js daar); staat in helpers.js (ook voor toegankelijkheid.spec.js).
+const { LANGUAGES } = require('./helpers');
 const CODES = LANGUAGES.map(l => l[0]);
 const snap = page => page.evaluate(() => window.__game.snapshot());
 const placeholders = text => [...String(text).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join(',');
@@ -120,7 +117,7 @@ test('taal kiezen in het menu: keuzelijst met alle talen, alles wisselt meteen, 
   await expect(page.locator('#high-score')).toContainText('Bestwert');
   await expect(page.locator('#dirt-pill')).toContainText('dreckig');
   await expect(page.locator('#btn-shop')).toHaveAttribute('aria-label', 'Laden');
-  await expect(page.locator('.tool-btn[data-id="plunger"]')).toHaveAttribute('aria-label', 'Pömpel');
+  await expect(page.locator('.tool-btn[data-id="plunger"]')).toHaveAccessibleName('Pömpel');
   await expect(page.locator('#camera-menu [data-view="bucket"]')).toHaveText('Eimer');
   await page.keyboard.press('Escape');
   await page.locator('#btn-shop').click();

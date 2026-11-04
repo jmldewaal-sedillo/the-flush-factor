@@ -31,7 +31,7 @@ export default {
   'fatal.body': 'Qualcosa è andato storto durante il caricamento. Controlla la connessione e ricarica la pagina.',
 
   'a.camera': 'Inquadratura',
-  'a.backToilet': 'Torna al water',
+  'a.backToilet': 'Torna indietro al water',
   'a.menu': 'Menu',
   'a.profile': 'Profilo e statistiche',
   'a.profileOf': 'Profilo di {name}',
@@ -41,7 +41,7 @@ export default {
   'a.flush': 'Tira lo sciacquone',
   'a.bucketView': 'Guarda il secchio',
   'a.bucketEmpty': 'Svuota il secchio',
-  'a.backToGame': 'Torna al gioco',
+  'a.backToGame': 'Torna indietro al gioco',
   'a.close': 'Chiudi',
   'a.pickAvatar': 'Scegli un avatar',
   'a.avatar': 'Avatar {n}',

@@ -11,16 +11,18 @@
 @font-face { font-family: 'Nunito'; font-weight: 800; src: url('../assets/fonts/nunito/nunito-800.woff2') format('woff2'); font-display: swap; }
 
 :root {
-  /* ── kleur ── */
+  /* ── kleur ──
+     Contrast volgens WCAG 2.1 AA (Sprint 16; tests/toegankelijkheid.spec.js): wit en ink-tekst op
+     blauw, rood en groen halen minstens 4,5:1. Daarom zijn die drie donkerder dan in de eerste versie. */
   --ink: #1d1b3a;            /* omlijning, tekst op licht */
   --paper: #fff8e7;          /* crème: panelen, kaarten, knoppen */
   --paper-2: #ffffff;        /* invoervelden, vakjes */
   --duck: #ffd23f;           /* badeend-geel: hoofdactie */
-  --plunger: #ef3e36;        /* ontstopper-rood: gevaar, verstopt, weggooien */
+  --plunger: #d4342c;        /* ontstopper-rood: gevaar, verstopt, weggooien */
   --mint: #7be0c3;           /* achtergrond van schermen */
   --mint-light: #9fe6d0;
-  --blue: #3d9be9;           /* toiletblauw: scorebubbel, spoelen, winkel */
-  --ok: #2bb673;             /* gelukt, werkt, in bezit */
+  --blue: #1c72c0;           /* toiletblauw: scorebubbel, spoelen, winkel */
+  --ok: #1e7f4d;             /* gelukt, werkt, in bezit */
   --muted: #6b6788;          /* bijschriften */
   --soft-ok: #d8f5e6;        /* lichte tinten voor vlakken */
   --soft-bad: #ffe1df;

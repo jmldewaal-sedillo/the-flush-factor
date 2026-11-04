@@ -17,6 +17,7 @@
     "ios:open": "cap open ios"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@capacitor/cli": "8.5.3",
     "@playwright/test": "^1.47.0"
   },

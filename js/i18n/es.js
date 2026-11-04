@@ -22,7 +22,7 @@ export default {
   'bucketFull': '¡Cubo lleno! −{pts} puntos',
   'penalty': ' −{pts} puntos',
   'anchorFree': 'Sitio libre: {place}. La decoración está en la tienda.',
-  'back': 'Atrás',
+  'back': 'Volver',
   'loading': 'Cargando…',
   'loadError': 'No se pudo cargar. Revisa tu conexión e inténtalo de nuevo.',
   'noWebGL.title': 'WebGL no disponible',

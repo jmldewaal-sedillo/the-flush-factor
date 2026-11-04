@@ -37,7 +37,7 @@ test('knop schoonmaakspullen: altijd in beeld, met de voorraad erop', async ({ p
   await expect(page.locator('#clean-count')).toBeVisible();
   await expect(page.locator('#clean-count')).toHaveText('0');
   await expect(page.locator('#hud-clean')).toHaveAttribute('data-stock', '0');
-  await expect(page.locator('#btn-clean')).toHaveAttribute('aria-label', /op/);
+  await expect(page.locator('#btn-clean')).toHaveAccessibleName(/op/);
   // ook in elke camerastand (behalve de close-up van de emmer, waar alleen "Terug" en "Legen" staan)
   for (const view of ['overview', 'wallBack', 'wallLeft', 'wallRight', 'toilet']) {
     await setView(page, view);
@@ -56,7 +56,7 @@ test('lege voorraad: de knop brengt je naar Schoonmaak & Reparatie in de winkel'
   await card(page, 'sponge').click();
   await page.locator('#btn-shop-close').click();
   await expect(page.locator('#clean-count')).toHaveText('6');
-  await expect(page.locator('#btn-clean')).toHaveAttribute('aria-label', /6/);
+  await expect(page.locator('#btn-clean')).toHaveAccessibleName(/6/);
   await page.locator('#btn-clean').click();
   await expect(page.locator('#shop-screen')).toBeHidden();
   await expect(page.locator('#clean-tray .clean-option')).toHaveCount(1);

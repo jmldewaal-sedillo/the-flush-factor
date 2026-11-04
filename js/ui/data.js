@@ -91,4 +91,8 @@ export function bindDataControls({ beforeChange }) {
 }
 
 export const dataDialogOpen = () => !$('transfer-dialog').hidden || !$('confirm-dialog').hidden;
-export function closeDataDialogs() { $('transfer-dialog').hidden = true; }
+// Escape: een vraag wordt "Annuleren" (een melding met één knop blijft staan); anders gaat "overzetten" dicht.
+export function closeDataDialogs() {
+  if (!$('confirm-dialog').hidden) { if (!$('confirm-no').hidden) $('confirm-no').click(); return; }
+  $('transfer-dialog').hidden = true;
+}

@@ -96,7 +96,7 @@ test('profiel via de scorebubbel: naam en avatar wijzigen, statistieken, account
   await page.reload();
   await until(page, () => window.__game?.ready);
   expect((await snap(page)).profile).toMatchObject({ name: 'Sjaak', avatar: 'rocket' });
-  await expect(page.locator('#score-bubble')).toHaveAttribute('aria-label', 'Profiel van Sjaak');
+  await expect(page.locator('#score-bubble')).toHaveAccessibleName(/^Profiel van Sjaak \d/);         // plus wat je ziet: score, record, reeks, level
 
   // sluiten zonder opslaan verandert niets
   await page.locator('#score-bubble').click();

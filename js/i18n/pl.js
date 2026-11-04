@@ -22,7 +22,7 @@ export default {
   'bucketFull': 'Wiadro pełne! −{pts} pkt',
   'penalty': ' −{pts} pkt',
   'anchorFree': 'Wolne miejsce: {place}. Dekoracje znajdziesz w sklepie.',
-  'back': 'Wstecz',
+  'back': 'Wróć',
   'loading': 'Wczytywanie…',
   'loadError': 'Nie udało się wczytać. Sprawdź połączenie i spróbuj ponownie.',
   'noWebGL.title': 'WebGL jest niedostępny',

@@ -20,6 +20,7 @@ import { hud } from './ui/hud.js';
 import { playChaos } from './ui/chaos.js';
 import { ProfileScreen } from './ui/profile.js';
 import { bindDataControls, dataDialogOpen, closeDataDialogs } from './ui/data.js';
+import { manageDialogFocus } from './ui/focus.js';
 import { sound } from './sound.js';
 import { SOUNDS, UNCLOG_AFTER_TOOL } from './data/sounds.js';
 import { TOOLS } from './data/tools.js';
@@ -446,6 +447,8 @@ async function init() {
     return true;
   };
   document.addEventListener('keydown', e => { if (e.key === 'Escape') goBack(); });
+  // Toetsenbord: de focus gaat mee in en uit elk venster (js/ui/focus.js).
+  manageDialogFocus(['shop-screen', 'credits-modal', 'profile-screen', 'transfer-dialog', 'sound-dialog', 'confirm-dialog']);
   if (window.Platform?.VOLLEDIG_SCHERM === false) document.querySelector('#main-menu [data-action="fullscreen"]')?.remove();
 
   $('main-menu').addEventListener('click', e => {

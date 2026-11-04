@@ -31,7 +31,7 @@ export default {
   'fatal.body': 'Yüklenirken bir sorun oldu. Bağlantını kontrol et ve sayfayı yenile.',
 
   'a.camera': 'Kamera açısı',
-  'a.backToilet': 'Tuvalete dön',
+  'a.backToilet': 'Tuvalete geri dön',
   'a.menu': 'Menü',
   'a.profile': 'Profil ve istatistikler',
   'a.profileOf': '{name} profili',
@@ -41,7 +41,7 @@ export default {
   'a.flush': 'Sifonu çek',
   'a.bucketView': 'Kovaya bak',
   'a.bucketEmpty': 'Kovayı boşalt',
-  'a.backToGame': 'Oyuna dön',
+  'a.backToGame': 'Oyuna geri dön',
   'a.close': 'Kapat',
   'a.pickAvatar': 'Bir avatar seç',
   'a.avatar': 'Avatar {n}',

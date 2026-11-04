@@ -8,6 +8,11 @@ const SETTINGS_KEY = 'flushfactor.settings';
 const LEGACY_SAVE_KEY = 'flushfactor_v1';       // tot en met Sprint 9; alleen nog voor de migratietest
 const PROFILE = { name: 'Tester', avatar: 'duck', mode: 'guest', createdAt: '2026-01-01T00:00:00.000Z' };
 const EMOJI = /\p{Extended_Pictographic}/gu;
+// De talen van het spel, in de volgorde van js/i18n/index.js (tests/i18n.spec.js controleert dat).
+const LANGUAGES = [
+  ['nl', 'Nederlands'], ['en', 'English'], ['de', 'Deutsch'], ['fr', 'Français'], ['es', 'Español'],
+  ['pt', 'Português'], ['it', 'Italiano'], ['pl', 'Polski'], ['tr', 'Türkçe'], ['id', 'Bahasa Indonesia'],
+];
 
 /**
  * Opent het spel en wacht tot het echt klaar is (3D geladen), zonder vaste wachttijden.
@@ -131,4 +136,4 @@ const OLD = 5;
 /** Zet een spelstand klaar in de opslag (voor een herlaad midden in een test). */
 const seedSave = (page, data) => page.evaluate(([key, d]) => localStorage.setItem(key, JSON.stringify(d)), [SAVE_KEY, { version: 2, profile: PROFILE, ...data }]);
 
-module.exports = { withSwitches, NEW_PLAYER, OLD, PROFILE, tapScene, watch, seen, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, seedSave, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };
+module.exports = { LANGUAGES, withSwitches, NEW_PLAYER, OLD, PROFILE, tapScene, watch, seen, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, seedSave, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };

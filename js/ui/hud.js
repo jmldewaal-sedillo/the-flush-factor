@@ -34,7 +34,7 @@ export const hud = {
   level(n) { $('level-display').textContent = t('level', { n }); },
   profile(profile) {
     $('profile-avatar').innerHTML = profile ? icon(profile.avatar, 22) : '';
-    $('score-bubble').setAttribute('aria-label', profile ? t('a.profileOf', { name: profile.name || t('profile.guest') }) : t('a.profile'));
+    $('score-bubble-name').textContent = profile ? t('a.profileOf', { name: profile.name || t('profile.guest') }) : t('a.profile');
   },
 
   message(text) {
@@ -112,7 +112,7 @@ export const hud = {
     $('clean-icon').innerHTML = icon(current ? current.icon : 'care', 26);
     $('clean-count').textContent = String(current ? current.left : total);
     btn.setAttribute('aria-pressed', String(!!current));
-    btn.setAttribute('aria-label', total > 0 ? t('care.stock', { n: total }) : t('care.stockEmpty'));
+    $('btn-clean-name').textContent = total > 0 ? t('care.stock', { n: total }) : t('care.stockEmpty');      // + het getal op de knop (aria-labelledby)
     tray.innerHTML = owned.map(c => {
       const name = itemName(c);
       return `<button class="round-btn clean-option" data-cleaner="${c.id}" data-left="${c.left}" aria-label="${t('care.option', { name, left: c.left, total: c.uses })}" aria-pressed="${c.id === active}" title="${name}">
@@ -179,11 +179,13 @@ export const hud = {
       btn.className = 'tool-btn';
       btn.dataset.id = tool.id;
       btn.dataset.kind = tool.discovered || 'unknown';
-      btn.setAttribute('aria-label', itemName(tool));
+      // Naam = de naam van het gereedschap plus de seconden die je ziet tijdens het afkoelen (WCAG 2.5.3).
+      btn.setAttribute('aria-labelledby', `tool-name-${tool.id} tool-secs-${tool.id}`);
       btn.innerHTML = `
+        <span class="sr-only" id="tool-name-${tool.id}">${itemName(tool)}</span>
         <svg class="cd-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="cd-track" cx="30" cy="30" r="24"/><circle class="cd-fill" cx="30" cy="30" r="24"/></svg>
         ${icon(tool.icon, 28, 'tool-icon')}
-        <span class="cd-secs"></span><span class="tool-badge"></span>
+        <span class="cd-secs" id="tool-secs-${tool.id}"></span><span class="tool-badge"></span>
         ${tool.stars ? `<span class="tool-stars" aria-hidden="true">${'★'.repeat(tool.stars)}</span>` : ''}`;
       let timer = 0, held = false;
       const hide = () => { clearTimeout(timer); tip.hidden = true; };
