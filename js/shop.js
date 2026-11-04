@@ -264,7 +264,7 @@ export class Shop {
       <span class="tag tag-money">${icon('euro', 12)}${t('shop.realMoney')}</span>
       <span class="shop-card-icon">${icon('coins', 36)}</span>
       <span class="shop-card-name">${t('shop.pack', { n: fmt(pkg.coins) })}</span>
-      <span class="shop-card-price"><span class="price-tag buy-price">${money(pkg.price)}</span>${pkg.badge ? `<span class="badge badge-popular">${t(`shop.${pkg.badge}`)}</span>` : ''}</span>`;
+      <span class="shop-card-price"><span class="price-tag buy-price">${money(pkg.price)}</span></span>`;
     card.addEventListener('click', async () => {
       await purchaseService.buy(pkg.id);
       this.say(t('shop.purchaseSoon'));

@@ -165,3 +165,57 @@ test('webversie: de bronbestanden laden de weblaag, met service worker en "Volle
   expect(read('sw.js')).toContain("'platform/web.js'");
   expectNoProblems(problems);
 });
+
+// Bouwdoel hoofdsite (Sprint 16): privacy en verwijderen voor studiosedillo.com/the-flush-factor/.
+test.describe('bouwdoel hoofdsite', () => {
+  let OUT, URL_;
+  test.beforeAll(({}, info) => {
+    OUT = path.join(ROOT, 'dist', `proef-hoofdsite-${info.workerIndex}`);
+    execFileSync('node', [path.join(ROOT, 'tools', 'bouw.mjs'), 'hoofdsite', '--uit', OUT], { stdio: 'pipe' });
+    URL_ = `./dist/proef-hoofdsite-${info.workerIndex}/the-flush-factor/`;
+  });
+  test.afterAll(() => fs.rmSync(OUT, { recursive: true, force: true }));
+  test.beforeEach(({}, info) => test.skip(info.project.name !== 'phone-portrait', 'hoeft maar één keer'));
+
+  test('alleen de pagina\'s en wat ze nodig hebben; Engelse tekst in de HTML, noindex, CSP, terug naar de hoofdsite', () => {
+    const dir = path.join(OUT, 'the-flush-factor');
+    const files = allFiles(dir);
+    for (const must of ['privacy.html', 'delete.html', 'verwijderen.html', 'js/pages.js', 'css/pages.css']) expect(files).toContain(must);
+    expect(files.filter(f => /^(index\.html|sw\.js|manifest|platform\/|assets\/(models|sounds|textures)|js\/(game|renderer3d|vendor))/.test(f)), 'geen spel').toEqual([]);
+    for (const page of ['privacy.html', 'delete.html']) {
+      const html = fs.readFileSync(path.join(dir, page), 'utf8');
+      expect(html).toContain('<html lang="en">');
+      expect(html).toContain('<meta name="robots" content="noindex">');
+      expect(html).toMatch(/<meta http-equiv="Content-Security-Policy" content="default-src 'self';/);
+      expect(html).toMatch(/<article id="page-text"><h1>(Privacy policy|Deleting your data)<\/h1>/);
+      expect(html).toContain('KvK 42122276');
+      expect(html).not.toMatch(/href="\.\/"/);
+      expect(html).toContain('<a class="back" href="../" data-i18n="page.backToSite">To Studio Sedillo</a>');
+    }
+  });
+
+  test('zonder JavaScript leesbaar; met JavaScript in de gekozen taal, zonder fouten of verzoeken naar buiten', async ({ browser }) => {
+    const plain = await browser.newContext({ javaScriptEnabled: false });
+    const p = await plain.newPage();
+    await p.goto(new URL(`${URL_}privacy.html`, require('./server').BASE + '/').href);
+    await expect(p.locator('#page-text h1')).toHaveText('Privacy policy');
+    await expect(p.locator('#page-text')).toContainText('Studio Sedillo');
+    await plain.close();
+
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    const problems = [];
+    page.on('pageerror', e => problems.push(e.message));
+    page.on('console', m => { if (m.type() === 'error') problems.push(m.text()); });
+    page.on('response', r => { if (r.status() >= 400) problems.push(`${r.status()} ${r.url()}`); });
+    page.on('request', r => { if (!r.url().startsWith(require('./server').BASE)) problems.push(`extern: ${r.url()}`); });
+    for (const [file, title] of [['privacy.html?lang=nl', 'Privacyverklaring'], ['delete.html?lang=de', 'Daten löschen'], ['verwijderen.html?lang=nl', 'Gegevens verwijderen']]) {
+      await page.goto(new URL(`${URL_}${file}`, require('./server').BASE + '/').href);
+      await expect(page.locator('#page-text h1')).toHaveText(title);
+      await expect(page.locator('a.back').first()).toHaveAttribute('href', '../');
+    }
+    await expect(page.locator('a.back').first()).toHaveText('Naar Studio Sedillo');
+    expect(problems).toEqual([]);
+    await ctx.close();
+  });
+});

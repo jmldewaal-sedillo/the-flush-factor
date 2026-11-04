@@ -5,6 +5,7 @@
 //   node tools/bouw.mjs android | ios        -> hetzelfde (dist/app/); beide apps krijgen dezelfde bestanden
 //   node tools/bouw.mjs test <repo> [commit] -> dist/test/  testversie voor github.io, altijd noindex
 //   node tools/bouw.mjs pages <repo> [commit]   wat de workflow publiceert: de testversie, alleen voor <naam>-test
+//   node tools/bouw.mjs hoofdsite            -> dist/hoofdsite/the-flush-factor/   privacy en verwijderen voor studiosedillo.com
 //   --uit <map>                              andere uitvoermap
 //
 // Per bouwdoel:
@@ -12,9 +13,9 @@
 //   test   service worker en manifest, noindex, "TEST" op het startscherm, met de keuzepagina's voor Jenn
 // Het live adres (branch main van the-flush-factor) staat nog rechtstreeks op GitHub Pages: de bestanden in de
 // root zijn zelf de webversie (platform/web.js), zonder bouwstap.
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const argv = process.argv.slice(2);
@@ -123,8 +124,56 @@ function bouwTest(repo, commit = '') {
   console.log(`Testversie: ${relative(process.cwd(), out) || out} (${allFiles(out).length} bestanden, noindex, zonder eigen domein)`);
 }
 
+// De pagina's voor de Play Store op de hoofdsite: studiosedillo.com/the-flush-factor/privacy en /delete
+// (Apps/CLAUDE.md, sectie 11, punt 3). Alleen wat die pagina's nodig hebben; geen spel en geen laag uit platform/.
+// De Engelse tekst staat al in de HTML, zodat de pagina's ook zonder JavaScript te lezen zijn; pages.js zet daarna
+// de gekozen taal. "Terug naar het spel" wordt "Naar Studio Sedillo" (het spel staat daar niet).
+// Op de site zet Apps/tools/hoofdsite-toevoegen.sh ze (pusht naar de live site, alleen na akkoord van Jenn).
+const HOOFDSITE_PAD = 'the-flush-factor';                 // de repo-naam, zoals studiosedillo.com/sudoku-kids/
+const HOOFDSITE_BESTANDEN = ['privacy.html', 'delete.html', 'verwijderen.html', 'js/pages.js', 'js/redirect.js', 'js/storage.js',
+  'js/i18n', 'js/data/config.js', 'js/data/credits.js', 'js/data/icon-credits.js', 'css/tokens.css', 'css/pages.css',
+  'assets/fonts/lilita-one', 'assets/fonts/nunito', 'assets/icons/app/icon-192.png'];
+
+async function bouwHoofdsite() {
+  const out = join(outDir('hoofdsite'), HOOFDSITE_PAD);
+  for (const rel of HOOFDSITE_BESTANDEN) {
+    const src = join(ROOT, rel), dst = join(out, rel);
+    if (!existsSync(src)) fail(`ontbreekt: ${rel}`);
+    mkdirSync(join(dst, '..'), { recursive: true });
+    if (statSync(src).isDirectory()) cpSync(src, dst, { recursive: true }); else copyFileSync(src, dst);
+  }
+  // De teksten zijn ES-modules zonder "type": "module" in package.json (dat mag niet, zie CLAUDE.md); Node meldt
+  // dat bij het importeren. Alleen die ene melding weg.
+  process.removeAllListeners('warning');
+  process.on('warning', w => { if (w.code !== 'MODULE_TYPELESS_PACKAGE_JSON') console.warn(w); });
+  const imp = rel => import(pathToFileURL(join(ROOT, rel)).href);
+  const [{ default: en }, { default: enUi }, config, { STUDIO }] = await Promise.all([imp('js/i18n/legal/en.js'), imp('js/i18n/en.js'), imp('js/data/config.js'), imp('js/data/credits.js')]);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const mail = `<a href="mailto:${STUDIO.email}">${STUDIO.email}</a>`;
+  const date = new Date(`${config.PRIVACY_DATE}T12:00:00`).toLocaleDateString('en', { day: 'numeric', month: 'long', year: 'numeric' });
+  const fill = text => text.split('{app}').join(esc(config.APP_NAME)).split('{short}').join(esc(config.APP_SHORT_NAME)).split('{mail}').join(mail).split('{date}').join(esc(date));
+  for (const page of ['privacy', 'delete']) {
+    const file = join(out, `${page}.html`);
+    let html = readFileSync(file, 'utf8');
+    const T = en[page];
+    const text = `<h1>${T.title}</h1><p class="updated">${fill(T.sub)}</p>` + T.sections.map(s => `<h2>${s[0]}</h2>${fill(s[1])}`).join('');
+    const before = html;
+    html = html.replace('<html lang="nl">', '<html lang="en">')
+      .replace(/<title>[^<]*<\/title>/, `<title>${esc(T.title)} – ${esc(config.APP_NAME)}</title>`)
+      .replace('<article id="page-text"></article>', `<article id="page-text">${text}</article>`)
+      .replace(/<a class="back" href="\.\/" data-i18n="page\.backToApp">[^<]*<\/a>/g, `<a class="back" href="../" data-i18n="page.backToSite">${esc(enUi['page.backToSite'])}</a>`)
+      .replace(/(<meta name="viewport"[^>]*>\r?\n)/, '$1  <meta name="robots" content="noindex">\n');
+    for (const must of ['lang="en"', '<article id="page-text"><h1>', 'href="../" data-i18n="page.backToSite"', 'name="robots"'])
+      if (!html.includes(must) || html === before) fail(`${page}.html: kon de pagina niet klaarzetten voor de hoofdsite (${must})`);
+    if (/href="\.\/"/.test(html)) fail(`${page}.html: er staat nog een link naar het spel`);
+    writeFileSync(file, html);
+  }
+  console.log(`Hoofdsite: ${relative(process.cwd(), out) || out} (${allFiles(out).length} bestanden) -> studiosedillo.com/${HOOFDSITE_PAD}/privacy en /delete`);
+}
+
 switch (doel) {
   case 'app': case 'android': case 'ios': bouwApp(); break;
+  case 'hoofdsite': await bouwHoofdsite(); break;
   case 'test': bouwTest(rest[0], rest[1] || ''); break;
   case 'pages':
     if (!/-test$/.test(rest[0] || '')) { console.log(`Niets te publiceren voor ${rest[0]}: alleen de test-repo publiceert via de workflow.`); break; }
@@ -132,6 +181,6 @@ switch (doel) {
     bouwTest(rest[0], rest[1] || '');
     break;
   default:
-    console.error(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(3, 9).map(l => l.replace(/^\/\/ ?/, '')).join('\n'));
+    console.error(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(3, 10).map(l => l.replace(/^\/\/ ?/, '')).join('\n'));
     process.exit(2);
 }

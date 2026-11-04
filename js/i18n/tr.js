@@ -166,8 +166,6 @@ export default {
   'shop.uses': '{n}× kullanım',
   'shop.usesLeft': '{total} kullanımdan {left} kaldı',
   'shop.pack': '{n} puan',
-  'shop.popular': 'popüler',
-  'shop.bestDeal': 'en iyi fırsat',
   'cat.buy.label': 'Puan satın al',
   'cat.buy.blurb': 'Gerçek parayla. Fiyatlar euro.',
   'cat.tools.label': 'Aletler',
@@ -311,6 +309,7 @@ export default {
   'data.importYes': 'Evet, hepsini değiştir',
   'data.importDone': 'İlerleme geri yüklendi.',
   'page.backToApp': 'Oyuna dön',
+  'page.backToSite': 'Studio Sedillo’ya git',
   'page.country': 'Hollanda',
   'page.language': 'Dil',
 };

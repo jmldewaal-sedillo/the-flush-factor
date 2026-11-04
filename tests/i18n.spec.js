@@ -29,7 +29,8 @@ function overflowing() {
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = node.textContent.trim();
     const el = node.parentElement;
-    if (!text || !el || el.closest('script, style, #pv-root, option') || !visible(el)) continue;
+    // .sr-only: alleen voor schermlezers, niet te zien (toegankelijkheid, Sprint 16)
+    if (!text || !el || el.closest('script, style, #pv-root, option, .sr-only') || !visible(el)) continue;
     const range = document.createRange();
     range.selectNodeContents(node);
     const box = el.closest(BOX);

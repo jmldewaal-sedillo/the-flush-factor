@@ -166,8 +166,6 @@ export default {
   'shop.uses': '{n}× do użycia',
   'shop.usesLeft': 'Zostało {left} z {total}',
   'shop.pack': '{n} pkt',
-  'shop.popular': 'popularne',
-  'shop.bestDeal': 'najlepsza oferta',
   'cat.buy.label': 'Kup punkty',
   'cat.buy.blurb': 'Za prawdziwe pieniądze. Ceny w euro.',
   'cat.tools.label': 'Narzędzia',
@@ -311,6 +309,7 @@ export default {
   'data.importYes': 'Tak, zastąp wszystko',
   'data.importDone': 'Postępy zostały przywrócone.',
   'page.backToApp': 'Wróć do gry',
+  'page.backToSite': 'Przejdź do Studio Sedillo',
   'page.country': 'Holandia',
   'page.language': 'Język',
 };

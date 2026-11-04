@@ -49,7 +49,7 @@ test('rook: winkel, repareren, schoonmaken, menu en taal', async ({ page }) => {
 
   // winkel: alle categorieën, iets kopen, reparatie
   await page.locator('#btn-shop').click();
-  await expect(page.locator('.shop-category')).toHaveCount(8);
+  await expect(page.locator('.shop-category')).toHaveCount(7);                 // "Punten kopen" alleen met AANKOPEN (Sprint 16)
   await page.locator('.shop-category[data-cat="care"] .shop-category-header').click();
   await page.locator('.shop-card[data-id="toilet-brush"]').click();
   await page.locator('.shop-card[data-id="new-seat"]').click();

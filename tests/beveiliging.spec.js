@@ -19,9 +19,9 @@ const htmlFiles = dir => fs.readdirSync(dir).filter(f => f.endsWith('.html'));
 
 test('elke pagina heeft een strenge Content-Security-Policy, in de bron en in elk bouwdoel', async ({}, info) => {
   once(info);
-  const check = (dir, label) => {
+  const check = (dir, label, min = 4) => {
     const pages = htmlFiles(dir);
-    expect(pages.length, label).toBeGreaterThan(3);
+    expect(pages.length, label).toBeGreaterThanOrEqual(min);
     for (const file of pages) {
       const html = fs.readFileSync(path.join(dir, file), 'utf8');
       const csp = cspOf(html);
@@ -48,6 +48,8 @@ test('elke pagina heeft een strenge Content-Security-Policy, in de bron en in el
       execFileSync('node', [path.join(ROOT, 'tools', 'bouw.mjs'), ...args, '--uit', out], { stdio: 'pipe' });
       check(out, doel);
     }
+    execFileSync('node', [path.join(ROOT, 'tools', 'bouw.mjs'), 'hoofdsite', '--uit', out], { stdio: 'pipe' });
+    check(path.join(out, 'the-flush-factor'), 'hoofdsite', 3);
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
 });
 

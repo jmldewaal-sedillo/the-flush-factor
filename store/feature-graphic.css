@@ -1,0 +1,25 @@
+/* Opmaak van store/feature-graphic.html (1024 × 500). Kleuren en letters uit css/tokens.css. */
+html, body { margin: 0; padding: 0; background: var(--mint); }
+.fg {
+  position: relative; width: 1024px; height: 500px; overflow: hidden;
+  background: var(--tiles);
+  font-family: var(--font-display); color: var(--ink);
+}
+.fg-text {
+  position: absolute; left: 84px; top: 50%; transform: translateY(-50%) rotate(var(--tilt));
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+  padding: 26px 34px 28px; background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: 8px 8px 0 var(--ink);
+}
+.fg-icon { width: 92px; height: 92px; border: var(--border); border-radius: 22px; box-shadow: var(--shadow-sm); }
+.fg-text h1 { margin: 0; font-size: 74px; line-height: 0.95; font-weight: 400; letter-spacing: 0.5px; }
+.fg-text p {
+  margin: 0; padding: 8px 18px; font-size: 28px; color: var(--on-color); background: var(--blue);
+  border: var(--border); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); transform: rotate(var(--tilt-alt));
+}
+.fg-shots { position: absolute; right: 70px; top: 0; bottom: 0; width: 470px; }
+.shot {
+  position: absolute; width: 214px; height: 380px; object-fit: cover;
+  border: 5px solid var(--ink); border-radius: 30px; box-shadow: 8px 8px 0 var(--ink); background: var(--ink);
+}
+.shot-a { left: 0; top: 70px; transform: rotate(-5deg); }
+.shot-b { right: 0; top: 48px; transform: rotate(4deg); }

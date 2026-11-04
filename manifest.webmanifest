@@ -1,7 +1,7 @@
 {
   "name": "The Flush Factor",
   "short_name": "FlushFactor",
-  "description": "Het meest absurde spoelspel op aarde.",
+  "description": "Een absurd spoelspel: spoel, ontstop en bouw je wc-hokje uit tot een luxe badkamer.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

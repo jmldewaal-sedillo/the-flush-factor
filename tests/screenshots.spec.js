@@ -151,8 +151,8 @@ test('screenshots sprint 10', async ({ page }, info) => {
   await until(page, () => window.__game.three.hasEnvironment());
 
   // punt 90: spoelen van voren, van opzij en van bovenaf; nergens water buiten de kom, geen zwarte bouten
-  await page.addStyleTag({ content: 'body.shot-scene #hud { visibility: hidden; }' });
-  await page.evaluate(() => { document.body.classList.add('shot-scene'); window.__game.three.freezeFlush(0.45); });
+  // De HUD weg via de stijl van het element (de CSP verbiedt een <style>-blok; Sprint 16).
+  await page.evaluate(() => { document.body.classList.add('shot-scene'); document.getElementById('hud').style.visibility = 'hidden'; window.__game.three.freezeFlush(0.45); });
   for (const [name, pos, target] of [
     ['voor', [0.03, 0.5, 1.45], [0.03, 0.3, 0.3]],
     ['opzij', [-0.62, 0.3, 0.6], [0.03, 0.2, 0.45]],
@@ -164,7 +164,7 @@ test('screenshots sprint 10', async ({ page }, info) => {
     await until(page, f0 => window.__game.three.frames() > f0 + 2, f);
     await shot(`s10-01-spoelen-${name}`);
   }
-  await page.evaluate(() => { window.__game.three.inspect(null); window.__game.three.freezeFlush(null); document.body.classList.remove('shot-scene'); });
+  await page.evaluate(() => { window.__game.three.inspect(null); window.__game.three.freezeFlush(null); document.body.classList.remove('shot-scene'); document.getElementById('hud').style.visibility = ''; });
 
   // punten 91 en 92: de knop met de voorraad, en de la met wat er per middel over is
   await page.evaluate(() => { window.__game.setCleaner('sponge'); window.__game.scrub({ kind: 'stain', id: 'w1' }); window.__game.setCleaner(null); });

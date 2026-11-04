@@ -66,6 +66,10 @@ uit de Play Store staan, en heeft zijn eigen spelstand (los van de browser en va
 2. Uploaden naar **Interne test** in de Play Console; daarna productie (zie `docs/publiceren.md`).
 
 **Controleer vóór het uploaden:**
+- [ ] `node tools/android-instellingen.mjs --check` is in orde: geen cloud-back-up (voortgang overzetten gaat via
+      de app) en geen advertentie-ID zolang `ADVERTENTIES` uit staat. `npm run app:sync` zet het goed; de workflow
+      `app.yml` controleert het bij elke push.
+- [ ] `node tools/store-klaar.mjs` is in orde (store-teksten zonder loze beloftes, niets meer "INVULLEN").
 - [ ] `targetSdkVersion` (in `android/variables.gradle`, nu 36) voldoet aan de eis van dat moment (Google verhoogt
       hem elk jaar in augustus; dan Capacitor bijwerken).
 - [ ] De app start in vliegtuigmodus.

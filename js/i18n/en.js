@@ -166,8 +166,6 @@ export default {
   'shop.uses': '{n}× use',
   'shop.usesLeft': '{left} of {total} left',
   'shop.pack': '{n} points',
-  'shop.popular': 'popular',
-  'shop.bestDeal': 'best deal',
   'cat.buy.label': 'Buy points',
   'cat.buy.blurb': 'With real money. Prices in euros.',
   'cat.tools.label': 'Tools',
@@ -311,6 +309,7 @@ export default {
   'data.importYes': 'Yes, replace everything',
   'data.importDone': 'The progress has been restored.',
   'page.backToApp': 'Back to the game',
+  'page.backToSite': 'To Studio Sedillo',
   'page.country': 'the Netherlands',
   'page.language': 'Language',
 };

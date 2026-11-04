@@ -10,7 +10,7 @@ Webportals: nog geen
 
 **Besluit van Jenn, 2026-10-11 (`Apps/CLAUDE.md`, sectie 11):** eerst de Android-app en webportals; geen app-website op een subdomein tot "lanceren web". Het plan "verhuizen naar flushfactor.studiosedillo.com" en de TWA zijn vervallen.
 
-Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de testversie), nog niet gemerged naar `main`. Sprint 13 en 14 staan op de branch `sprint-13` (vanaf `sprint-9`); die staat sinds 2026-10-17 op de testversie (akkoord van Jenn: "alles pushen naar de test versie"). Sprint 15 (de app voor Android en iOS) staat op `sprint-15` (vanaf `sprint-13`), ook op de testversie.
+Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de testversie), nog niet gemerged naar `main`. Sprint 13 en 14 staan op de branch `sprint-13` (vanaf `sprint-9`); die staat sinds 2026-10-17 op de testversie (akkoord van Jenn: "alles pushen naar de test versie"). Sprint 15 (de app voor Android en iOS) staat op `sprint-15` (vanaf `sprint-13`). Sprint 16 (vaste controles: toegankelijkheid, beveiliging, geen knoppen zonder werking) staat op `sprint-16` (vanaf `sprint-15`), ook op de testversie.
 
 ## Nu bezig
 
@@ -27,7 +27,9 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] **Test-APK op je Android-telefoon zetten** (Jenn): zie `docs/app.md`, "Android testen zonder Play Store".
 - [ ] **Upload key maken** (Jenn) en de eerste `.aab` naar de interne test in de Play Console, niet vóór 2026-10-24 (72 uur na het koppelen van het betalingsprofiel op 2026-10-21). Zie `docs/app.md`.
 - [ ] **iOS naar TestFlight** zodra het Apple Developer-account er is (`Apps/docs/apple-developer.md`): ondertekenen en uploaden in de workflow (Claude Code, op verzoek).
-- [ ] Privacyverklaring per bouwdoel nalopen vóór de eerste store-release: de tekst noemt nu "de Android-app"; wordt "de app voor Android en iOS", in alle tien talen.
+- [x] Privacyverklaring per bouwdoel nalopen vóór de eerste store-release. *Gedaan in Sprint 16: "de app voor Android en iOS" en verwijderen op iPhone/iPad, in alle tien talen (datum 2026-11-04).*
+- [ ] **Pagina's op studiosedillo.com zetten** (na akkoord van Jenn; pusht naar de live hoofdsite; gebouwd en `--dry-run` groen op 2026-11-04, de echte push mocht Claude niet zelf doen): `npm run bouw:hoofdsite`, daarna `Apps/tools/hoofdsite-toevoegen.sh --app the-flush-factor --paginas the-flush-factor/dist/hoofdsite/the-flush-factor` (eerst `--dry-run`). Zie `docs/publiceren.md`.
+- [x] **Dependabot-meldingen aanzetten** — aan sinds 2026-11-04 (meldingen en automatische beveiligingsupdates; `.github/dependabot.yml` sinds Sprint 16).
 - [ ] Op een echte telefoon testen via het testadres (nog nooit gedaan).
 - [ ] Merge `sprint-9` naar `main` na akkoord ("zet live").
 
@@ -44,7 +46,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 
 - [ ] **Vertalingen laten nakijken door moedertaalsprekers**: alle tien talen in `js/i18n/` (spel) en `js/i18n/legal/` (privacyverklaring en verwijderpagina). Ze zijn door Claude geschreven en nog door niemand nagelezen; vooral de grappen en de juridische tekst.
 - [ ] Doelgroep en leeftijd vastleggen (aanname nu: geen kinder-app; zie `CLAUDE.md` van deze app). Hoort ook bij punt 72 ("Doelgroep en content" in de Play Console).
-- [ ] Privacyverklaring en verwijderpagina **live** op https://studiosedillo.com/the-flush-factor/privacy en `/delete` (de URL's voor de Play Store; minimaal EN en NL). De pagina's zelf zijn er (Sprint 10); ze moeten nog naar de hoofdsite.
+- [ ] Privacyverklaring en verwijderpagina **live** op https://studiosedillo.com/the-flush-factor/privacy en `/delete` (de URL's voor de Play Store; minimaal EN en NL). De pagina's zelf zijn er (Sprint 10) en worden sinds Sprint 16 voor de hoofdsite gebouwd (`npm run bouw:hoofdsite`); ze moeten er nog op, na akkoord.
 - [ ] **Privacytekst laten nakijken** (door iemand met verstand van de AVG): de verklaring en de verwijderpagina in `js/i18n/legal/`, in elk geval Nederlands en Engels. Door Claude geschreven, door niemand nagekeken.
 - [ ] Vlak voor publicatie opnieuw controleren of het EU-U.S. Data Privacy Framework nog geldt voor GitHub en Google (de tekst noemt het). Stand op 2026-10-12: van kracht; het Gerecht van de EU heeft het op 3 september 2025 in stand gelaten, het hoger beroep (zaak C-703/25 P, Latombe/Commissie) loopt nog bij het Hof van Justitie. Vernietigt het Hof het besluit, dan moet die alinea eruit of anders.
 - [ ] Data Safety ingevuld (antwoorden volgen uit `docs/privacy-audit.md`).
@@ -59,6 +61,9 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
 
 ## Logboek
+
+### 2026-11-04
+- **Sprint 16 (punten 122–127), vaste controles** op `sprint-16`: de controle van 2026-10-26 (`Apps/docs/controle-2026-10-26.md`) voor dit spel uitgevoerd. Inloggen en punten kopen staan uit en zijn niet te zien; gecontroleerde import; CSP; Android zonder back-up; contrast, knopnamen en toetsenbord; store-teksten zonder "meest absurde"; privacytekst voor Android en iOS; pagina's voor de hoofdsite. Twee fouten in de controles ook in de template opgelost.
 
 ### 2026-10-21
 - Ontwikkelaarsaccount: het omzetten naar organisatie is nog niet af. Google mailde op 2026-10-19 dat het nieuwe betalingsprofiel geverifieerd is en gekoppeld moet worden; tot dan blijft het account persoonlijk. Jenn heeft het betalingsprofiel op 2026-10-21 gekoppeld: het account is nu een organisatieaccount, ontwikkelaarsnaam Studio Sedillo, e-mail studio.sedillo@gmail.com (geverifieerd). Niet vóór 2026-10-24 een app indienen. Roadmap en `docs/publiceren.md` aangepast.
@@ -692,6 +697,17 @@ Verzoek van Jenn, 2026-10-18: de levels later uitbreiden en een to-do voor ongev
 - [ ] **Seizoensdecoraties** (winter, zomer, Halloween) als gewone aankoop. Eerlijke winkel: niets dat "maar kort te koop" is en geen aftellende timers.
 - [ ] Bij betaalde inhoud: eerst `Apps/CLAUDE.md` (aankopen, privacy) en akkoord van Jenn.
 - [ ] Balans en `docs/puntenbalans.md` opnieuw nakijken met alles erbij.
+
+## Sprint 16 (punten 122–127): vaste controles
+
+Branch `sprint-16`. Aanleiding: de controle van 26 oktober 2026 (`Apps/docs/controle-2026-10-26.md`, "The Flush Factor") en `Apps/CLAUDE.md` §11.7a; Jenn, 2026-11-04: "yes" op het voorstel.
+
+- [x] **122. Geen knoppen zonder werking** — schakelaars `KINDER_APP`, `ADVERTENTIES`, `AANKOPEN`, `INLOGGEN` in `js/data/config.js`, alles `false`. Uit = niet te zien: geen categorie "Punten kopen", geen inlogblok in het profiel. Labels "populair" en "beste deal" weg (onbewezen). `tests/geld.spec.js`; de tests van de voorbereide knoppen zetten ze aan met `switches`.
+- [x] **123. Beveiliging** — `loadState` kijkt elk onderdeel van een spelstand na (soort, bereik, lengte; onleesbaar = nieuw spel); een code neemt alleen bekende instellingen over; taalcodes via `Object.hasOwn` (`?lang=constructor` brak de pagina). Strenge CSP + referrer op elke pagina (de importmap met hash), keuzepagina's zonder inline code (`previews/`). `tools/android-instellingen.mjs` uit de template: geen cloud-back-up, geen advertentie-ID (in `app:sync` en `app.yml`). `.github/dependabot.yml`. `tests/beveiliging.spec.js`.
+- [x] **124. Toegankelijkheid (WCAG 2.1 AA)** — blauw, rood en groen donkerder (contrast ≥ 4,5:1); knopnamen bevatten de zichtbare tekst (scorebubbel, schoonmaak, gereedschap tijdens afkoelen, terugknop in es/it/pl/tr); vensters met `aria-modal`. `tests/toegankelijkheid.spec.js` (axe in tien talen, reflow op 320 px).
+- [x] **125. Toetsenbord** — `js/ui/focus.js`: focus in een venster bij openen, blijft erin, terug op de knop na sluiten; Escape annuleert een bevestiging. `tests/toetsenbord.spec.js`.
+- [x] **126. Teksten** — store-teksten en manifest zonder "meest absurde … op aarde"; `tools/store-controle.mjs` en `tools/store-klaar.mjs`; `tests/inhoud.spec.js` (ook trackers, adressen, credits). Privacytekst: "de app voor Android en iOS", verwijderen op iPhone/iPad, geen zin meer over knoppen die niet werken (tien talen, datum 2026-11-04).
+- [x] **127. Pagina's voor de hoofdsite** — `node tools/bouw.mjs hoofdsite` → `dist/hoofdsite/the-flush-factor/` (privacy, verwijderen, Engelse tekst al in de HTML, "Naar Studio Sedillo" i.p.v. "Terug naar het spel"). Op de site zetten na akkoord van Jenn.
 
 ## Sprint 15 (punten 117–121): de app voor Android en iOS
 

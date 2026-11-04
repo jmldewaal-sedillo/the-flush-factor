@@ -51,6 +51,7 @@ spel zelf (een test bewaakt dat).
 
 ## Nog niet actief, wel voorbereid
 
-- Inloggen met Google/Facebook (`js/auth.js`) en punten kopen (`js/purchases.js`): knoppen zonder
-  werking; ze versturen niets. **Vóór** die live gaan: privacyverklaring en Data Safety bijwerken
-  (CLAUDE.md §5).
+- Inloggen met Google/Facebook (`js/auth.js`) en punten kopen (`js/purchases.js`): voorbereid, maar
+  sinds Sprint 16 **niet te zien** (`INLOGGEN` en `AANKOPEN` staan op `false` in `js/data/config.js`;
+  tests/geld.spec.js). Zet een schakelaar pas aan na akkoord van Jenn, en dan eerst de privacyverklaring,
+  Data Safety en (bij aankopen) een voorwaardenpagina; tests/geld.spec.js eist dat.

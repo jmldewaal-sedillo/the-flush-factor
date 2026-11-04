@@ -543,7 +543,6 @@ body.is-clogged #status-msg { top: calc(var(--sat) + var(--msg-top) + 52px); }
 .badge-active { background: var(--ink); color: #fff; }
 .badge-owned { background: var(--ok); color: #fff; }
 .badge-locked { background: var(--paper-2); color: var(--muted); border-style: dashed; }
-.badge-popular { background: var(--duck); }
 .tag { position: absolute; top: -11px; right: -6px; z-index: 1; display: inline-flex; align-items: center; gap: 3px; padding: 2px 9px; border: var(--border-thin); border-radius: var(--radius-pill); font-family: var(--font-display); font-size: 0.8rem; white-space: nowrap; transform: rotate(7deg); }
 .tag-new { background: var(--plunger); color: #fff; }
 .tag-almost { background: var(--duck); }

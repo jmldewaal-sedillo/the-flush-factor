@@ -166,8 +166,6 @@ export default {
   'shop.uses': '{n}× utilisable',
   'shop.usesLeft': 'Encore {left} sur {total}',
   'shop.pack': '{n} points',
-  'shop.popular': 'populaire',
-  'shop.bestDeal': 'meilleure offre',
   'cat.buy.label': 'Acheter des points',
   'cat.buy.blurb': 'Avec de l’argent réel. Prix en euros.',
   'cat.tools.label': 'Outils',
@@ -311,6 +309,7 @@ export default {
   'data.importYes': 'Oui, tout remplacer',
   'data.importDone': 'La progression a été restaurée.',
   'page.backToApp': 'Retour au jeu',
+  'page.backToSite': 'Vers Studio Sedillo',
   'page.country': 'Pays-Bas',
   'page.language': 'Langue',
 };

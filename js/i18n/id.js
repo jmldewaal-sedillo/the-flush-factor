@@ -166,8 +166,6 @@ export default {
   'shop.uses': '{n}× pakai',
   'shop.usesLeft': 'Sisa {left} dari {total}',
   'shop.pack': '{n} poin',
-  'shop.popular': 'populer',
-  'shop.bestDeal': 'paling hemat',
   'cat.buy.label': 'Beli poin',
   'cat.buy.blurb': 'Dengan uang sungguhan. Harga dalam euro.',
   'cat.tools.label': 'Alat',
@@ -311,6 +309,7 @@ export default {
   'data.importYes': 'Ya, ganti semuanya',
   'data.importDone': 'Progres sudah dipulihkan.',
   'page.backToApp': 'Kembali ke game',
+  'page.backToSite': 'Ke Studio Sedillo',
   'page.country': 'Belanda',
   'page.language': 'Bahasa',
 };

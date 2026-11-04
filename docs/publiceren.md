@@ -54,13 +54,16 @@ https://support.google.com/googleplay/android-developer/answer/14151465 (testeis
 
 ## Verklaringen bij App maken
 
-Vaste regels: `Apps/CLAUDE.md`, sectie 11, punt 8. Nagekeken op 2026-10-21.
-**Conclusie: de app nog niet aanmaken.** Het programmabeleid klopt nog niet (zie de open punten).
+Vaste regels: `Apps/CLAUDE.md`, sectie 11, punt 8. Nagekeken op 2026-10-21, bijgewerkt 2026-11-04 (Sprint 16).
+**Conclusie: de app nog niet aanmaken.** Het programmabeleid klopt nog niet: de pagina's moeten nog op de
+hoofdsite, en punt 72 en de doelgroep zijn nog niet nagelopen.
 
 - [x] **Amerikaanse exportwetten:** geen eigen versleuteling, alleen HTTPS van het systeem;
       `ITSAppUsesNonExemptEncryption = false` in `ios/App/App/Info.plist` (toegevoegd 2026-10-21).
-- [ ] **Programmabeleid: geen knoppen zonder werking.** De knoppen voor inloggen en punten kopen
-      staan er zonder werking: weghalen of verbergen, of echt maken (besluit van Jenn).
+- [x] **Programmabeleid: geen knoppen zonder werking.** *Sprint 16:* inloggen en punten kopen staan uit
+      (`INLOGGEN` en `AANKOPEN` in `js/data/config.js`) en zijn dan niet te zien; `tests/geld.spec.js` bewaakt het.
+- [x] **Programmabeleid: geen misleiding in de teksten.** *Sprint 16:* geen "meest absurde", "populair" of
+      "beste deal" meer; vóór uploaden `node tools/store-klaar.mjs` (ook in `tests/inhoud.spec.js`).
 - [ ] **Programmabeleid: punt 72** (Play Store-beleid, ROADMAP) nalopen, met de doelgroep vastgelegd.
 - [ ] **Programmabeleid: inhoud.** Toilethumor mag, maar telt mee in IARC.
 - [x] **Programmabeleid: eigen of vrij materiaal:** geluiden en muziek CC0, bronnen in `docs/credits.md`.
@@ -69,7 +72,10 @@ Vaste regels: `Apps/CLAUDE.md`, sectie 11, punt 8. Nagekeken op 2026-10-21.
 
 
 - [x] Privacyverklaring en verwijderpagina bestaan, in alle tien talen (`privacy.html`, `delete.html`).
-- [ ] Die pagina's op de hoofdsite (minimaal EN en NL), via `tools/hoofdsite-toevoegen.sh` na akkoord.
+- [ ] Die pagina's op de hoofdsite, via `Apps/tools/hoofdsite-toevoegen.sh` na akkoord van Jenn:
+      `npm run bouw:hoofdsite`, dan vanuit `Apps/`:
+      `tools/hoofdsite-toevoegen.sh --app the-flush-factor --paginas the-flush-factor/dist/hoofdsite/the-flush-factor`
+      (eerst met `--dry-run`). Alle tien talen; de Engelse tekst staat in de HTML (leesbaar zonder JavaScript).
 - [x] In de app: profiel verwijderen, alle gegevens verwijderen, voortgang overzetten.
 - [x] `docs/privacy-audit.md` klopt met wat het spel bewaart (een test bewaakt dat).
 - [ ] Vertalingen nagekeken door moedertaalsprekers.

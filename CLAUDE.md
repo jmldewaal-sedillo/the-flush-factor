@@ -13,9 +13,9 @@ Een absurd, brutaal en grappig spoelspel: je spoelt een toilet door, lost versto
 
 ## Doelgroep
 
-Algemeen publiek dat van flauwe toilethumor houdt; **geen kinder-app** (geen ouderslot). Er zijn
-knoppen voor inloggen en voor punten kopen met echt geld voorbereid (nog niet actief), en dat past
-niet bij een app voor kinderen onder de 13. *Aanname van Claude; Jenn beslist dit definitief vóór
+Algemeen publiek dat van flauwe toilethumor houdt; **geen kinder-app** (geen ouderslot; `KINDER_APP: false`).
+Inloggen en punten kopen met echt geld zijn voorbereid maar staan uit en zijn niet te zien (Sprint 16); aan
+zetten past niet bij een app voor kinderen onder de 13. *Aanname van Claude; Jenn beslist dit definitief vóór
 publicatie (zie `docs/publiceren.md`).*
 
 ## Toon
@@ -52,6 +52,15 @@ kwetsende grappen. De speler wordt met "je" aangesproken.
 - **Geen verhuizing naar een subdomein en geen DNS-records.** De webversie blijft staan op
   `jmldewaal-sedillo.github.io/the-flush-factor/` tot Jenn iets anders besluit; een eigen
   subdomein komt er pas bij "lanceren web". Zet **geen `CNAME`-bestand in de root**.
+- **Schakelaars (Sprint 16):** `KINDER_APP`, `ADVERTENTIES`, `AANKOPEN` en `INLOGGEN` in `js/data/config.js`. Wat uit
+  staat is ook niet te zien (geen knoppen zonder werking, `Apps/CLAUDE.md` §11.8). Tests die de voorbereide knoppen
+  nodig hebben zetten ze per pagina aan met `openGame(page, { switches: { AANKOPEN: true } })` (`tests/helpers.js`).
+- **Vaste controles (`Apps/CLAUDE.md` §11.7a, Sprint 16):** `tests/toegankelijkheid.spec.js` (axe, tien talen),
+  `toetsenbord.spec.js` (focus in vensters: `js/ui/focus.js`), `beveiliging.spec.js` (CSP, vijandige codes,
+  Android), `inhoud.spec.js` (store-teksten, trackers, hosts, credits) en `geld.spec.js`. Geen inline scripts of
+  stijlen (de CSP verbiedt ze; balken via `bar()`/`applyBars()` in `js/ui/icons.js`); de importmap staat met zijn
+  hash in de CSP van `index.html` (een test berekent hem opnieuw). Elke opgeslagen waarde gaat door `loadState`
+  in `js/state.js`, die alles nakijkt.
 - **Geld verdienen:** de knoppen voor punten kopen en de plek voor advertenties blijven uit.
   AdMob of aankopen kunnen pas nadat het zakelijke postadres bij de KvK is vastgelegd en het
   bezoekadres is afgeschermd, en dan alleen na akkoord van Jenn (sectie 11, punt 5).

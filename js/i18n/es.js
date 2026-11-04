@@ -166,8 +166,6 @@ export default {
   'shop.uses': '{n}× de uso',
   'shop.usesLeft': 'Quedan {left} de {total}',
   'shop.pack': '{n} puntos',
-  'shop.popular': 'popular',
-  'shop.bestDeal': 'mejor oferta',
   'cat.buy.label': 'Comprar puntos',
   'cat.buy.blurb': 'Con dinero real. Precios en euros.',
   'cat.tools.label': 'Herramientas',
@@ -311,6 +309,7 @@ export default {
   'data.importYes': 'Sí, sustituir todo',
   'data.importDone': 'El progreso se ha restaurado.',
   'page.backToApp': 'Volver al juego',
+  'page.backToSite': 'Ir a Studio Sedillo',
   'page.country': 'Países Bajos',
   'page.language': 'Idioma',
 };

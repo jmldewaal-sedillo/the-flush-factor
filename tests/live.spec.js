@@ -19,10 +19,10 @@ test('LIVE: winkel toont alle categorieën en ze klappen uit', async ({ page }, 
   if (await guest.isVisible().catch(() => false)) await guest.click();
   await page.locator('#btn-shop').click();
   const labels = page.locator('.shop-category-label');
-  await expect(labels).toHaveCount(7);
+  expect(await labels.count()).toBeGreaterThanOrEqual(7);       // "Punten kopen" alleen als AANKOPEN aan staat (Sprint 16)
   const names = await labels.allTextContents();
-  for (const expected of ['Punten kopen', 'Gereedschap', 'Toiletmodellen', 'Tegelpatronen', 'Vloeren', 'Decoratie']) expect(names).toContain(expected);
-  expect(names[6]).toMatch(/Emmers|Manden/);
+  for (const expected of ['Gereedschap', 'Toiletmodellen', 'Tegelpatronen', 'Vloeren', 'Decoratie']) expect(names).toContain(expected);
+  expect(names[names.length - 1]).toMatch(/Emmers|Manden/);
 
   const headers = await page.locator('.shop-category-header').all();
   for (const h of headers) await h.click();

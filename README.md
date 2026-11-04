@@ -87,7 +87,9 @@ assets/
   icons/              lucide/, game-icons/ (bron-SVG's), sprite.svg (gegenereerd), app/ (app-iconen)
   fonts/              Lilita One + Nunito (spel) en vier lettertypen voor de stijlvoorbeelden; elk met OFL.txt
   _unused/            originelen en niet-gebruikte modellen (worden niet geladen)
-tools/                serve, build-icons, build-sw, bouw (app voor Android/iOS en testversie), optimize-assets, model-viewer, balans (puntensimulatie)
+tools/                serve, build-icons, build-sw, bouw (app voor Android/iOS, testversie, pagina's voor de hoofdsite), android-instellingen,
+                      store-controle en store-klaar (store-teksten), optimize-assets, model-viewer, balans (puntensimulatie)
+previews/             opmaak en code van de keuzepagina's (style-preview, spoelicoon-preview); alleen op de testversie
 platform/             dunne laag per bouwdoel: web.js (browser) en app.js (Capacitor)
 android/, ios/        de native projecten van Capacitor (docs/app.md)
 tests/                Playwright-tests per onderwerp
@@ -170,7 +172,7 @@ npx playwright test shop          # één onderwerp
 |---|---|
 | `boot.spec.js` | geen console-fouten, 404's of externe verzoeken; eerste laadbeurt < 4 MB; melding zonder WebGL |
 | `emoji.spec.js` | geen emoji in broncode, manifest, preview en interface (alle toestanden); elk icoon bestaat |
-| `shop.spec.js` | zeven categorieën, uitklappen, bewaren, kopen, activeren, effect in 3D |
+| `shop.spec.js` | zeven categorieën (acht met `AANKOPEN`), uitklappen, bewaren, kopen, activeren, effect in 3D |
 | `bucket.spec.js` | vullen, legen, herladen; volle emmer; emmerweergave; alle vijf emmers en hun hengsel; inhoud blijft binnen de emmer |
 | `camera.spec.js` | zes camerastanden, swipen, "+"-plekken, muren aantikken, tik tegenover slepen |
 | `start.spec.js` | start-staat van een nieuwe speler, vrijspelen per level, bestaande speler (level 4) houdt alles |
@@ -194,6 +196,11 @@ npx playwright test shop          # één onderwerp
 | `bouwdoelen.spec.js` | Elke laag in `platform/` heeft dezelfde onderdelen; de spelcode kijkt niet naar het bouwdoel; de app (Android/iOS) bouwt zonder service worker, start, en de terugknop gaat stap voor stap terug; package-naam en permissies |
 | `balans.spec.js` | puntenbalans binnen de streefwaarden (simulatie), level volgt uit wat je verdiend hebt, oudere opslag gaat mee naar de nieuwe prijzen |
 | `rook.spec.js` | de rooktest: kort en breed, draait vóór publicatie van de testversie (`npm run test:rook`) |
+| `toegankelijkheid.spec.js` | WCAG 2.1 AA met axe in elk scherm, elk venster en elke taal; reflow op 320 px |
+| `toetsenbord.spec.js` | spoelen, winkel, menu, profiel, overzetten en bevestigen met alleen het toetsenbord; focus blijft in een venster en gaat terug |
+| `beveiliging.spec.js` | CSP in elke pagina en elk bouwdoel, vijandige codes en kapotte opslag, `?lang=` met rare waarden, Android zonder back-up en advertentie-ID |
+| `inhoud.spec.js` | store-teksten zonder loze beloftes, geen trackers of lettertypen van buiten, alleen bekende adressen, credits compleet |
+| `geld.spec.js` | advertenties, aankopen en inloggen uit en niet te zien; nooit in een kinder-app; aan = privacytekst en voorwaarden mee |
 | `live.spec.js` | winkel op de live site in een schoon profiel (alleen met `LIVE_URL=…`) |
 
 De tests wachten op het spel zelf (`window.__game`), niet op vaste tijden. `window.__game` is ook handig in de
