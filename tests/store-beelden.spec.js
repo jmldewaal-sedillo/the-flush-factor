@@ -19,7 +19,7 @@ const only = (env, all) => (process.env[env] ? process.env[env].split(',').filte
 
 // Een opgeknapt hokje met spullen: laat zien waar het spel naartoe gaat (eerlijk: dit kun je echt bereiken).
 const DRESSED = {
-  version: 5, profile: PROFILE, score: 24000, earned: 60000, level: 8,
+  version: 5, profile: PROFILE, score: 24000, highScore: 60000, earned: 60000, level: 8,
   purchased: ['toilet-golden', 'tiles-stars', 'floor-marble', 'deco-mirror', 'deco-plant', 'deco-shelf', 'deco-painting', 'deco-cabinet', 'deco-poster', 'bucket-metal', 'sponge', 'mop', 'pressure-washer', 'super-plunger'],
   cosmetics: { toilet: 'toilet-golden', tiles: 'tiles-stars', floor: 'floor-marble' },
   decor: { wallBack: 'deco-mirror', wallBackHigh: 'deco-shelf', wallLeft: 'deco-painting', wallLeftLow: 'deco-cabinet', wallRight: 'deco-poster', floorLeft: 'deco-plant' },

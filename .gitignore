@@ -12,3 +12,6 @@ _site/
 
 # Gebouwde bouwdoelen (tools/bouw.mjs)
 dist/
+
+# Store-screenshots (±56 MB): altijd opnieuw te maken met tests/store-beelden.spec.js; uploaden gaat vanaf deze computer
+store/screenshots/
