@@ -122,8 +122,11 @@ export const storage = {
       const parsed = JSON.parse(fromBase64(text.slice(CODE_PREFIX.length)));
       if (!isPlainObject(parsed) || parsed.app !== SLUG || parsed.v !== 1 || !isPlainObject(parsed.data)) return null;
       const out = {};
-      for (const k of ['settings', 'profiles', partKey('game')]) if (isPlainObject(parsed.data[k])) out[k] = parsed.data[k];
-      return isPlainObject(out[partKey('game')]) ? out : null;
+      for (const k of ['profiles', partKey('game')]) if (isPlainObject(parsed.data[k])) out[k] = parsed.data[k];
+      if (!isPlainObject(out[partKey('game')])) return null;
+      const settings = cleanSettings(parsed.data.settings);
+      if (settings) out.settings = settings;
+      return out;
     } catch { return null; }
   },
   // Vervangt alles op dit toestel door de inhoud van de code. Geeft false terug (en verandert niets) als
@@ -136,6 +139,16 @@ export const storage = {
     return true;
   },
 };
+
+// Instellingen uit een code: alleen de bekende, met de juiste soort. De spelstand zelf kijkt state.js na.
+function cleanSettings(value) {
+  if (!isPlainObject(value)) return null;
+  const out = {};
+  if (typeof value.language === 'string' && /^[a-z]{2}$/.test(value.language)) out.language = value.language;
+  if (Array.isArray(value.shopOpen)) out.shopOpen = value.shopOpen.filter(x => typeof x === 'string' && x.length <= 40).slice(0, 40);
+  if (typeof value.toolsOpen === 'boolean') out.toolsOpen = value.toolsOpen;
+  return Object.keys(out).length ? out : null;
+}
 
 function toBase64(text) {
   const bytes = new TextEncoder().encode(text);

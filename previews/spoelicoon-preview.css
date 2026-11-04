@@ -1,0 +1,31 @@
+/* spoelicoon-preview.html: opmaak (los bestand vanwege de Content-Security-Policy, Sprint 16) */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--tiles); color: var(--ink); font-family: var(--font-body); padding: 20px 16px 60px; }
+h1 { font-family: var(--font-display); font-size: 1.6rem; margin-bottom: 6px; }
+.intro { max-width: 720px; line-height: 1.5; margin-bottom: 20px; font-weight: 600; }
+.variants { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; max-width: 1100px; }
+.variant { background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 14px 16px; }
+.variant:nth-child(odd) { transform: rotate(var(--tilt-alt)); }
+.variant h2 { font-family: var(--font-display); font-size: 1.25rem; margin-bottom: 2px; }
+.variant p { font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; min-height: 2.4em; }
+.row { display: flex; align-items: flex-end; justify-content: space-around; gap: 8px; }
+.cell { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 800; color: var(--muted); }
+
+/* zoals #flush-btn in css/style.css */
+.btn {
+  --size: 86px;
+  width: var(--size); height: var(--size); border-radius: 50%;
+  --btn-bg: var(--blue);
+  background: var(--btn-bg); color: var(--on-color);
+  border: 4px solid var(--ink); box-shadow: 5px 5px 0 var(--ink);
+  display: flex; align-items: center; justify-content: center;
+}
+.btn .ic { width: 44px; height: 44px; }
+.btn.clogged { --btn-bg: var(--plunger); }
+.btn.pressed { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--ink); }
+.btn.pressed .ic { transform: rotate(-120deg); }
+.btn.small { --size: 66px; box-shadow: 3px 3px 0 var(--ink); }
+.btn.small .ic { width: 34px; height: 34px; }
+.sprite-defs { position: absolute; }
+/* binnenlijn in de kleur van de knop zelf (blauw of rood); een variabele erft door tot in <use> */
+.kolk-line { stroke: var(--btn-bg); }

@@ -14,10 +14,12 @@ const EMOJI = /\p{Extended_Pictographic}/gu;
  * Verzamelt intussen alles wat niet mag: console-fouten, JS-fouten, 4xx/5xx en externe verzoeken.
  * opties: query (extra URL-parameters), save (opgeslagen spelstand vooraf), clogs (willekeurige verstoppingen aan),
  *         quality en pixelRatio (renderinstellingen), firstStart (helemaal lege opslag: het welkomstscherm verschijnt),
- *         path (een gebouwde versie, zoals './dist/app/'; standaard de bronbestanden)
+ *         path (een gebouwde versie, zoals './dist/app/'; standaard de bronbestanden),
+ *         switches (schakelaars uit js/data/config.js anders zetten, zoals { AANKOPEN: true }; zie withSwitches)
  */
-async function openGame(page, { query = '', save = null, clogs = false, quality = 'low', pixelRatio = 0.3, firstStart = false, path = './' } = {}) {
+async function openGame(page, { query = '', save = null, clogs = false, quality = 'low', pixelRatio = 0.3, firstStart = false, path = './', switches = null } = {}) {
   const problems = [];
+  if (switches) await withSwitches(page, switches);
   page.on('console', m => { if (m.type() === 'error') problems.push(`console: ${m.text()}`); });
   page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
   page.on('response', r => { if (r.status() >= 400) problems.push(`${r.status()}: ${r.url()}`); });
@@ -41,6 +43,23 @@ async function openGame(page, { query = '', save = null, clogs = false, quality 
   await page.goto(`${path}?${q}`);
   await ready(page);
   return problems;
+}
+
+/**
+ * Zet schakelaars uit js/data/config.js (AANKOPEN, INLOGGEN, …) alleen voor deze pagina anders, zonder de
+ * bestanden te veranderen. Voor de voorbereide functies die in de echte app uit staan (Sprint 16).
+ */
+async function withSwitches(page, switches) {
+  await page.route('**/js/data/config.js', async route => {
+    const response = await route.fetch();
+    let body = await response.text();
+    for (const [name, value] of Object.entries(switches)) {
+      const re = new RegExp(`export const ${name} = (true|false);`);
+      if (!re.test(body)) throw new Error(`schakelaar ${name} staat niet in config.js`);
+      body = body.replace(re, `export const ${name} = ${value};`);
+    }
+    await route.fulfill({ response, body });
+  });
 }
 
 async function ready(page) {
@@ -112,4 +131,4 @@ const OLD = 5;
 /** Zet een spelstand klaar in de opslag (voor een herlaad midden in een test). */
 const seedSave = (page, data) => page.evaluate(([key, d]) => localStorage.setItem(key, JSON.stringify(d)), [SAVE_KEY, { version: 2, profile: PROFILE, ...data }]);
 
-module.exports = { NEW_PLAYER, OLD, PROFILE, tapScene, watch, seen, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, seedSave, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };
+module.exports = { withSwitches, NEW_PLAYER, OLD, PROFILE, tapScene, watch, seen, SAVE_KEY, SETTINGS_KEY, LEGACY_SAVE_KEY, seedSave, openGame, ready, until, cameraIdle, setView, clogAndFix, emojiIn, expectNoProblems, domText };

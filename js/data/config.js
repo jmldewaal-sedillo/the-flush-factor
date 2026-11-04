@@ -6,6 +6,14 @@ export const PRIVACY_DATE = '2026-10-12';
 export const APP_NAME = 'The Flush Factor';
 export const APP_SHORT_NAME = 'FlushFactor';
 
+// Geld en accounts (Apps/CLAUDE.md, sectie 11, punt 5; Sprint 16). Alles staat uit tot Jenn het goedkeurt.
+// Wat uit staat is ook niet te zien: geen knoppen die niets doen. tests/geld.spec.js bewaakt dat de rest
+// meeklopt (privacyverklaring, voorwaardenpagina, nooit in een kinder-app).
+export const KINDER_APP = false;
+export const ADVERTENTIES = false;
+export const AANKOPEN = false;      // puntenpakketten met echt geld in de winkel (js/data/packages.js)
+export const INLOGGEN = false;      // "Inloggen met Google/Facebook" in het profiel (js/auth.js)
+
 // Verstoppingen (basiswaarden; per level overschreven door LEVELS).
 export const CLOG_CONFIG = {
   baseChancePerSecond: 0.008,   // kans per seconde op een verstopping

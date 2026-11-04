@@ -1,6 +1,6 @@
 // Toont de privacyverklaring of de verwijderpagina (<body data-page="privacy"> of "delete") in de taal
 // van het spel. De teksten staan in js/i18n/legal/, de knoppen in js/i18n/.
-import { LANGUAGES, STRINGS, deviceLanguage, setLanguage, getLanguage, t } from './i18n/index.js';
+import { LANGUAGES, isLanguage, deviceLanguage, setLanguage, getLanguage, t } from './i18n/index.js';
 import { LEGAL } from './i18n/legal/index.js';
 import { storage } from './storage.js';
 import { PRIVACY_DATE, APP_NAME, APP_SHORT_NAME } from './data/config.js';
@@ -25,7 +25,7 @@ function show() {
 // ?lang=xx in het adres wint (handig voor een directe link); anders de taal van het spel, anders die van het toestel.
 const asked = new URLSearchParams(location.search).get('lang');
 const saved = storage.readSetting('language');
-setLanguage(STRINGS[asked] ? asked : STRINGS[saved] ? saved : deviceLanguage());
+setLanguage(isLanguage(asked) ? asked : isLanguage(saved) ? saved : deviceLanguage());
 
 const langs = document.querySelector('.langs');
 langs.setAttribute('aria-label', LANGUAGES.map(l => l[1]).slice(0, 2).join(' / '));

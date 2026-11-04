@@ -6,8 +6,10 @@ const { openGame, until, expectNoProblems, watch, seen, OLD } = require('./helpe
 const CATEGORIES = ['Punten kopen', 'Gereedschap', 'Schoonmaak & Reparatie', 'Toiletmodellen', 'Tegelpatronen', 'Vloeren', 'Decoratie', 'Emmers'];
 const MIN_ITEMS = { buy: 4, tools: 12, care: 10, toilets: 4, tiles: 5, floors: 5, decoration: 6, buckets: 5 };
 
-async function openShop(page, save = { score: 50000, level: 5 }) {
-  const problems = await openGame(page, { save });
+// Puntenpakketten met echt geld staan uit (AANKOPEN in config.js); de tests van die voorbereide kaarten zetten ze aan.
+const MONEY_ON = { AANKOPEN: true };
+async function openShop(page, save = { score: 50000, level: 5 }, switches = null) {
+  const problems = await openGame(page, { save, switches });
   await page.locator('#btn-shop').click();
   await expect(page.locator('#shop-screen')).toBeVisible();
   return problems;
@@ -19,9 +21,10 @@ const openCat = async (page, id) => {
   await expect(cat(page, id).locator('.shop-card').first()).toBeVisible();
 };
 
-test('alle 8 categorieën staan er, in volgorde, en zijn ingeklapt echt dicht', async ({ page }) => {
+test('alle categorieën staan er, in volgorde, en zijn ingeklapt echt dicht; "Punten kopen" alleen met AANKOPEN', async ({ page }) => {
   const problems = await openShop(page);
-  await expect(page.locator('.shop-category-label')).toHaveText(CATEGORIES);
+  await expect(page.locator('.shop-category-label')).toHaveText(CATEGORIES.slice(1));
+  await expect(page.locator('.buy-card, .shop-category[data-cat="buy"]')).toHaveCount(0);
   for (const head of await page.locator('.shop-category-header').all()) {
     await expect(head).toBeVisible();
     await expect(head).toHaveAttribute('aria-expanded', 'false');
@@ -33,7 +36,8 @@ test('alle 8 categorieën staan er, in volgorde, en zijn ingeklapt echt dicht', 
 });
 
 test('elke categorie klapt uit en toont al haar items met icoon, en klapt weer in', async ({ page }) => {
-  await openShop(page);
+  await openShop(page, undefined, MONEY_ON);
+  await expect(page.locator('.shop-category-label')).toHaveText(CATEGORIES);
   for (const [id, min] of Object.entries(MIN_ITEMS)) {
     await openCat(page, id);
     const cards = cat(page, id).locator('.shop-card');
@@ -61,8 +65,8 @@ test('meerdere categorieën tegelijk open, en de stand blijft bewaard na herlade
   await expect(cat(page, 'buckets').locator('.shop-card').first()).toBeVisible();
 });
 
-test('punten kopen: melding bij élke tik, saldo verandert niet', async ({ page }) => {
-  await openShop(page, { score: 123, level: 1 });
+test('punten kopen (voorbereid, AANKOPEN aan): melding bij élke tik, saldo verandert niet', async ({ page }) => {
+  await openShop(page, { score: 123, level: 1 }, MONEY_ON);
   await openCat(page, 'buy');
   for (const i of [0, 1, 0]) {
     await page.evaluate(() => { const m = document.getElementById('shop-message'); m.classList.remove('visible'); m.textContent = ''; });

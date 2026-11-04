@@ -65,7 +65,9 @@ test.describe('regels', () => {
     expect(gradle).toContain('applicationId "com.studiosedillo.flushfactor"');
     expect(gradle, 'de test-APK heeft een eigen package-naam').toMatch(/debug \{[^}]*applicationIdSuffix "\.test"/);
     const manifest = read('android/app/src/main/AndroidManifest.xml');
-    expect(manifest).not.toMatch(/AD_ID|LOCATION|POST_NOTIFICATIONS|CAMERA|RECORD_AUDIO/);
+    expect(manifest).not.toMatch(/LOCATION|POST_NOTIFICATIONS|CAMERA|RECORD_AUDIO/);
+    // de advertentie-ID staat er alleen in om hem weg te halen (tools/android-instellingen.mjs; tests/beveiliging.spec.js)
+    expect(manifest.match(/AD_ID[^>]*>/g)).toEqual(['AD_ID" tools:node="remove" />']);
     const ids = [...read('ios/App/App.xcodeproj/project.pbxproj').matchAll(/PRODUCT_BUNDLE_IDENTIFIER = ([\w.]+);/g)].map(m => m[1]);
     expect(new Set(ids)).toEqual(new Set(['com.studiosedillo.flushfactor']));
     // sleutels en gebouwde bestanden komen nooit in Git

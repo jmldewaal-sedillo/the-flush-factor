@@ -3,7 +3,7 @@
 import { t, num, itemName, itemShort, LANGUAGES, getLanguage } from '../i18n/index.js';
 import { CAMERA_VIEWS } from '../data/room.js';
 import { CREDITS, STUDIO } from '../data/credits.js';
-import { icon } from './icons.js';
+import { icon, bar, applyBars } from './icons.js';
 import { storage } from '../storage.js';
 import { VOLUME_STEP, SOUND_GROUPS } from '../data/sounds.js';
 
@@ -76,7 +76,8 @@ export const hud = {
     const secs = Math.max(0, Math.ceil(ms / 1000));
     if (el._secs === secs) return;
     el._secs = secs;
-    el.innerHTML = `${icon('zap', 16)}<span>${t('rush.pill', { s: secs })}</span><span class="bar"><span class="bar-fill" style="width:${Math.round(ms / this._rushTotal * 100)}%"></span></span>`;
+    el.innerHTML = `${icon('zap', 16)}<span>${t('rush.pill', { s: secs })}</span>${bar(ms / this._rushTotal * 100)}`;
+    applyBars(el);
   },
   rushBanner(text) { this.banner('rush-banner', `${icon('zap', 22)} <span>${text}</span>`, 2600); },
   banner(id, html, ms) {

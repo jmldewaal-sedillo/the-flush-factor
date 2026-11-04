@@ -40,8 +40,8 @@ test('één designbestand: kleuren staan alleen in tokens.css', async ({}, info)
   expect(style).not.toMatch(/backdrop-filter|blur\(/);
 });
 
-test('welkomstscherm in de nieuwe stijl; inlogknoppen tonen "Binnenkort"', async ({ page }) => {
-  await openGame(page, { firstStart: true });
+test('welkomstscherm in de nieuwe stijl; inlogknoppen (voorbereid) tonen "Binnenkort"', async ({ page }) => {
+  await openGame(page, { firstStart: true, switches: { INLOGGEN: true } });
   const panel = await css('#profile-content')(page);
   expect(panel.color).toBe(INK);
   expect(panel.shadow).toMatch(/0px 0px/);
@@ -66,7 +66,7 @@ test('winkel: uitgelicht item, voortgang naar het volgende level, collectie per 
   await expect(featured).toContainText('Je kunt Lijm & reparatieset kopen!');
   // elke categorie heeft een eigen kleur en laat zien hoeveel je hebt
   const colors = await page.locator('.shop-category-icon').evaluateAll(els => els.map(e => getComputedStyle(e).backgroundColor));
-  expect(new Set(colors).size).toBe(8);
+  expect(new Set(colors).size).toBe(7);                 // zonder "Punten kopen" (AANKOPEN staat uit)
   await expect(page.locator('.shop-category[data-cat="tools"] .shop-category-count')).toHaveText('0 van 12');
   await expect(page.locator('.shop-category[data-cat="buckets"] .shop-category-count')).toHaveText('1 van 5');
   // tik op uitgelicht: categorie klapt open en de kaart staat in beeld
@@ -96,7 +96,7 @@ test('winkel: "Bijna betaalbaar!", feestje bij kopen, en na de aankoop een nieuw
 });
 
 test('winkel is eerlijk: echt geld apart met prijs in euro, geen timers of "laatste kans"', async ({ page }) => {
-  await openGame(page, { save: { score: 5000, level: 5 } });
+  await openGame(page, { save: { score: 5000, level: 5 }, switches: { AANKOPEN: true } });       // de pakketten zijn voorbereid
   await page.locator('#btn-shop').click();
   for (const h of await page.locator('.shop-category-header').all()) await h.click();
   const packs = page.locator('.shop-card.buy-card');

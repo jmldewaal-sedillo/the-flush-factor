@@ -45,6 +45,9 @@ jobs:
       - name: Bouwdoel app en Capacitor-sync
         run: node tools/bouw.mjs app && npx cap sync android
 
+      - name: Geen cloud-back-up en geen advertentie-ID (tools/android-instellingen.mjs)
+        run: node tools/android-instellingen.mjs --check
+
       - name: Test-APK bouwen
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon

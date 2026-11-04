@@ -12,7 +12,7 @@
     "balans": "node --no-warnings tools/balans.mjs --items",
     "test:rook": "playwright test tests/rook.spec.js --project=phone-portrait --project=tablet-landscape",
     "bouw:app": "node tools/bouw.mjs app",
-    "app:sync": "node tools/bouw.mjs app && cap sync",
+    "app:sync": "node tools/bouw.mjs app && cap sync && node tools/android-instellingen.mjs",
     "android:open": "cap open android",
     "ios:open": "cap open ios"
   },

@@ -24,7 +24,7 @@
     import('./i18n/index.js').then(function (i18n) {
       var saved = null;
       try { saved = JSON.parse(localStorage.getItem('flushfactor.settings') || 'null'); } catch (e) { /* geen opslag */ }
-      var lang = saved && i18n.STRINGS[saved.language] ? saved.language : i18n.deviceLanguage();
+      var lang = saved && i18n.isLanguage(saved.language) ? saved.language : i18n.deviceLanguage();
       title.textContent = i18n.STRINGS[lang]['fatal.title'];
       body.textContent = i18n.STRINGS[lang]['fatal.body'];
     }).catch(function () { /* noodtekst blijft staan */ });

@@ -2,6 +2,7 @@
 // het volgende level, "Nieuw!"- en "Bijna betaalbaar!"-labels en een collectie per categorie.
 // Eerlijk: geen timers of "laatste kans"; echt geld staat apart, met de prijs in euro's.
 import { SHOP_CATEGORIES, ALMOST_AFFORDABLE } from './data/shop.js';
+import { AANKOPEN } from './data/config.js';
 import { SHOP_TOOLS } from './data/tools.js';
 import { BUCKETS } from './data/buckets.js';
 import { COSMETIC_LISTS, DECORATIONS } from './data/cosmetics.js';
@@ -9,12 +10,14 @@ import { REPAIRS, CLEANERS } from './data/care.js';
 import { PACKAGES } from './data/packages.js';
 import { LEVELS } from './data/levels.js';
 import { t, num, money, itemName, itemDesc } from './i18n/index.js';
-import { icon } from './ui/icons.js';
+import { icon, bar, applyBars } from './ui/icons.js';
 import { purchaseService } from './purchases.js';
 import { storage } from './storage.js';
 import { canUpgrade, upgradeTier, toolStats, MAX_STARS } from './upgrades.js';
 
 const fmt = n => num(n);
+// Puntenpakketten met echt geld alleen als AANKOPEN aan staat (config.js); anders is de categorie er niet.
+const CATEGORIES = SHOP_CATEGORIES.filter(c => c.source !== 'packages' || AANKOPEN);
 const $ = id => document.getElementById(id);
 
 export class Shop {
@@ -52,7 +55,7 @@ export class Shop {
   close() {
     // Wat je in een open categorie hebt gezien is daarna niet meer "nieuw".
     const seen = [];
-    for (const cat of SHOP_CATEGORIES) {
+    for (const cat of CATEGORIES) {
       if (this.open_.has(cat.id)) seen.push(...this._source(cat).items.filter(i => this.state.newItems.includes(i.id)).map(i => i.id));
     }
     if (seen.length) this.actions.seen(seen);
@@ -147,7 +150,7 @@ export class Shop {
   render() {
     this._renderTop();
     this.list.textContent = '';
-    for (const cat of SHOP_CATEGORIES) this.list.appendChild(this._category(cat));
+    for (const cat of CATEGORIES) this.list.appendChild(this._category(cat));
   }
 
   // Bovenaan: voortgang naar het volgende level en het uitgelichte item (het goedkoopste dat je nog kunt kopen).
@@ -161,7 +164,7 @@ export class Shop {
 
     // Ook de volgende ster van je gereedschap telt als doel (punt 115).
     let goal = null;
-    for (const cat of SHOP_CATEGORIES) {
+    for (const cat of CATEGORIES) {
       if (cat.source === 'packages') continue;
       const src = this._source(cat);
       for (const item of src.items) {
@@ -177,21 +180,23 @@ export class Shop {
     this.top.innerHTML = `
       <div class="shop-progress" id="shop-level">
         <span class="shop-progress-label">${icon('arrow-up', 16)}<span>${levelText}</span></span>
-        <span class="bar"><span class="bar-fill" style="width:${levelPct.toFixed(0)}%"></span></span>
+        ${bar(levelPct)}
       </div>
       ${goal ? `
-      <button class="shop-featured" id="shop-featured" data-id="${goal.item.id}" data-cat="${goal.cat.id}" style="--cat:${goal.cat.color}">
+      <button class="shop-featured" id="shop-featured" data-id="${goal.item.id}" data-cat="${goal.cat.id}">
         <span class="featured-tag">${icon('star', 13)}${t('shop.featured')}</span>
         <span class="featured-icon">${icon(goal.item.icon, 40)}</span>
         <span class="featured-text">
           <span class="featured-name">${goalName}</span>
           <span class="featured-goal">${s.score >= goal.price ? t('shop.goalReady', { name: goalName }) : t('shop.goalNext', { pts: fmt(goal.price - s.score), name: goalName })}</span>
-          <span class="bar"><span class="bar-fill" style="width:${Math.min(100, s.score / goal.price * 100).toFixed(0)}%"></span></span>
+          ${bar(s.score / goal.price * 100)}
         </span>
         <span class="price-tag">${icon('coins', 14)}${fmt(goal.price)}</span>
       </button>` : `<div class="shop-progress"><span class="shop-progress-label">${icon('circle-check', 16)}<span>${t('shop.allOwned')}</span></span></div>`}`;
 
+    applyBars(this.top);
     const featured = $('shop-featured');
+    if (featured) featured.style.setProperty('--cat', goal.cat.color);
     if (featured) featured.addEventListener('click', () => {
       // Open de categorie en breng de kaart in beeld; kopen doe je op de kaart zelf.
       this.open_.add(goal.cat.id); this._saveOpen(); this.render();
@@ -215,7 +220,7 @@ export class Shop {
     const collection = isMoney ? '' : `
       <span class="shop-collection" title="${t('shop.collected')}">
         <span class="shop-category-count">${t('shop.collection', { a: have, b: total })}</span>
-        <span class="bar"><span class="bar-fill" style="width:${total ? have / total * 100 : 0}%"></span></span>
+        ${bar(total ? have / total * 100 : 0)}
       </span>`;
 
     const head = document.createElement('button');
@@ -227,6 +232,7 @@ export class Shop {
       ${fresh ? `<span class="tag tag-new">${t('shop.isNew')}</span>` : ''}
       ${collection}
       ${icon('chevron-down', 20, 'shop-category-arrow')}`;
+    applyBars(head);
 
     const body = document.createElement('div');
     body.className = 'shop-category-body';
@@ -296,8 +302,9 @@ export class Shop {
       ${stars}
       ${detail ? `<span class="shop-card-detail">${detail}</span>` : ''}
       <span class="shop-card-desc">${itemDesc(item)}</span>
-      ${meter !== null ? `<span class="bar uses-bar"><span class="bar-fill" style="width:${Math.round(meter * 100)}%"></span></span>` : ''}
+      ${meter !== null ? bar(meter * 100, 'uses-bar') : ''}
       <span class="shop-card-price">${status}</span>`;
+    applyBars(card);
 
     if (!st.levelLocked) card.addEventListener('click', () => this._click(item, src, card));
     return card;

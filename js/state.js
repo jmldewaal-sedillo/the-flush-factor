@@ -5,7 +5,7 @@ import { CLOG_PROPS } from './data/clog-props.js';
 import { DECORATIONS, DEFAULT_COSMETICS, LEGACY_COSMETICS, COSMETIC_LISTS } from './data/cosmetics.js';
 import { STARTING_TOOLS, LEGACY_STARTING_TOOLS, TOOLS } from './data/tools.js';
 import { DEFECTS, CLEANERS } from './data/care.js';
-import { STRINGS, deviceLanguage } from './i18n/index.js';
+import { isLanguage, deviceLanguage } from './i18n/index.js';
 import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from './data/profile.js';
 import { SOUND_GROUPS, soundDefaults } from './data/sounds.js';
 import { LEVELS } from './data/levels.js';
@@ -120,81 +120,112 @@ function migrateV2(data) {
   return out;
 }
 
+// Een spelstand kan overal vandaan komen: "Voortgang overzetten" leest een code die iedereen kan maken
+// (Sprint 16). Daarom wordt elk onderdeel nagekeken op soort, bereik en lengte, en valt alles wat niet klopt
+// terug op de standaard. Gaat er toch iets mis, dan start een nieuw spel in plaats van een app die blijft vastlopen.
+const MAX_LIST = 500;                    // langer is geen echte spelstand
+const MAX_NUMBER = 1e12;
+const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
+const list = v => (Array.isArray(v) ? v.slice(0, MAX_LIST) : []);
+const ids = v => list(v).filter(x => typeof x === 'string' && x.length <= 60);
+const STAT_KEYS = Object.keys(createState().stats);
+
 export function loadState(state) {
+  try {
+    return readSave(state);
+  } catch (e) {
+    console.warn('Spelstand onleesbaar; er start een nieuw spel.', e);
+    const fresh = createState();
+    fresh.language = state.language;
+    return fresh;
+  }
+}
+
+function readSave(state) {
   const language = storage.readSetting('language');
-  if (STRINGS[language]) state.language = language;
+  if (isLanguage(language)) state.language = language;
   let data = storage.read('game');
-  if (!data || typeof data !== 'object') return state;
+  if (!isObj(data)) return state;
+  if (!Number.isFinite(data.version)) data = { ...data, version: 1 };
+  for (const k of ['purchased', 'purchasedItems', 'ownedTools', 'bucketItems', 'basketItems', 'stains', 'newItems']) if (k in data && !Array.isArray(data[k])) delete data[k];
   data = migrate(data);
 
-  const num = (v, d) => (Number.isFinite(v) ? v : d);
-  state.score = num(data.score, 0);
-  state.highScore = num(data.highScore, 0);
-  state.combo = num(data.combo, 1);
-  state.streak = num(data.streak, 0);
-  state.bestStreak = num(data.bestStreak, 0);
+  const num = (v, d) => (Number.isFinite(v) ? Math.min(MAX_NUMBER, Math.max(-MAX_NUMBER, v)) : d);
+  const pos = (v, d) => Math.max(0, num(v, d));
+  state.score = pos(data.score, 0);
+  state.highScore = pos(data.highScore, 0);
+  state.combo = Math.min(10, Math.max(1, num(data.combo, 1)));
+  state.streak = pos(data.streak, 0);
+  state.bestStreak = pos(data.bestStreak, 0);
   // Het level zakt nooit, en wat je verdiend hebt is minstens de drempel van je level.
-  state.earned = Math.max(0, num(data.earned, 0));
-  state.level = Math.min(LEVELS.length, Math.max(num(data.level, 1), levelFor(state.earned).level));
+  state.earned = pos(data.earned, 0);
+  state.level = Math.min(LEVELS.length, Math.max(1, Math.floor(num(data.level, 1)), levelFor(state.earned).level));
   state.earned = Math.max(state.earned, LEVELS[state.level - 1].minScore);
-  state.purchased = new Set(data.purchased || []);
+  state.purchased = new Set(ids(data.purchased));
   state.bucketId = BUCKETS.some(b => b.id === data.bucketId) ? data.bucketId : DEFAULT_BUCKET;
-  state.bucketItems = (data.bucketItems || [])
-    .filter(it => CLOG_PROPS.some(p => p.id === it.id))
-    .map(it => ({ id: it.id, liters: num(it.liters, 0.5) }));
+  state.bucketItems = list(data.bucketItems)
+    .filter(it => isObj(it) && CLOG_PROPS.some(p => p.id === it.id))
+    .map(it => ({ id: it.id, liters: Math.min(10, pos(it.liters, 0.5)) }));
   for (const slot of Object.keys(DEFAULT_COSMETICS)) {
-    const id = data.cosmetics?.[slot];
+    const id = isObj(data.cosmetics) ? data.cosmetics[slot] : null;
     state.cosmetics[slot] = COSMETIC_LISTS[slot].some(c => c.id === id) ? id : DEFAULT_COSMETICS[slot];
   }
   state.decor = {};
-  for (const [anchor, id] of Object.entries(data.decor || {})) {
+  for (const [anchor, id] of Object.entries(isObj(data.decor) ? data.decor : {})) {
     if (DECORATIONS.some(d => d.id === id && d.anchor === anchor)) state.decor[anchor] = id;
   }
   const known = new Set(TOOLS.map(t => t.id));
-  const owned = (data.ownedTools || []).filter(id => known.has(id));
+  const owned = [...new Set(ids(data.ownedTools).filter(id => known.has(id)))];
   state.ownedTools = owned.length ? owned : STARTING_TOOLS.map(t => t.id);
-  state.toolDiscovery = data.toolDiscovery || {};
+  state.toolDiscovery = {};
+  for (const [id, kind] of Object.entries(isObj(data.toolDiscovery) ? data.toolDiscovery : {})) {
+    if (known.has(id) && (kind === 'working' || kind === 'chaos')) state.toolDiscovery[id] = kind;
+  }
   // Sterren alleen voor gereedschap dat je hebt en dat verbeterd kan worden, nooit meer dan het maximum.
   state.toolUpgrades = {};
-  for (const [id, n] of Object.entries(data.toolUpgrades || {})) {
+  for (const [id, n] of Object.entries(isObj(data.toolUpgrades) ? data.toolUpgrades : {})) {
     const def = TOOLS.find(t => t.id === id);
     if (def && canUpgrade(def) && state.ownedTools.includes(id) && Number.isInteger(n) && n > 0) state.toolUpgrades[id] = Math.min(MAX_STARS, n);
   }
-  state.stats = { ...state.stats, ...(data.stats || {}) };
-  const defects = data.toilet?.defects || {};
+  // Statistieken: alleen de bekende tellers, als getal (ze komen in het profiel op het scherm).
+  const stats = isObj(data.stats) ? data.stats : {};
+  for (const k of STAT_KEYS) state.stats[k] = pos(stats[k], 0);
+  const defects = isObj(data.toilet) && isObj(data.toilet.defects) ? data.toilet.defects : {};
   state.toilet = {
     defects: Object.fromEntries(Object.keys(DEFECTS).map(k => [k, defects[k] === true])),
-    dirt: Math.min(1, Math.max(0, num(data.toilet?.dirt, 0))),
+    dirt: Math.min(1, Math.max(0, num(isObj(data.toilet) ? data.toilet.dirt : 0, 0))),
   };
-  state.stains = (Array.isArray(data.stains) ? data.stains : [])
-    .filter(st => st && typeof st.id === 'string' && ['wall-back', 'wall-left', 'wall-right', 'floor'].includes(st.surface) && st.dirt > 0)
+  state.stains = list(data.stains)
+    .filter(st => isObj(st) && typeof st.id === 'string' && st.id.length <= 40 && ['wall-back', 'wall-left', 'wall-right', 'floor'].includes(st.surface) && Number.isFinite(st.dirt) && st.dirt > 0)
     .map(st => ({ id: st.id, surface: st.surface, look: st.look === 'puddle' ? 'puddle' : 'splat', u: num(st.u, 0), v: num(st.v, 1), size: num(st.size, 0.3), turn: num(st.turn, 0), dirt: Math.min(1, st.dirt) }));
-  state.overflowStreak = num(data.overflowStreak, 0);
-  state.newItems = Array.isArray(data.newItems) ? data.newItems.filter(x => typeof x === 'string') : [];
+  state.overflowStreak = pos(data.overflowStreak, 0);
+  state.newItems = ids(data.newItems);
   // Voorraad: alleen bekende middelen, nooit meer dan er in een nieuwe zit. "Gekocht" volgt de voorraad.
   state.supplies = {};
+  const supplies = isObj(data.supplies) ? data.supplies : {};
   for (const c of CLEANERS) {
-    const left = Math.min(c.uses, Math.floor(num(data.supplies?.[c.id], 0)));
+    const left = Math.min(c.uses, Math.floor(pos(supplies[c.id], 0)));
     if (left > 0) { state.supplies[c.id] = left; state.purchased.add(c.id); } else state.purchased.delete(c.id);
   }
   // Geluid (punt 106): per groep aan/uit en volume, plus de hoofdschakelaar. Oudere opslag had één schakelaar
   // en één volume (punt 96): "uit" wordt "alle geluid uit", het volume geldt voor de effecten; de muziek
   // krijgt zijn standaard. Nog oudere opslag heeft niets en krijgt de standaard.
-  const old = data.sound || {}, base = soundDefaults();
+  const old = isObj(data.sound) ? data.sound : {}, base = soundDefaults();
+  const groups = isObj(old.groups) ? old.groups : {};
   state.sound = {
     muted: typeof old.muted === 'boolean' ? old.muted : old.on === false,
     groups: Object.fromEntries(SOUND_GROUPS.map(g => {
-      const own = old.groups?.[g.id] || {};
+      const own = isObj(groups[g.id]) ? groups[g.id] : {};
       const legacy = g.id !== 'music' && Number.isFinite(old.volume) ? old.volume : base.groups[g.id].volume;
       return [g.id, { on: typeof own.on === 'boolean' ? own.on : base.groups[g.id].on, volume: Math.min(1, Math.max(0, num(own.volume, legacy))) }];
     })),
   };
-  if (data.profile && typeof data.profile === 'object') {
+  if (isObj(data.profile)) {
     state.profile = {
-      name: String(data.profile.name || '').slice(0, NAME_MAX),      // leeg = "Gast" in de gekozen taal
+      name: typeof data.profile.name === 'string' ? data.profile.name.slice(0, NAME_MAX) : '',   // leeg = "Gast" in de gekozen taal
       avatar: AVATARS.includes(data.profile.avatar) ? data.profile.avatar : DEFAULT_PROFILE.avatar,
       mode: 'guest',
-      createdAt: data.profile.createdAt || null,
+      createdAt: typeof data.profile.createdAt === 'string' ? data.profile.createdAt.slice(0, 40) : null,
     };
   }
   return state;

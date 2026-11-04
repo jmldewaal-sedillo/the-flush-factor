@@ -13,10 +13,8 @@ test('eerste start: welkomstscherm; als gast spelen; daarna verschijnt het niet 
   await expect(page.locator('#profile-submit')).toHaveText('Spelen als gast');
   await expect(page.locator('#btn-profile-close')).toBeHidden();          // eerst kiezen
   await expect(page.locator('#profile-stats-block')).toBeHidden();
-  // punt 86: de inlogknoppen laten zelf al zien dat ze er nog niet zijn
-  await expect(page.locator('#profile-auth .auth-btn > span:first-child')).toHaveText(['Inloggen met Google', 'Inloggen met Facebook']);
-  await expect(page.locator('#profile-auth .auth-btn .soon')).toHaveText(['Binnenkort', 'Binnenkort']);
-  await expect(page.locator('#profile-auth-note')).toContainText('Inloggen kan nog niet');
+  // Sprint 16: inloggen staat uit (INLOGGEN in config.js), dus er zijn geen knoppen die niets doen
+  await expect(page.locator('.profile-auth-block, .auth-btn')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(screen).toBeVisible();
   expect((await snap(page)).profile).toBeNull();
@@ -57,8 +55,12 @@ test('tijdens het welkomstscherm komen er geen verstoppingen', async ({ page }) 
   await until(page, () => window.__game.snapshot().clogged);     // daarna gelden de gewone spelregels weer
 });
 
-test('Google en Facebook: knoppen via het koppelpunt, melding "Binnenkort beschikbaar", geen namaak-inlogscherm', async ({ page, context }) => {
-  const problems = await openGame(page, { firstStart: true });
+test('Google en Facebook (voorbereid, INLOGGEN aan): knoppen via het koppelpunt, melding "Binnenkort beschikbaar", geen namaak-inlogscherm', async ({ page, context }) => {
+  const problems = await openGame(page, { firstStart: true, switches: { INLOGGEN: true } });
+  // punt 86: de inlogknoppen laten zelf al zien dat ze er nog niet zijn
+  await expect(page.locator('#profile-auth .auth-btn > span:first-child')).toHaveText(['Inloggen met Google', 'Inloggen met Facebook']);
+  await expect(page.locator('#profile-auth .auth-btn .soon')).toHaveText(['Binnenkort', 'Binnenkort']);
+  await expect(page.locator('#profile-auth-note')).toContainText('Inloggen kan nog niet');
   const pages = context.pages().length;
   for (const provider of ['google', 'facebook']) {
     await page.evaluate(() => { const s = document.getElementById('profile-status'); s.classList.remove('visible'); s.textContent = ''; });
@@ -76,7 +78,7 @@ test('Google en Facebook: knoppen via het koppelpunt, melding "Binnenkort beschi
 });
 
 test('profiel via de scorebubbel: naam en avatar wijzigen, statistieken, account koppelen', async ({ page }) => {
-  await openGame(page, { save: { bestStreak: 12, stats: { totalFlushes: 345, totalClogs: 9, totalUnclogs: 7, totalLiters: 12.5 } } });
+  await openGame(page, { save: { bestStreak: 12, stats: { totalFlushes: 345, totalClogs: 9, totalUnclogs: 7, totalLiters: 12.5 } }, switches: { INLOGGEN: true } });
   await expect(page.locator('#profile-screen')).toBeHidden();
   await page.locator('#score-bubble').click();
   await expect(page.locator('#profile-screen')).toHaveAttribute('data-mode', 'profile');

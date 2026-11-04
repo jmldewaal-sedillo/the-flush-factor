@@ -2,6 +2,7 @@
 // Alleen DOM; het echte aanmelden loopt via authService (js/auth.js).
 import { AVATARS, DEFAULT_PROFILE, NAME_MAX } from '../data/profile.js';
 import { AUTH_PROVIDERS, authService } from '../auth.js';
+import { INLOGGEN } from '../data/config.js';
 import { t } from '../i18n/index.js';
 import { icon } from './icons.js';
 
@@ -24,8 +25,10 @@ export class ProfileScreen {
       const btn = e.target.closest('[data-avatar]');
       if (btn) this._pick(btn.dataset.avatar);
     });
-    this._buildAuth();
-    $('profile-auth').addEventListener('click', async e => {
+    // Inloggen alleen als INLOGGEN aan staat (config.js); anders is het hele blok er niet.
+    if (!INLOGGEN) document.querySelector('.profile-auth-block').remove();
+    else this._buildAuth();
+    if (INLOGGEN) $('profile-auth').addEventListener('click', async e => {
       const btn = e.target.closest('[data-provider]');
       if (!btn) return;
       const result = await (this.welcome ? authService.signIn(btn.dataset.provider) : authService.linkAccount(btn.dataset.provider));
@@ -44,7 +47,7 @@ export class ProfileScreen {
 
   // Na een taalwissel: teksten opnieuw zetten (ook als het scherm openstaat).
   refresh() {
-    this._buildAuth();
+    if (INLOGGEN) this._buildAuth();
     document.querySelectorAll('.avatar-option').forEach((b, i) => b.setAttribute('aria-label', t('a.avatar', { n: i + 1 })));
     if (this.isOpen()) this._texts();
   }
@@ -76,8 +79,10 @@ export class ProfileScreen {
     $('profile-stats-block').hidden = welcome;
     $('profile-data-block').hidden = welcome;
     $('profile-name').value = welcome ? '' : (profile.name || '');
-    $('profile-status').textContent = '';
-    $('profile-status').classList.remove('visible');
+    if (INLOGGEN) {
+      $('profile-status').textContent = '';
+      $('profile-status').classList.remove('visible');
+    }
     this._pick(profile.avatar);
     this._texts();
     $('profile-screen').hidden = false;
@@ -90,8 +95,10 @@ export class ProfileScreen {
     $('profile-title').textContent = t(welcome ? 'profile.welcomeTitle' : 'profile.title');
     $('profile-intro').textContent = t(welcome ? 'profile.welcomeIntro' : 'profile.intro');
     $('profile-submit').textContent = t(welcome ? 'profile.playAsGuest' : 'profile.save');
-    $('profile-auth-title').textContent = t(welcome ? 'profile.orSignIn' : 'profile.linkAccount');
-    $('profile-auth-note').textContent = t('profile.authNote');
+    if (INLOGGEN) {
+      $('profile-auth-title').textContent = t(welcome ? 'profile.orSignIn' : 'profile.linkAccount');
+      $('profile-auth-note').textContent = t('profile.authNote');
+    }
     $('profile-name').placeholder = t('profile.guest');
     if (!welcome) $('profile-stats').innerHTML = this.getStats().map(s => `<div><dt>${s.label}</dt><dd>${s.value}</dd></div>`).join('');
   }

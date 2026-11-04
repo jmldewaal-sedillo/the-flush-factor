@@ -149,7 +149,7 @@ for (const [code, name] of LANGUAGES) {
   test(`${name} (${code}): alle schermen compleet en alles past`, async ({ page }, info) => {
     // Het smalste formaat krijgt elke taal; op de andere formaten de talen met de langste woorden.
     test.skip(info.project.name !== 'phone-portrait' && !['de', 'pl', 'fr'].includes(code), 'elke taal op het smalste formaat; lange talen ook op de rest');
-    const problems = await openGame(page, { save: { ...RICH, language: code } });
+    const problems = await openGame(page, { save: { ...RICH, language: code }, switches: { AANKOPEN: true, INLOGGEN: true } });
     expect((await snap(page)).language).toBe(code);
     const strings = await page.evaluate(async c => (await import('./js/i18n/index.js')).STRINGS[c], code);
     const bad = [];

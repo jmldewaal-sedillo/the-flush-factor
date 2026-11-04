@@ -21,6 +21,9 @@ export const LANGUAGES = [
 export const STRINGS = { nl, en, de, fr, es, pt, it, pl, tr, id };
 export const FALLBACK = 'nl';
 
+// Alleen echte taalcodes uit de lijst; "constructor" of "__proto__" (uit ?lang= of een code) tellen niet.
+export const isLanguage = code => typeof code === 'string' && Object.hasOwn(STRINGS, code);
+
 let current = FALLBACK;
 const missing = new Set();
 const listeners = [];
@@ -28,12 +31,12 @@ const listeners = [];
 // Eerste start: de taal van het toestel, anders Engels.
 export function deviceLanguage() {
   const device = String(navigator.language || FALLBACK).slice(0, 2).toLowerCase();
-  return STRINGS[device] ? device : 'en';
+  return isLanguage(device) ? device : 'en';
 }
 
 export const getLanguage = () => current;
 export function setLanguage(code) {
-  current = STRINGS[code] ? code : FALLBACK;
+  current = isLanguage(code) ? code : FALLBACK;
   document.documentElement.lang = current;
   applyTranslations();
   listeners.forEach(fn => fn(current));
@@ -43,9 +46,9 @@ export const onLanguageChange = fn => { listeners.push(fn); };
 
 function lookup(key) {
   const lang = STRINGS[current];
-  if (key in lang) return lang[key];
+  if (Object.hasOwn(lang, key)) return lang[key];
   missing.add(`${current}: ${key}`);
-  return key in STRINGS[FALLBACK] ? STRINGS[FALLBACK][key] : key;
+  return Object.hasOwn(STRINGS[FALLBACK], key) ? STRINGS[FALLBACK][key] : key;
 }
 
 // t('shop.bought', { name: 'Spons' }) — {naam} in de tekst wordt vervangen.
@@ -59,7 +62,7 @@ export function pick(key) {
   const value = lookup(key);
   return Array.isArray(value) ? value[Math.floor(Math.random() * value.length)] : String(value);
 }
-export const has = key => key in STRINGS[current] || key in STRINGS[FALLBACK];
+export const has = key => Object.hasOwn(STRINGS[current], key) || Object.hasOwn(STRINGS[FALLBACK], key);
 
 // Namen en omschrijvingen van spullen staan onder item.<id>.*
 export const itemName = item => t(`item.${item.id}.name`);

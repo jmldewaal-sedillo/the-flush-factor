@@ -31,7 +31,7 @@ test('geen emoji in de broncode (html, css, js, manifest, iconen)', async ({}, i
 });
 
 test('geen emoji in de interface, in geen enkele toestand', async ({ page }) => {
-  await openGame(page, { save: { score: 190, level: 1 } });
+  await openGame(page, { save: { score: 190, level: 1 }, switches: { AANKOPEN: true, INLOGGEN: true } });     // ook de voorbereide knoppen
   const seen = [];
   const scan = async label => { const f = emojiIn(await domText(page)); if (f.length) seen.push(`${label}: ${f.join(' ')}`); };
 

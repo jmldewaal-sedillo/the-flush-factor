@@ -33,7 +33,7 @@ const NOT_IN_GAME = new Set([
 ]);
 const NOT_IN_ASSETS = new Set(['reference']);                                // referentiemateriaal van de maker
 // De keuzepagina's (stijl, punt 78; spoelicoon, punt 75) zijn voor Jenn op de testversie; niet in de app.
-const PREVIEWS = ['style-preview.html', 'spoelicoon-preview.html'];
+const PREVIEWS = ['style-preview.html', 'spoelicoon-preview.html', 'previews'];
 const ONLY_WITH_SERVICE_WORKER = ['sw.js', 'manifest.webmanifest'];
 const WEB_LAYER = '<script src="platform/web.js"></script>';
 
