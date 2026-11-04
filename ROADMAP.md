@@ -50,7 +50,7 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] **Privacytekst laten nakijken** (door iemand met verstand van de AVG): de verklaring en de verwijderpagina in `js/i18n/legal/`, in elk geval Nederlands en Engels. Door Claude geschreven, door niemand nagekeken.
 - [ ] Vlak voor publicatie opnieuw controleren of het EU-U.S. Data Privacy Framework nog geldt voor GitHub en Google (de tekst noemt het). Stand op 2026-10-12: van kracht; het Gerecht van de EU heeft het op 3 september 2025 in stand gelaten, het hoger beroep (zaak C-703/25 P, Latombe/Commissie) loopt nog bij het Hof van Justitie. Vernietigt het Hof het besluit, dan moet die alinea eruit of anders.
 - [ ] Data Safety ingevuld (antwoorden volgen uit `docs/privacy-audit.md`).
-- [ ] Store-teksten (begin in `store/`), icoon, feature graphic 1024×500, telefoon- en tabletscreenshots.
+- [ ] Store-teksten, icoon, feature graphic 1024×500, telefoon- en tabletscreenshots. *Klaar op 2026-11-05 behalve het echte icoon:* teksten in tien talen (acht nog niet nagelezen), `store/feature-graphic.png`, screenshots lokaal in `store/screenshots/` (niet in Git; zie `store/README.md`). Invulhulp Play Console: `docs/play-store.md`.
 - [ ] Android-app gebouwd met Capacitor en getest in de interne test van de Play Console. De upload key maakt Jenn zelf. (Was: TWA met `assetlinks.json`; vervallen.)
 - [x] **Ontwikkelaarsaccount omzetten naar zakelijk (organisatie)** *Aangevraagd 2026-10-18 (website geverifieerd, D-U-N-S via Altares); betalingsprofiel geverifieerd 2026-10-19 en gekoppeld 2026-10-21. Niet vóór 2026-10-24 indienen.* — wens van Jenn, 2026-10-18 (KvK aanwezig). Volgorde: (1) eerst het zakelijke postadres bij de KvK en het afgeschermde bezoekadres, want een organisatieaccount toont naam, adres en telefoonnummer altijd publiek, ook zonder advertenties; (2) D-U-N-S-nummer opzoeken of gratis aanvragen bij Dun & Bradstreet (kan tot 30 dagen duren); (3) zakelijk telefoonnummer kiezen; (4) website studiosedillo.com laten verifiëren in de Console; (5) "Account type wijzigen" onder Ontwikkelaarsaccount > Over jou, met een nieuw zakelijk betaalprofiel. Kan niet terug; daarna 72 uur wachten met indienen. Zie `docs/publiceren.md`.
 - [ ] Gesloten test: 12 testers, 14 dagen (eis voor een nieuw persoonlijk ontwikkelaarsaccount; volgens meerdere bronnen niet voor een organisatieaccount, nog na te kijken bij Google).
@@ -61,6 +61,12 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
 
 ## Logboek
+
+### 2026-11-05 (nacht, Claude zelfstandig)
+- Sprint 16 afgerond en naar de testversie: volledige suite gedraaid (546 groen; de rest waren tests die naar de CSP en zeven winkelcategorieën moesten, plus tablet-time-outs bij drie tests tegelijk die apart wel slagen; `layout.spec.js` krijgt nu 240 s).
+- Store-materiaal: teksten in de, fr, es, pt-BR, it, pl, tr en id; feature graphic; 84 screenshots (telefoon in tien talen, tablet 7 en 10 inch in en en nl) uit het echte spel via `tests/store-beelden.spec.js` (alleen op verzoek). `docs/play-store.md`: voorstellen voor IARC, Data safety, doelgroep, store-vermelding en de eerste interne test.
+- Dependabot-meldingen en automatische beveiligingsupdates aan op de live-repo. Bijwerking: `dependabot.yml` staat nu ook op `main` van de test-repo, die daardoor update-PR's krijgt (ruis; daar faalt de blocklist-controle omdat Dependabot-runs het geheim niet krijgen).
+- Pagina's voor studiosedillo.com gebouwd en `--dry-run` groen; de echte push naar de live hoofdsite werd door de permissies van Claude Code tegengehouden. Jenn: zie "Volgende".
 
 ### 2026-11-04
 - **Sprint 16 (punten 122–127), vaste controles** op `sprint-16`: de controle van 2026-10-26 (`Apps/docs/controle-2026-10-26.md`) voor dit spel uitgevoerd. Inloggen en punten kopen staan uit en zijn niet te zien; gecontroleerde import; CSP; Android zonder back-up; contrast, knopnamen en toetsenbord; store-teksten zonder "meest absurde"; privacytekst voor Android en iOS; pagina's voor de hoofdsite. Twee fouten in de controles ook in de template opgelost.
