@@ -53,3 +53,25 @@ overzetten" (scorebubbel → Gegevens) kun je een spelstand meenemen.
 
 - Geen `CNAME`-bestand in de root en geen DNS-records (sectie 11, punt 6).
 - De live-repo publiceert niet via deze workflow; `main` verandert alleen na akkoord van Jenn.
+
+## Dependabot staat uit in de test-repo
+
+`dependabot.yml` gaat met elke push naar `main` van de test-repo mee, en Dependabot leest dat bestand op de
+**standaardbranch**. Daardoor kreeg de test-repo dezelfde update-PR's als de hoofdrepo (ruis; de blocklist-controle
+faalt er bovendien, omdat Dependabot-runs het geheim niet krijgen). De oplossing verandert niets aan de werkwijze:
+de standaardbranch van de test-repo wordt een lege branch `standaard` met alleen een README, en `main` blijft de
+testversie. De workflow publiceert alleen vanaf `main` en de Pages-omgeving laat `main` toe (gecontroleerd op
+2026-11-07). Updates en meldingen horen alleen in de hoofdrepo `the-flush-factor`.
+
+Eén keer uitvoeren (Jenn; Claude Code mag de repo-instellingen niet zelf wijzigen):
+
+```bash
+cd /home/maggiesedd/Documents/Projecten/Apps
+tools/test-repo-dependabot-uit.sh --dry-run the-flush-factor-test   # laat zien wat er gebeurt
+tools/test-repo-dependabot-uit.sh the-flush-factor-test             # branch, standaardbranch, PR's sluiten
+tools/test-repo-dependabot-uit.sh --alle                            # alle *-test repo's (ook brainsnacks-test)
+```
+
+Controleren: `gh repo view jmldewaal-sedillo/the-flush-factor-test --json defaultBranchRef` geeft `standaard`,
+en `gh pr list -R jmldewaal-sedillo/the-flush-factor-test` is leeg. Nieuwe apps krijgen dit vanzelf via
+`Apps/tools/nieuwe-app.sh`.

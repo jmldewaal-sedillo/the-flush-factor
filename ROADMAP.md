@@ -30,6 +30,8 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [x] Privacyverklaring per bouwdoel nalopen vóór de eerste store-release. *Gedaan in Sprint 16: "de app voor Android en iOS" en verwijderen op iPhone/iPad, in alle tien talen (datum 2026-11-04).*
 - [ ] **Pagina's op studiosedillo.com zetten** (na akkoord van Jenn; pusht naar de live hoofdsite; gebouwd en `--dry-run` groen op 2026-11-04, de echte push mocht Claude niet zelf doen): `npm run bouw:hoofdsite`, daarna `Apps/tools/hoofdsite-toevoegen.sh --app the-flush-factor --paginas the-flush-factor/dist/hoofdsite/the-flush-factor` (eerst `--dry-run`). Zie `docs/publiceren.md`.
 - [x] **Dependabot-meldingen aanzetten** — aan sinds 2026-11-04 (meldingen en automatische beveiligingsupdates; `.github/dependabot.yml` sinds Sprint 16).
+- [ ] **Dependabot uitzetten in de test-repo** (Jenn, één commando; Claude Code mocht de repo-instellingen niet wijzigen): `Apps/tools/test-repo-dependabot-uit.sh --alle` (eerst met `--dry-run`). Sluit de zeven update-PR's in `the-flush-factor-test` en `brainsnacks-test` en zet daar een lege standaardbranch `standaard`; `main` blijft de testversie. Zie `docs/testversie.md`.
+- [ ] **Pakketten bijwerken ná de merge naar `main`**, via de Dependabot-PR's in de hoofdrepo (Capacitor 8.6.0 van 2026-11-06, Playwright 1.65.0 van 2026-11-07; nu bewust niet gedaan: dag-oude versies vlak voor de eerste store-upload, en de volledige suite duurt anderhalf uur).
 - [ ] Op een echte telefoon testen via het testadres (nog nooit gedaan).
 - [ ] Merge `sprint-9` naar `main` na akkoord ("zet live").
 
@@ -61,6 +63,11 @@ Werk in uitvoering staat op de branch `sprint-9` (Sprint 9 t/m 12, ook op de tes
 - [ ] 72. Play Store-beleid en 73. regels nakijken (zie verderop).
 
 ## Logboek
+
+### 2026-11-07 (Claude zelfstandig)
+- Stand nagekeken: Sprint 16 staat op `origin/sprint-16` en op de testversie (`0b4398ae0e`), CI groen (volledige suite 1u26, app-build, privégegevens), geen Dependabot-alerts, werkboom schoon. Open punten zijn allemaal van Jenn (testen, spoelicoon, upload key, akkoord hoofdsite, "zet live").
+- **Dependabot-ruis in de test-repo structureel opgelost** (`Apps/CLAUDE.md` §9): `Apps/tools/test-repo-dependabot-uit.sh` maakt in een `*-test`-repo een lege standaardbranch `standaard` (Dependabot leest `dependabot.yml` alleen daar), `main` blijft de testversie, open PR's van Dependabot gaan dicht. Gecontroleerd dat de workflow en de Pages-omgeving alleen op `main` letten. `nieuwe-app.sh` doet het voortaan vanzelf; vastgelegd in `Apps/CLAUDE.md`, `TEMPLATE.md`, `docs/controle-2026-10-26.md` en `docs/testversie.md`. De dry-run liep; het echte uitvoeren werd door de permissies van Claude Code tegengehouden, dus het staat onder "Volgende" voor Jenn.
+- Pakketupdates (Capacitor 8.6.0, Playwright 1.65.0) bewust uitgesteld tot na de merge, zie "Volgende".
 
 ### 2026-11-05 (nacht, Claude zelfstandig)
 - Sprint 16 afgerond en naar de testversie: volledige suite gedraaid (546 groen; de rest waren tests die naar de CSP en zeven winkelcategorieën moesten, plus tablet-time-outs bij drie tests tegelijk die apart wel slagen; `layout.spec.js` krijgt nu 240 s).
